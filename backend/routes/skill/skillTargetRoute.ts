@@ -1,0 +1,33 @@
+import SkillTargetController from "../../controllers/skill/skillTargetController";
+import authorizeRoles from "../../middlewares/authorizeRole";
+import { role } from "../../enum/enum";
+
+const skillTargetRoutes = {
+  name: "target-routes",
+  register: async function (server, options) {
+    server.route([
+      {
+        method: "POST",
+        path: "/create",
+        options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
+        handler: SkillTargetController.createTarget,
+      },
+
+      {
+        method: "GET",
+        path: "/skillTarget",
+        options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
+        handler: SkillTargetController.getTarget,
+      },
+
+      {
+        method: "DELETE",
+        path: "/delete",
+        options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
+        handler: SkillTargetController.deleteTarget,
+      },
+    ]);
+  },
+};
+
+export default skillTargetRoutes;
