@@ -286,3 +286,5 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     </div>
   );
 };
+
+export default TeamManagement;

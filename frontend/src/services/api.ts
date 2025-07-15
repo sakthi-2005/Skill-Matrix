@@ -313,3 +313,65 @@ export const skillUpgradeService = {
     resourceLink?: string;
   }) => apiRequest("/guides/update", { method: "POST", body: data }),
 };
+
+export const adminService = {
+  // Organization stats
+  getOrganizationStats: () => apiRequest("/admin/organization/stats"),
+  
+  // Team management
+  createTeam: (data: { name: string; description?: string }) => 
+    apiRequest("/admin/teams", { method: "POST", body: data }),
+  
+  getAllTeams: (includeDeleted: boolean = false) => 
+    apiRequest(`/admin/teams?includeDeleted=${includeDeleted}`),
+  
+  getTeamById: (id: number, includeDeleted: boolean = false) => 
+    apiRequest(`/admin/teams/${id}?includeDeleted=${includeDeleted}`),
+  
+  updateTeam: (id: number, data: { name?: string; description?: string }) => 
+    apiRequest(`/admin/teams/${id}`, { method: "PUT", body: data }),
+  
+  deleteTeam: (id: number) => 
+    apiRequest(`/admin/teams/${id}`, { method: "DELETE" }),
+  
+  restoreTeam: (id: number) => 
+    apiRequest(`/admin/teams/${id}/restore`, { method: "POST" }),
+  
+  // SubTeam management
+  createSubTeam: (data: { name: string; description?: string; teamId: number }) => 
+    apiRequest("/admin/subteams", { method: "POST", body: data }),
+  
+  getAllSubTeams: (includeDeleted: boolean = false) => 
+    apiRequest(`/admin/subteams?includeDeleted=${includeDeleted}`),
+  
+  getSubTeamById: (id: number, includeDeleted: boolean = false) => 
+    apiRequest(`/admin/subteams/${id}?includeDeleted=${includeDeleted}`),
+  
+  updateSubTeam: (id: number, data: { name?: string; description?: string; teamId?: number }) => 
+    apiRequest(`/admin/subteams/${id}`, { method: "PUT", body: data }),
+  
+  deleteSubTeam: (id: number) => 
+    apiRequest(`/admin/subteams/${id}`, { method: "DELETE" }),
+  
+  restoreSubTeam: (id: number) => 
+    apiRequest(`/admin/subteams/${id}/restore`, { method: "POST" }),
+  
+  // Position management
+  createPosition: (data: { name: string; description?: string }) => 
+    apiRequest("/admin/positions", { method: "POST", body: data }),
+  
+  getAllPositions: (includeDeleted: boolean = false) => 
+    apiRequest(`/admin/positions?includeDeleted=${includeDeleted}`),
+  
+  getPositionById: (id: number, includeDeleted: boolean = false) => 
+    apiRequest(`/admin/positions/${id}?includeDeleted=${includeDeleted}`),
+  
+  updatePosition: (id: number, data: { name?: string; description?: string }) => 
+    apiRequest(`/admin/positions/${id}`, { method: "PUT", body: data }),
+  
+  deletePosition: (id: number) => 
+    apiRequest(`/admin/positions/${id}`, { method: "DELETE" }),
+  
+  restorePosition: (id: number) => 
+    apiRequest(`/admin/positions/${id}/restore`, { method: "POST" }),
+};

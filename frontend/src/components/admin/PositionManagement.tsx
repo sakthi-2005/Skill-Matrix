@@ -280,3 +280,5 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
     </div>
   );
 };
+
+export default PositionManagement;

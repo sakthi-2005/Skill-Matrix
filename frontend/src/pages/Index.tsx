@@ -18,6 +18,7 @@ import PendingAssessmentsPage from "../components/assessment/PendingAssessmentsP
 import TeamAssessment from "@/components/assessment/TeamAssessment";
 import EmployeeAssessmentReview from "@/components/assessment/EmployeeAssessmentReview";
 import HRAssessmentManagement from "@/components/assessment/HRAssessmentManagement";
+import HRAdminDashboard from "@/components/admin/HRAdminDashboard";
 
 
 const Index = () => {
@@ -50,6 +51,8 @@ const Index = () => {
       setActiveTab("employee-assessment-review");
     } else if(path.startsWith("/hr-assessment-management")){
       setActiveTab("hr-assessment-management");
+    } else if(path.startsWith("/admin-dashboard")){
+      setActiveTab("admin-dashboard");
     }
     else {
       setActiveTab("dashboard");
@@ -126,6 +129,9 @@ const Index = () => {
       case "hr-assessment-management":
         navigate("/hr-assessment-management");
         break;
+      case "admin-dashboard":
+        navigate("/admin-dashboard");
+        break;
       default:
         navigate("/");
     }
@@ -146,6 +152,7 @@ const Index = () => {
           <Route path="/team-assessment" element={<TeamAssessment/>}/>
           <Route path="/employee-assessment-review" element={<EmployeeAssessmentReview/>}/>
           <Route path="/hr-assessment-management" element={<HRAssessmentManagement/>}/>
+          <Route path="/admin-dashboard" element={<HRAdminDashboard/>}/>
           <Route
             path="/pending-assessments"
             element={<PendingAssessmentsPage />}

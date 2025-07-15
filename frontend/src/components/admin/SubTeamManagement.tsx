@@ -334,3 +334,5 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
     </div>
   );
 };
+
+export default SubTeamManagement;
