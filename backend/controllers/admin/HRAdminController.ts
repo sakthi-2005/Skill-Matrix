@@ -113,6 +113,40 @@ export class HRAdminController {
     }
   };
 
+  activateTeam = async (request: Request, h: ResponseToolkit) => {
+    try {
+      const { id } = request.params;
+      const team = await this.hrAdminService.activateTeam(Number(id));
+      return h.response({
+        success: true,
+        message: "Team activated successfully",
+        data: team,
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to activate team");
+    }
+  };
+
+  deactivateTeam = async (request: Request, h: ResponseToolkit) => {
+    try {
+      const { id } = request.params;
+      const team = await this.hrAdminService.deactivateTeam(Number(id));
+      return h.response({
+        success: true,
+        message: "Team deactivated successfully",
+        data: team,
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to deactivate team");
+    }
+  };
+
   // ============ SUB-TEAMS ============
 
   createSubTeam = async (request: Request, h: ResponseToolkit) => {

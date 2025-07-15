@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/custom/Card';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardStats from './DashboardStats';
-import { Building2, Target, AlertCircle, Settings } from 'lucide-react';
+import { Building2, Target, AlertCircle } from 'lucide-react';
 import { assessmentService, skillService, teamService, userService } from '@/services/api';
 import { getAverageSkillLevel } from '@/utils/helper';
 
@@ -79,7 +79,7 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
         title="Organization Skills Overview"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -154,33 +154,7 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Admin Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">Manage organization structure</p>
-              <div className="space-y-2">
-                <button 
-                  onClick={() => onNavigate('admin-dashboard')} 
-                  className="w-full border h-9 rounded-md px-3 border-input bg-background hover:bg-accent hover:text-accent-foreground"
-                >
-                  Teams & Positions
-                </button>
-                <button 
-                  onClick={() => onNavigate('admin-dashboard')} 
-                  className="w-full border h-9 rounded-md px-3 border-input bg-background hover:bg-accent hover:text-accent-foreground"
-                >
-                  Organization Setup
-                </button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
     </div>
   );

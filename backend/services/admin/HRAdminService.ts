@@ -170,6 +170,50 @@ export class HRAdminService {
     }
   }
 
+  async activateTeam(id: number): Promise<TeamType> {
+    try {
+      const team = await this.getTeamById(id);
+      
+      if (team.isActive) {
+        throw Boom.badRequest("Team is already active");
+      }
+
+      await this.teamRepository.update(id, {
+        isActive: true,
+        updatedAt: new Date(),
+      });
+
+      return await this.getTeamById(id);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to activate team");
+    }
+  }
+
+  async deactivateTeam(id: number): Promise<TeamType> {
+    try {
+      const team = await this.getTeamById(id);
+      
+      if (!team.isActive) {
+        throw Boom.badRequest("Team is already inactive");
+      }
+
+      await this.teamRepository.update(id, {
+        isActive: false,
+        updatedAt: new Date(),
+      });
+
+      return await this.getTeamById(id);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to deactivate team");
+    }
+  }
+
   // ============ SUB-TEAMS ============
 
   async createSubTeam(subTeamData: Partial<SubTeamType>): Promise<SubTeamType> {

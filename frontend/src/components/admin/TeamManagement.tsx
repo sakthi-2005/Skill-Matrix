@@ -15,11 +15,15 @@ import {
   Eye,
   EyeOff,
   Users,
-  Building2
+  Building2,
+  Power,
+  PowerOff,
+  Info
 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import { Team, CreateTeamRequest, UpdateTeamRequest } from '../../types/admin';
 import { toast } from 'sonner';
+import { TeamDetailModal } from './TeamDetailModal';
 
 interface TeamManagementProps {
   onStatsUpdate: () => void;
@@ -29,9 +33,11 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showDeleted, setShowDeleted] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [formData, setFormData] = useState<CreateTeamRequest>({
     name: '',
     description: '',
@@ -39,12 +45,12 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
 
   useEffect(() => {
     loadTeams();
-  }, [showDeleted]);
+  }, []);
 
   const loadTeams = async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllTeams(showDeleted);
+      const response = await adminService.getAllTeams(false); // Always load non-deleted teams
       if (response.success) {
         setTeams(response.data || []);
       }
@@ -80,8 +86,32 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     }
   };
 
+  const handleActivate = async (team: Team) => {
+    try {
+      await adminService.activateTeam(team.id);
+      toast.success('Team activated successfully');
+      loadTeams();
+      onStatsUpdate();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to activate team');
+    }
+  };
+
+  const handleDeactivate = async (team: Team) => {
+    if (window.confirm(`Are you sure you want to deactivate "${team.name}"?`)) {
+      try {
+        await adminService.deactivateTeam(team.id);
+        toast.success('Team deactivated successfully');
+        loadTeams();
+        onStatsUpdate();
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to deactivate team');
+      }
+    }
+  };
+
   const handleDelete = async (team: Team) => {
-    if (window.confirm(`Are you sure you want to delete "${team.name}"?`)) {
+    if (window.confirm(`Are you sure you want to delete "${team.name}"? This action cannot be undone.`)) {
       try {
         await adminService.deleteTeam(team.id);
         toast.success('Team deleted successfully');
@@ -119,10 +149,19 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     setIsDialogOpen(true);
   };
 
-  const filteredTeams = teams.filter(team =>
-    team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (team.description && team.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const openDetailModal = (team: Team) => {
+    setSelectedTeam(team);
+    setIsDetailModalOpen(true);
+  };
+
+  const filteredTeams = teams.filter(team => {
+    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (team.description && team.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesActiveFilter = showInactive ? true : team.isActive;
+    
+    return matchesSearch && matchesActiveFilter && !team.deletedAt;
+  });
 
   return (
     <div className="space-y-6">
@@ -132,11 +171,11 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowDeleted(!showDeleted)}
+            onClick={() => setShowInactive(!showInactive)}
             className="flex items-center space-x-2"
           >
-            {showDeleted ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span>{showDeleted ? 'Hide Deleted' : 'Show Deleted'}</span>
+            {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <span>{showInactive ? 'Hide Inactive' : 'Show Inactive'}</span>
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -206,7 +245,11 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTeams.map((team) => (
-            <Card key={team.id} className={team.deletedAt ? 'opacity-60' : ''}>
+            <Card 
+              key={team.id} 
+              className={`cursor-pointer hover:shadow-md transition-shadow ${!team.isActive ? 'opacity-60' : ''}`}
+              onClick={() => openDetailModal(team)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center space-x-2">
@@ -214,13 +257,20 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                     <span>{team.name}</span>
                   </CardTitle>
                   <div className="flex items-center space-x-2">
-                    {team.deletedAt ? (
-                      <Badge variant="destructive">Deleted</Badge>
-                    ) : (
-                      <Badge variant={team.isActive ? 'default' : 'secondary'}>
-                        {team.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                    )}
+                    <Badge variant={team.isActive ? 'default' : 'secondary'}>
+                      {team.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDetailModal(team);
+                      }}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Info className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -242,38 +292,59 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                   </div>
 
                   <div className="flex justify-end space-x-2">
-                    {team.deletedAt ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditDialog(team);
+                      }}
+                      className="flex items-center space-x-1"
+                    >
+                      <Edit className="h-3 w-3" />
+                      <span>Edit</span>
+                    </Button>
+                    
+                    {team.isActive ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRestore(team)}
-                        className="flex items-center space-x-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeactivate(team);
+                        }}
+                        className="flex items-center space-x-1 text-orange-600 hover:text-orange-700"
                       >
-                        <RotateCcw className="h-3 w-3" />
-                        <span>Restore</span>
+                        <PowerOff className="h-3 w-3" />
+                        <span>Deactivate</span>
                       </Button>
                     ) : (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(team)}
-                          className="flex items-center space-x-1"
-                        >
-                          <Edit className="h-3 w-3" />
-                          <span>Edit</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(team)}
-                          className="flex items-center space-x-1 text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          <span>Delete</span>
-                        </Button>
-                      </>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleActivate(team);
+                        }}
+                        className="flex items-center space-x-1 text-green-600 hover:text-green-700"
+                      >
+                        <Power className="h-3 w-3" />
+                        <span>Activate</span>
+                      </Button>
                     )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(team);
+                      }}
+                      className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      <span>Delete</span>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -288,6 +359,12 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
           <p className="text-gray-600">No teams found</p>
         </div>
       )}
+
+      <TeamDetailModal
+        team={selectedTeam}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+      />
     </div>
   );
 };

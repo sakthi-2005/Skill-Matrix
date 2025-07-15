@@ -125,6 +125,34 @@ export const HRAdminRoutes = (server: Server) => {
     handler: hrAdminController.restoreTeam,
   });
 
+  server.route({
+    method: "POST",
+    path: "/admin/hr/teams/{id}/activate",
+    options: {
+      ...authorizeRoles(["hr"]),
+      validate: {
+        params: Joi.object({
+          id: Joi.number().integer().required(),
+        }),
+      },
+    },
+    handler: hrAdminController.activateTeam,
+  });
+
+  server.route({
+    method: "POST",
+    path: "/admin/hr/teams/{id}/deactivate",
+    options: {
+      ...authorizeRoles(["hr"]),
+      validate: {
+        params: Joi.object({
+          id: Joi.number().integer().required(),
+        }),
+      },
+    },
+    handler: hrAdminController.deactivateTeam,
+  });
+
   // ============ SUB-TEAMS ============
   server.route({
     method: "POST",

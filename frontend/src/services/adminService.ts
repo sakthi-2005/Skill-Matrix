@@ -115,6 +115,22 @@ class AdminService {
     return this.handleResponse<ApiResponse<Team>>(response);
   }
 
+  async activateTeam(id: number): Promise<ApiResponse<Team>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/teams/${id}/activate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<Team>>(response);
+  }
+
+  async deactivateTeam(id: number): Promise<ApiResponse<Team>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/teams/${id}/deactivate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<Team>>(response);
+  }
+
   // ============ SUB-TEAMS ============
 
   async createSubTeam(data: CreateSubTeamRequest): Promise<ApiResponse<SubTeam>> {
