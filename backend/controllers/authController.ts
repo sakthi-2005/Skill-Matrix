@@ -108,7 +108,7 @@ const AuthController: Controller = {
           hrId: user.hrId,
           leadId: user.leadId,
           position: user.position,
-          Team: user.Team,
+          Team: user.team,
         },
         { key: process.env.JWT_SECRET_KEY as string, algorithm: "HS256" }
       );
@@ -175,7 +175,7 @@ const AuthController: Controller = {
           hrId: user.hrId,
           leadId: user.leadId,
           position: user.position,
-          Team: user.Team,
+          Team: user.team,
         },
         { key: process.env.JWT_SECRET_KEY as string, algorithm: "HS256" }
       );
@@ -189,7 +189,7 @@ const AuthController: Controller = {
           email: user.email,
           role: user.role,
           position: user.position,
-          Team: user.Team
+          Team: user.team
         }
       }).code(200);
     } catch (error) {

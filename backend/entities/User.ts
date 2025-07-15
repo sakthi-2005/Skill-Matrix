@@ -32,6 +32,11 @@ export const User = new EntitySchema<UserType>({
       name: "team_id",
       nullable: true,
     },
+    subTeamId: {
+      type: "integer",
+      name: "sub_team_id",
+      nullable: true,
+    },
     positionId: {
       type: "integer",
       name: "position_id",
@@ -94,11 +99,19 @@ export const User = new EntitySchema<UserType>({
         referencedColumnName: "id",
       },
     },
-    Team: {
+    team: {
       target: "Team",
       type: "many-to-one",
       joinColumn: {
         name: "team_id",
+        referencedColumnName: "id",
+      },
+    },
+    subTeam: {
+      target: "SubTeam",
+      type: "many-to-one",
+      joinColumn: {
+        name: "sub_team_id",
         referencedColumnName: "id",
       },
     },

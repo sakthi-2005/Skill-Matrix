@@ -65,6 +65,7 @@ export interface UserType {
   email: string;
   roleId?: number;
   teamId?: number;
+  subTeamId?: number;
   positionId?: number;
   leadId?: string;
   hrId?: string;
@@ -75,7 +76,8 @@ export interface UserType {
   Requests?: AssessmentRequestType;
   role?: RoleType;
   position?: PositionType;
-  Team?: TeamType;
+  team?: TeamType;
+  subTeam?: SubTeamType;
   Audit?: AuditType;
   target?: targetType
 }
@@ -83,9 +85,30 @@ export interface UserType {
 export interface TeamType {
   id: number;
   name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
   
   // Relations
-  user?: UserType;
+  users?: UserType[];
+  subTeams?: SubTeamType[];
+}
+
+export interface SubTeamType {
+  id: number;
+  name: string;
+  description?: string;
+  teamId: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+  
+  // Relations
+  team?: TeamType;
+  users?: UserType[];
 }
 
 export interface SkillUpgradeGuideType {
@@ -141,9 +164,14 @@ export interface RoleType {
 export interface PositionType {
   id: number;
   name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
   
   // Relations
-  user?: UserType;
+  users?: UserType[];
 }
 
 export interface AuditType {

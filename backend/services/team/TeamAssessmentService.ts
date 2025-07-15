@@ -248,7 +248,7 @@ const TeamAssessmentService = {
           }
     
           const teamMemberIds = teamMembers.map(member => member.id);
-          const teamName = teamMembers[0].Team?.name || "Unknown Team";
+          const teamName = teamMembers[0].team?.name || "Unknown Team";
     
           // Get assessments for team
           const teamAssessments = await assessmentRequestRepo.find({

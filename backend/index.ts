@@ -14,6 +14,7 @@ import assessmentCycleRoutes from "./routes/cycle/AssessmentCycleRoutes";
 import requestRoutes from "./routes/skill/SkillUpdateRequestRoute";
 import AssessmentLegacyRoutes from "./routes/AssessmentLegacyRoutes";
 import AssessmentCronJobs from "./services/assessment/AssessmentCronJobs";
+import { HRAdminRoutes } from "./routes/admin/HRAdminRoutes";
 
 
 dotenv.config();
@@ -141,6 +142,9 @@ const init = async () => {
       prefix: "/api/auth",
     },
   });
+
+  // Register HR Admin routes
+  HRAdminRoutes(server);
 
   await server.start();
   console.log(`Server running on ${server.info.uri}`);
