@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/custom/Card';
 import { Building, Users, MapPin, TrendingUp } from 'lucide-react';
-import { adminService } from '@/services/api';
+import { adminService } from '@/services/adminService';
 import { OrganizationStats } from '@/types/admin';
 
 const OrganizationOverview: React.FC = () => {
@@ -17,7 +17,11 @@ const OrganizationOverview: React.FC = () => {
     try {
       setLoading(true);
       const response = await adminService.getOrganizationStats();
-      setStats(response);
+      if (response.success) {
+        setStats(response.data);
+      } else {
+        throw new Error(response.message || 'Failed to load stats');
+      }
     } catch (err) {
       setError('Failed to load organization statistics');
       console.error('Error loading organization stats:', err);

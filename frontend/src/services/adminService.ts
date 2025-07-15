@@ -12,11 +12,11 @@ import {
   ApiResponse,
 } from '../types/admin';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 class AdminService {
   private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
@@ -25,8 +25,34 @@ class AdminService {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Network error' }));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        // If we can't parse the error response, use a generic message
+        if (response.status >= 500) {
+          errorMessage = 'An internal server error occurred';
+        } else if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (response.status === 403) {
+          errorMessage = 'You do not have permission to perform this action';
+        } else if (response.status === 404) {
+          errorMessage = 'The requested resource was not found';
+        } else {
+          errorMessage = 'Network error occurred';
+        }
+      }
+      
+      // Handle specific token-related errors
+      if (response.status === 401) {
+        // Clear the token if it's invalid
+        localStorage.removeItem('authToken');
+        throw new Error('Authentication failed. Please log in again.');
+      }
+      
+      throw new Error(errorMessage);
     }
     return response.json();
   }

@@ -144,7 +144,16 @@ const init = async () => {
   });
 
   // Register HR Admin routes
-  HRAdminRoutes(server);
+  await server.register({
+    plugin: {
+      name: 'hr-admin-routes',
+      register: HRAdminRoutes
+    },
+    options: {},
+    routes: {
+      prefix: "/api",
+    },
+  });
 
   await server.start();
   console.log(`Server running on ${server.info.uri}`);

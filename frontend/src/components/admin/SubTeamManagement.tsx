@@ -5,7 +5,7 @@ import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { 
   Plus, 
@@ -166,6 +166,11 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                 <DialogTitle>
                   {editingSubTeam ? 'Edit Sub-Team' : 'Create New Sub-Team'}
                 </DialogTitle>
+                <DialogDescription>
+                  {editingSubTeam 
+                    ? 'Update the sub-team information below.' 
+                    : 'Fill in the details to create a new sub-team.'}
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>

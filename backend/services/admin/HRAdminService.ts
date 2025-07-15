@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Repository, Not, IsNull } from "typeorm";
 import { AppDataSource } from "../../config/dataSource";
 import { Team } from "../../entities/Team";
 import { SubTeam } from "../../entities/SubTeam";
@@ -215,7 +215,7 @@ export class HRAdminService {
 
       return await this.subTeamRepository.find({
         where: whereCondition,
-        relations: ["team", "users"],
+        relations: ["Team", "users"],
         order: { createdAt: "DESC" },
       });
     } catch (error) {
@@ -231,7 +231,7 @@ export class HRAdminService {
 
       const subTeam = await this.subTeamRepository.findOne({
         where: whereCondition,
-        relations: ["team", "users"],
+        relations: ["Team", "users"],
       });
 
       if (!subTeam) {
@@ -466,12 +466,12 @@ export class HRAdminService {
   async getOrganizationStats() {
     try {
       const [activeTeams, deletedTeams, activeSubTeams, deletedSubTeams, activePositions, deletedPositions] = await Promise.all([
-        this.teamRepository.count({ where: { deletedAt: null } }),
-        this.teamRepository.count({ where: { deletedAt: null } }),
-        this.subTeamRepository.count({ where: { deletedAt: null } }),
-        this.subTeamRepository.count({ where: { deletedAt: null } }),
-        this.positionRepository.count({ where: { deletedAt: null } }),
-        this.positionRepository.count({ where: { deletedAt: null } }),
+        this.teamRepository.count({ where: { deletedAt: IsNull() } }),
+        this.teamRepository.count({ where: { deletedAt: Not(IsNull()) } }),
+        this.subTeamRepository.count({ where: { deletedAt: IsNull() } }),
+        this.subTeamRepository.count({ where: { deletedAt: Not(IsNull()) } }),
+        this.positionRepository.count({ where: { deletedAt: IsNull() } }),
+        this.positionRepository.count({ where: { deletedAt: Not(IsNull()) } }),
       ]);
 
       return {
