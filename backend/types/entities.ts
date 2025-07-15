@@ -76,8 +76,8 @@ export interface UserType {
   Requests?: AssessmentRequestType;
   role?: RoleType;
   position?: PositionType;
-  team?: TeamType;
-  subTeam?: SubTeamType;
+  Team?: TeamType;
+  SubTeam?: SubTeamType;
   Audit?: AuditType;
   target?: targetType
 }
@@ -107,7 +107,7 @@ export interface SubTeamType {
   deletedAt?: Date;
   
   // Relations
-  team?: TeamType;
+  Team?: TeamType;
   users?: UserType[];
 }
 

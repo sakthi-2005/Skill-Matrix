@@ -12,10 +12,24 @@ export async function seedHRAdminData() {
     const subTeamRepository = AppDataSource.getRepository(SubTeam);
     const positionRepository = AppDataSource.getRepository(Position);
 
-    // Clear existing data
-    await subTeamRepository.delete({});
-    await teamRepository.delete({});
-    await positionRepository.delete({});
+    // Clear existing data (if any exists)
+    try {
+      await subTeamRepository.query('DELETE FROM sub_teams');
+    } catch (error) {
+      console.log('Sub-teams table does not exist yet');
+    }
+    
+    try {
+      await teamRepository.query('DELETE FROM teams');
+    } catch (error) {
+      console.log('Teams table does not exist yet');
+    }
+    
+    try {
+      await positionRepository.query('DELETE FROM positions');
+    } catch (error) {
+      console.log('Positions table does not exist yet');
+    }
 
     // Seed Teams
     const teams: TeamType[] = [

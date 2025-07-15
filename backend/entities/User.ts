@@ -99,7 +99,7 @@ export const User = new EntitySchema<UserType>({
         referencedColumnName: "id",
       },
     },
-    team: {
+    Team: {
       target: "Team",
       type: "many-to-one",
       joinColumn: {
@@ -107,7 +107,7 @@ export const User = new EntitySchema<UserType>({
         referencedColumnName: "id",
       },
     },
-    subTeam: {
+    SubTeam: {
       target: "SubTeam",
       type: "many-to-one",
       joinColumn: {

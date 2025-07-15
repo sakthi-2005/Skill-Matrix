@@ -43,12 +43,12 @@ export const Team = new EntitySchema<TeamType>({
     users: {
       target: "User",
       type: "one-to-many",
-      inverseSide: "team",
+      inverseSide: "Team",
     },
     subTeams: {
       target: "SubTeam",
       type: "one-to-many",
-      inverseSide: "team",
+      inverseSide: "Team",
     },
   },
   indices: [

@@ -44,7 +44,7 @@ export const SubTeam = new EntitySchema<SubTeamType>({
     },
   },
   relations: {
-    team: {
+    Team: {
       target: "Team",
       type: "many-to-one",
       joinColumn: {
@@ -55,7 +55,7 @@ export const SubTeam = new EntitySchema<SubTeamType>({
     users: {
       target: "User",
       type: "one-to-many",
-      inverseSide: "subTeam",
+      inverseSide: "SubTeam",
     },
   },
   indices: [
