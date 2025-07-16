@@ -16,11 +16,15 @@ import {
   Eye,
   EyeOff,
   Users,
-  Building
+  Building,
+  Power,
+  PowerOff
 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import { Team, SubTeam, CreateSubTeamRequest, UpdateSubTeamRequest } from '../../types/admin';
 import { toast } from 'sonner';
+import { SubTeamDetailModal } from './SubTeamDetailModal';
+import { ConfirmationModal } from './ConfirmationModal';
 
 interface SubTeamManagementProps {
   onStatsUpdate: () => void;
@@ -31,10 +35,23 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showDeleted, setShowDeleted] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
   const [editingSubTeam, setEditingSubTeam] = useState<SubTeam | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedSubTeam, setSelectedSubTeam] = useState<SubTeam | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'deactivate' | 'activate';
+    subTeam: SubTeam | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    type: 'delete',
+    subTeam: null,
+    loading: false
+  });
   const [formData, setFormData] = useState<CreateSubTeamRequest>({
     name: '',
     description: '',
@@ -43,7 +60,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
 
   useEffect(() => {
     loadData();
-  }, [showDeleted, selectedTeamFilter]);
+  }, [showInactive, selectedTeamFilter]);
 
   const loadData = async () => {
     try {
@@ -51,7 +68,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
       const [subTeamsResponse, teamsResponse] = await Promise.all([
         adminService.getAllSubTeams(
           selectedTeamFilter === 'all' ? undefined : parseInt(selectedTeamFilter),
-          showDeleted
+          false // Always load non-deleted, we'll filter by active/inactive
         ),
         adminService.getAllTeams(false)
       ]);
@@ -94,16 +111,51 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
     }
   };
 
-  const handleDelete = async (subTeam: SubTeam) => {
-    if (window.confirm(`Are you sure you want to delete "${subTeam.name}"?`)) {
-      try {
-        await adminService.deleteSubTeam(subTeam.id);
-        toast.success('Sub-team deleted successfully');
-        loadData();
-        onStatsUpdate();
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to delete sub-team');
+  const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', subTeam: SubTeam) => {
+    setConfirmationModal({
+      isOpen: true,
+      type,
+      subTeam,
+      loading: false
+    });
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationModal({
+      isOpen: false,
+      type: 'delete',
+      subTeam: null,
+      loading: false
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmationModal.subTeam) return;
+
+    setConfirmationModal(prev => ({ ...prev, loading: true }));
+
+    try {
+      switch (confirmationModal.type) {
+        case 'activate':
+          await adminService.activateSubTeam(confirmationModal.subTeam.id);
+          toast.success('Sub-team activated successfully');
+          break;
+        case 'deactivate':
+          await adminService.deactivateSubTeam(confirmationModal.subTeam.id);
+          toast.success('Sub-team deactivated successfully');
+          break;
+        case 'delete':
+          await adminService.deleteSubTeam(confirmationModal.subTeam.id);
+          toast.success('Sub-team deleted successfully');
+          break;
       }
+      
+      loadData();
+      onStatsUpdate();
+      closeConfirmationModal();
+    } catch (error: any) {
+      toast.error(error.message || `Failed to ${confirmationModal.type} sub-team`);
+      setConfirmationModal(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -134,11 +186,20 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
     setIsDialogOpen(true);
   };
 
-  const filteredSubTeams = subTeams.filter(subTeam =>
-    subTeam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (subTeam.description && subTeam.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (subTeam.Team && subTeam.Team.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const openDetailModal = (subTeam: SubTeam) => {
+    setSelectedSubTeam(subTeam);
+    setIsDetailModalOpen(true);
+  };
+
+  const filteredSubTeams = subTeams.filter(subTeam => {
+    const matchesSearch = subTeam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (subTeam.description && subTeam.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (subTeam.Team && subTeam.Team.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesActiveFilter = showInactive ? true : subTeam.isActive;
+    
+    return matchesSearch && matchesActiveFilter && !subTeam.deletedAt;
+  });
 
   return (
     <div className="space-y-6">
@@ -148,11 +209,11 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowDeleted(!showDeleted)}
+            onClick={() => setShowInactive(!showInactive)}
             className="flex items-center space-x-2"
           >
-            {showDeleted ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span>{showDeleted ? 'Hide Deleted' : 'Show Deleted'}</span>
+            {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <span>{showInactive ? 'Active' : 'Show Inactive'}</span>
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -255,7 +316,11 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredSubTeams.map((subTeam) => (
-            <Card key={subTeam.id} className={subTeam.deletedAt ? 'opacity-60' : ''}>
+            <Card 
+              key={subTeam.id} 
+              className={`cursor-pointer hover:shadow-md transition-shadow ${subTeam.deletedAt ? 'opacity-60' : ''}`}
+              onClick={() => openDetailModal(subTeam)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center space-x-2">
@@ -294,7 +359,10 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRestore(subTeam)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRestore(subTeam);
+                        }}
                         className="flex items-center space-x-1"
                       >
                         <RotateCcw className="h-3 w-3" />
@@ -305,16 +373,51 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => openEditDialog(subTeam)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditDialog(subTeam);
+                          }}
                           className="flex items-center space-x-1"
                         >
                           <Edit className="h-3 w-3" />
                           <span>Edit</span>
                         </Button>
+                        
+                        {subTeam.isActive ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirmationModal('deactivate', subTeam);
+                            }}
+                            className="flex items-center space-x-1 text-orange-600 hover:text-orange-700"
+                          >
+                            <PowerOff className="h-3 w-3" />
+                            <span>Deactivate</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirmationModal('activate', subTeam);
+                            }}
+                            className="flex items-center space-x-1 text-green-600 hover:text-green-700"
+                          >
+                            <Power className="h-3 w-3" />
+                            <span>Activate</span>
+                          </Button>
+                        )}
+                        
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(subTeam)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openConfirmationModal('delete', subTeam);
+                          }}
                           className="flex items-center space-x-1 text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -336,6 +439,41 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
           <p className="text-gray-600">No sub-teams found</p>
         </div>
       )}
+
+      <SubTeamDetailModal
+        subTeam={selectedSubTeam}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={handleConfirmAction}
+        title={
+          confirmationModal.type === 'delete' 
+            ? 'Delete Sub-Team' 
+            : confirmationModal.type === 'deactivate'
+            ? 'Deactivate Sub-Team'
+            : 'Activate Sub-Team'
+        }
+        description={
+          confirmationModal.type === 'delete'
+            ? `Are you sure you want to delete "${confirmationModal.subTeam?.name}"? This action cannot be undone.`
+            : confirmationModal.type === 'deactivate'
+            ? `Are you sure you want to deactivate "${confirmationModal.subTeam?.name}"? This will make the sub-team inactive.`
+            : `Are you sure you want to activate "${confirmationModal.subTeam?.name}"? This will make the sub-team active.`
+        }
+        confirmText={
+          confirmationModal.type === 'delete' 
+            ? 'Delete' 
+            : confirmationModal.type === 'deactivate'
+            ? 'Deactivate'
+            : 'Activate'
+        }
+        type={confirmationModal.type}
+        loading={confirmationModal.loading}
+      />
     </div>
   );
 };

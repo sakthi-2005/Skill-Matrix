@@ -70,7 +70,10 @@ export interface UserType {
   leadId?: string;
   hrId?: string;
   profilePhoto?: string;
+  isActive: boolean;
   createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
   
   // Relations
   Requests?: AssessmentRequestType;
@@ -78,6 +81,8 @@ export interface UserType {
   position?: PositionType;
   Team?: TeamType;
   SubTeam?: SubTeamType;
+  lead?: UserType;
+  hr?: UserType;
   Audit?: AuditType;
   target?: targetType
 }

@@ -15,38 +15,89 @@ import {
   Eye,
   EyeOff,
   Users,
-  Briefcase
+  Briefcase,
+  Power,
+  PowerOff,
+  Target,
+  Settings
 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
+import { skillService } from '../../services/api';
 import { Position, CreatePositionRequest, UpdatePositionRequest } from '../../types/admin';
 import { toast } from 'sonner';
+import { PositionDetailModal } from './PositionDetailModal';
+import { ConfirmationModal } from './ConfirmationModal';
+import { PositionSkillMapping } from './PositionSkillMapping';
 
 interface PositionManagementProps {
   onStatsUpdate: () => void;
 }
 
+interface PositionWithSkillCount extends Position {
+  skillCount?: number;
+}
+
 export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsUpdate }) => {
-  const [positions, setPositions] = useState<Position[]>([]);
+  const [positions, setPositions] = useState<PositionWithSkillCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showDeleted, setShowDeleted] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'deactivate' | 'activate';
+    position: Position | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    type: 'delete',
+    position: null,
+    loading: false
+  });
   const [formData, setFormData] = useState<CreatePositionRequest>({
     name: '',
     description: '',
   });
+  const [skillRequirementsModal, setSkillRequirementsModal] = useState<{
+    isOpen: boolean;
+    position: Position | null;
+  }>({
+    isOpen: false,
+    position: null
+  });
 
   useEffect(() => {
     loadPositions();
-  }, [showDeleted]);
+  }, [showInactive]);
 
   const loadPositions = async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllPositions(showDeleted);
-      if (response.success) {
-        setPositions(response.data || []);
+      const [positionsResponse, skillsResponse] = await Promise.all([
+        adminService.getAllPositions(false), // Always load non-deleted, we'll filter by active/inactive
+        skillService.getAllSkills()
+      ]);
+      
+      if (positionsResponse.success) {
+        const positionsData = positionsResponse.data || [];
+        const skillsData = skillsResponse || [];
+        
+        // Calculate skill count for each position
+        const positionsWithSkillCount = positionsData.map((position: Position) => {
+          const skillCount = skillsData.filter((skill: any) => 
+            skill.position && skill.position.includes(position.id)
+          ).length;
+          
+          return {
+            ...position,
+            skillCount
+          };
+        });
+        
+        setPositions(positionsWithSkillCount);
       }
     } catch (error) {
       console.error('Error loading positions:', error);
@@ -80,16 +131,51 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
     }
   };
 
-  const handleDelete = async (position: Position) => {
-    if (window.confirm(`Are you sure you want to delete "${position.name}"?`)) {
-      try {
-        await adminService.deletePosition(position.id);
-        toast.success('Position deleted successfully');
-        loadPositions();
-        onStatsUpdate();
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to delete position');
+  const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', position: Position) => {
+    setConfirmationModal({
+      isOpen: true,
+      type,
+      position,
+      loading: false
+    });
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationModal({
+      isOpen: false,
+      type: 'delete',
+      position: null,
+      loading: false
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmationModal.position) return;
+
+    setConfirmationModal(prev => ({ ...prev, loading: true }));
+
+    try {
+      switch (confirmationModal.type) {
+        case 'activate':
+          await adminService.activatePosition(confirmationModal.position.id);
+          toast.success('Position activated successfully');
+          break;
+        case 'deactivate':
+          await adminService.deactivatePosition(confirmationModal.position.id);
+          toast.success('Position deactivated successfully');
+          break;
+        case 'delete':
+          await adminService.deletePosition(confirmationModal.position.id);
+          toast.success('Position deleted successfully');
+          break;
       }
+      
+      loadPositions();
+      onStatsUpdate();
+      closeConfirmationModal();
+    } catch (error: any) {
+      toast.error(error.message || `Failed to ${confirmationModal.type} position`);
+      setConfirmationModal(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -119,10 +205,33 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
     setIsDialogOpen(true);
   };
 
-  const filteredPositions = positions.filter(position =>
-    position.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (position.description && position.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const openDetailModal = (position: Position) => {
+    setSelectedPosition(position);
+    setIsDetailModalOpen(true);
+  };
+
+  const openSkillRequirementsModal = (position: Position) => {
+    setSkillRequirementsModal({
+      isOpen: true,
+      position
+    });
+  };
+
+  const closeSkillRequirementsModal = () => {
+    setSkillRequirementsModal({
+      isOpen: false,
+      position: null
+    });
+  };
+
+  const filteredPositions = positions.filter(position => {
+    const matchesSearch = position.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (position.description && position.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesActiveFilter = showInactive ? true : position.isActive;
+    
+    return matchesSearch && matchesActiveFilter && !position.deletedAt;
+  });
 
   return (
     <div className="space-y-6">
@@ -132,11 +241,11 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowDeleted(!showDeleted)}
+            onClick={() => setShowInactive(!showInactive)}
             className="flex items-center space-x-2"
           >
-            {showDeleted ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span>{showDeleted ? 'Hide Deleted' : 'Show Deleted'}</span>
+            {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <span>{showInactive ? 'Active' : 'Show Inactive'}</span>
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -206,7 +315,11 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPositions.map((position) => (
-            <Card key={position.id} className={position.deletedAt ? 'opacity-60' : ''}>
+            <Card 
+              key={position.id} 
+              className={`cursor-pointer hover:shadow-md transition-shadow ${position.deletedAt ? 'opacity-60' : ''}`}
+              onClick={() => openDetailModal(position)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center space-x-2">
@@ -230,9 +343,15 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                     <p className="text-sm text-gray-600">{position.description}</p>
                   )}
                   
-                  <div className="flex items-center space-x-1 text-sm text-gray-500">
-                    <Users className="h-4 w-4" />
-                    <span>{position.users?.length || 0} users</span>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center space-x-1">
+                      <Users className="h-4 w-4" />
+                      <span>{position.users?.length || 0} users</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Target className="h-4 w-4" />
+                      <span>{position.skillCount || 0} skills</span>
+                    </div>
                   </div>
 
                   <div className="flex justify-end space-x-2">
@@ -240,7 +359,10 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRestore(position)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRestore(position);
+                        }}
                         className="flex items-center space-x-1"
                       >
                         <RotateCcw className="h-3 w-3" />
@@ -251,16 +373,64 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => openEditDialog(position)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openSkillRequirementsModal(position);
+                          }}
+                          className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
+                        >
+                          <Target className="h-3 w-3" />
+                          <span>Skills</span>
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditDialog(position);
+                          }}
                           className="flex items-center space-x-1"
                         >
                           <Edit className="h-3 w-3" />
                           <span>Edit</span>
                         </Button>
+                        
+                        {position.isActive ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirmationModal('deactivate', position);
+                            }}
+                            className="flex items-center space-x-1 text-orange-600 hover:text-orange-700"
+                          >
+                            <PowerOff className="h-3 w-3" />
+                            <span>Deactivate</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirmationModal('activate', position);
+                            }}
+                            className="flex items-center space-x-1 text-green-600 hover:text-green-700"
+                          >
+                            <Power className="h-3 w-3" />
+                            <span>Activate</span>
+                          </Button>
+                        )}
+                        
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(position)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openConfirmationModal('delete', position);
+                          }}
                           className="flex items-center space-x-1 text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -281,6 +451,51 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">No positions found</p>
         </div>
+      )}
+
+      <PositionDetailModal
+        position={selectedPosition}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={handleConfirmAction}
+        title={
+          confirmationModal.type === 'delete' 
+            ? 'Delete Position' 
+            : confirmationModal.type === 'deactivate'
+            ? 'Deactivate Position'
+            : 'Activate Position'
+        }
+        description={
+          confirmationModal.type === 'delete'
+            ? `Are you sure you want to delete "${confirmationModal.position?.name}"? This action cannot be undone.`
+            : confirmationModal.type === 'deactivate'
+            ? `Are you sure you want to deactivate "${confirmationModal.position?.name}"? This will make the position inactive.`
+            : `Are you sure you want to activate "${confirmationModal.position?.name}"? This will make the position active.`
+        }
+        confirmText={
+          confirmationModal.type === 'delete' 
+            ? 'Delete' 
+            : confirmationModal.type === 'deactivate'
+            ? 'Deactivate'
+            : 'Activate'
+        }
+        type={confirmationModal.type}
+        loading={confirmationModal.loading}
+      />
+
+      {skillRequirementsModal.position && (
+        <PositionSkillMapping
+          positionId={skillRequirementsModal.position.id}
+          positionName={skillRequirementsModal.position.name}
+          isOpen={skillRequirementsModal.isOpen}
+          onClose={closeSkillRequirementsModal}
+          onSave={loadPositions}
+        />
       )}
     </div>
   );

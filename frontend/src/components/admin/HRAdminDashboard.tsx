@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import TeamManagement from './TeamManagement';
 import SubTeamManagement from './SubTeamManagement';
 import PositionManagement from './PositionManagement';
+import UserManagement from './UserManagement';
 import OrganizationOverview from './OrganizationOverview';
 
 const HRAdminDashboard: React.FC = () => {
@@ -41,13 +42,17 @@ const HRAdminDashboard: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <Building className="h-4 w-4" />
             <span>Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="teams" className="flex items-center space-x-2">
+          <TabsTrigger value="users" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
+            <span>Users</span>
+          </TabsTrigger>
+          <TabsTrigger value="teams" className="flex items-center space-x-2">
+            <Building className="h-4 w-4" />
             <span>Teams</span>
           </TabsTrigger>
           <TabsTrigger value="subteams" className="flex items-center space-x-2">
@@ -62,6 +67,10 @@ const HRAdminDashboard: React.FC = () => {
 
         <TabsContent value="overview" className="space-y-4">
           <OrganizationOverview />
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-4">
+          <UserManagement onStatsUpdate={handleStatsUpdate} />
         </TabsContent>
 
         <TabsContent value="teams" className="space-y-4">

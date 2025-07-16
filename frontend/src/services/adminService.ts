@@ -196,6 +196,22 @@ class AdminService {
     return this.handleResponse<ApiResponse<SubTeam>>(response);
   }
 
+  async activateSubTeam(id: number): Promise<ApiResponse<SubTeam>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams/${id}/activate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<SubTeam>>(response);
+  }
+
+  async deactivateSubTeam(id: number): Promise<ApiResponse<SubTeam>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams/${id}/deactivate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<SubTeam>>(response);
+  }
+
   // ============ POSITIONS ============
 
   async createPosition(data: CreatePositionRequest): Promise<ApiResponse<Position>> {
@@ -252,6 +268,106 @@ class AdminService {
       headers: this.getAuthHeaders(),
     });
     return this.handleResponse<ApiResponse<Position>>(response);
+  }
+
+  async activatePosition(id: number): Promise<ApiResponse<Position>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/positions/${id}/activate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<Position>>(response);
+  }
+
+  async deactivatePosition(id: number): Promise<ApiResponse<Position>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/positions/${id}/deactivate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<Position>>(response);
+  }
+
+  // ============ USERS ============
+
+  async getAllUsers(includeDeleted: boolean = false): Promise<ApiResponse<any[]>> {
+    const response = await fetch(
+      `${API_BASE_URL}/admin/hr/users?includeDeleted=${includeDeleted}`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      }
+    );
+    return this.handleResponse<ApiResponse<any[]>>(response);
+  }
+
+  async getUserById(id: number, includeDeleted: boolean = false): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      `${API_BASE_URL}/admin/hr/users/${id}?includeDeleted=${includeDeleted}`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      }
+    );
+    return this.handleResponse<ApiResponse<any>>(response);
+  }
+
+  async createUser(data: any): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/users`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse<ApiResponse<any>>(response);
+  }
+
+  async updateUser(id: number, data: any): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse<ApiResponse<any>>(response);
+  }
+
+  async deleteUser(id: number): Promise<ApiResponse<void>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<void>>(response);
+  }
+
+  async restoreUser(id: number): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}/restore`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<any>>(response);
+  }
+
+  async activateUser(id: number): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}/activate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<any>>(response);
+  }
+
+  async deactivateUser(id: number): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}/deactivate`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<any>>(response);
+  }
+
+  // ============ ROLES ============
+
+  async getAllRoles(): Promise<ApiResponse<any[]>> {
+    const response = await fetch(`${API_BASE_URL}/admin/hr/roles`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<any[]>>(response);
   }
 
   // ============ STATISTICS ============

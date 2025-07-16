@@ -111,8 +111,10 @@ export const userService = {
     roleId: number;
     positionId: number;
     teamId?: number;
+    subTeamId?: number;
     leadId?: number;
     hrId?: number;
+    isActive?: boolean;
   }) => apiRequest("/users/create", { method: "POST", body: userData }),
 
   updateUser: (userData: {
@@ -123,8 +125,10 @@ export const userService = {
     roleId?: number;
     positionId?: number;
     teamId?: number;
+    subTeamId?: number;
     leadId?: number;
     hrId?: number;
+    isActive?: boolean;
   }) => apiRequest("/users/update", { method: "POST", body: userData }),
 
   deleteUser: (id: number) =>
@@ -163,6 +167,13 @@ export const roleService = {
 
 export const teamService = {
   getAllTeams: () => apiRequest("/users/details?type=team"),
+};
+
+export const subTeamService = {
+  getAllSubTeams: () => apiRequest("/users/details?type=subteam"),
+  getSubTeamsByTeam: (teamId: number) => apiRequest(`/users/details?type=subteam`).then((subTeams: any[]) => 
+    subTeams.filter(subTeam => subTeam.teamId === teamId)
+  ),
 };
 
 // Assessment Services

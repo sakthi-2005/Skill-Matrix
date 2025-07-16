@@ -24,6 +24,7 @@ import { adminService } from '../../services/adminService';
 import { Team, CreateTeamRequest, UpdateTeamRequest } from '../../types/admin';
 import { toast } from 'sonner';
 import { TeamDetailModal } from './TeamDetailModal';
+import { ConfirmationModal } from './ConfirmationModal';
 
 interface TeamManagementProps {
   onStatsUpdate: () => void;
@@ -38,6 +39,17 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'deactivate' | 'activate';
+    team: Team | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    type: 'delete',
+    team: null,
+    loading: false
+  });
   const [formData, setFormData] = useState<CreateTeamRequest>({
     name: '',
     description: '',
@@ -86,40 +98,51 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     }
   };
 
-  const handleActivate = async (team: Team) => {
+  const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', team: Team) => {
+    setConfirmationModal({
+      isOpen: true,
+      type,
+      team,
+      loading: false
+    });
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationModal({
+      isOpen: false,
+      type: 'delete',
+      team: null,
+      loading: false
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmationModal.team) return;
+
+    setConfirmationModal(prev => ({ ...prev, loading: true }));
+
     try {
-      await adminService.activateTeam(team.id);
-      toast.success('Team activated successfully');
+      switch (confirmationModal.type) {
+        case 'activate':
+          await adminService.activateTeam(confirmationModal.team.id);
+          toast.success('Team activated successfully');
+          break;
+        case 'deactivate':
+          await adminService.deactivateTeam(confirmationModal.team.id);
+          toast.success('Team deactivated successfully');
+          break;
+        case 'delete':
+          await adminService.deleteTeam(confirmationModal.team.id);
+          toast.success('Team deleted successfully');
+          break;
+      }
+      
       loadTeams();
       onStatsUpdate();
+      closeConfirmationModal();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to activate team');
-    }
-  };
-
-  const handleDeactivate = async (team: Team) => {
-    if (window.confirm(`Are you sure you want to deactivate "${team.name}"?`)) {
-      try {
-        await adminService.deactivateTeam(team.id);
-        toast.success('Team deactivated successfully');
-        loadTeams();
-        onStatsUpdate();
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to deactivate team');
-      }
-    }
-  };
-
-  const handleDelete = async (team: Team) => {
-    if (window.confirm(`Are you sure you want to delete "${team.name}"? This action cannot be undone.`)) {
-      try {
-        await adminService.deleteTeam(team.id);
-        toast.success('Team deleted successfully');
-        loadTeams();
-        onStatsUpdate();
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to delete team');
-      }
+      toast.error(error.message || `Failed to ${confirmationModal.type} team`);
+      setConfirmationModal(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -175,7 +198,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
             className="flex items-center space-x-2"
           >
             {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span>{showInactive ? 'Hide Inactive' : 'Show Inactive'}</span>
+            <span>{showInactive ? 'Active' : 'Show Inactive'}</span>
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -311,7 +334,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeactivate(team);
+                          openConfirmationModal('deactivate', team);
                         }}
                         className="flex items-center space-x-1 text-orange-600 hover:text-orange-700"
                       >
@@ -324,7 +347,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleActivate(team);
+                          openConfirmationModal('activate', team);
                         }}
                         className="flex items-center space-x-1 text-green-600 hover:text-green-700"
                       >
@@ -338,7 +361,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(team);
+                        openConfirmationModal('delete', team);
                       }}
                       className="flex items-center space-x-1 text-red-600 hover:text-red-700"
                     >
@@ -364,6 +387,35 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
         team={selectedTeam}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={handleConfirmAction}
+        title={
+          confirmationModal.type === 'delete' 
+            ? 'Delete Team' 
+            : confirmationModal.type === 'deactivate'
+            ? 'Deactivate Team'
+            : 'Activate Team'
+        }
+        description={
+          confirmationModal.type === 'delete'
+            ? `Are you sure you want to delete "${confirmationModal.team?.name}"? This action cannot be undone.`
+            : confirmationModal.type === 'deactivate'
+            ? `Are you sure you want to deactivate "${confirmationModal.team?.name}"? This will make the team inactive.`
+            : `Are you sure you want to activate "${confirmationModal.team?.name}"? This will make the team active.`
+        }
+        confirmText={
+          confirmationModal.type === 'delete' 
+            ? 'Delete' 
+            : confirmationModal.type === 'deactivate'
+            ? 'Deactivate'
+            : 'Activate'
+        }
+        type={confirmationModal.type}
+        loading={confirmationModal.loading}
       />
     </div>
   );

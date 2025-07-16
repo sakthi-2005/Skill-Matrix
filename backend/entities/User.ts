@@ -56,13 +56,28 @@ export const User = new EntitySchema<UserType>({
       type: "text",
       nullable: true,
     },
+    isActive: {
+      type: "boolean",
+      default: true,
+      name: "is_active",
+    },
     createdAt: {
       type: "timestamp",
       createDate: true,
     },
+    updatedAt: {
+      type: "timestamp",
+      updateDate: true,
+      name: "updated_at",
+    },
+    deletedAt: {
+      type: "timestamp",
+      nullable: true,
+      name: "deleted_at",
+    },
   },
   relations: {
-    leadId: {
+    lead: {
       target: "User",
       type: "many-to-one",
       joinColumn: {
@@ -70,7 +85,7 @@ export const User = new EntitySchema<UserType>({
         referencedColumnName: "id",
       },
     },
-    hrId: {
+    hr: {
       target: "User",
       type: "many-to-one",
       joinColumn: {
