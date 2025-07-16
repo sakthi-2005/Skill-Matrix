@@ -454,7 +454,7 @@ const ReviewAssessmentModal: React.FC<{
                     <span className="font-medium">{score.Skill?.name}</span>
                     <div className="flex items-center gap-2">
                       <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                        {score.leadScore}/4
+                        {score.leadScore}/5
                       </span>
                     </div>
                   </div>
@@ -585,7 +585,7 @@ const AssessmentHistoryModal: React.FC<{
                     <div className="flex items-center gap-2">
                       {score.leadScore !== null && (
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                          Lead: {score.leadScore}/4
+                          Lead: {score.leadScore}/5
                         </span>
                       )}
                       {score.leadScore === null && (

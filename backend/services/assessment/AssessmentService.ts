@@ -216,7 +216,7 @@ const AssessmentService = {
       });
 
       const scoresSnapshot = currentScores.map(score => 
-        `${score.Skill?.name}: ${score.leadScore}/4`
+        `${score.Skill?.name}: ${score.leadScore}/5`
       ).join(', ');
 
       // Update assessment status based on employee decision

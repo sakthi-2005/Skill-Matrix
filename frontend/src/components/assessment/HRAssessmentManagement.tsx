@@ -1489,7 +1489,7 @@ const HRReviewModal: React.FC<{
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{score.Skill?.name}</span>
                     <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                      {score.leadScore}/4
+                      {score.leadScore}/5
                     </span>
                   </div>
                 </div>
@@ -1661,7 +1661,7 @@ const UserHistoryModal: React.FC<{
                             <span className="text-gray-700">{score.Skill?.name}</span>
                             {score.leadScore !== null ? (
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                                {score.leadScore}/4
+                                {score.leadScore}/5
                               </span>
                             ) : (
                               <span className="text-gray-400 text-xs">Not scored</span>
@@ -1798,7 +1798,7 @@ const ScoreHistoryModal: React.FC<{
                               ? 'bg-gray-100 text-gray-600'
                               : 'bg-red-100 text-red-800'
                           }`}>
-                            {change.previousScore === null ? 'Not scored' : `${change.previousScore}/4`}
+                            {change.previousScore === null ? 'Not scored' : `${change.previousScore}/5`}
                           </span>
                         </div>
                         
@@ -1807,7 +1807,7 @@ const ScoreHistoryModal: React.FC<{
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500">New:</span>
                           <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
-                            {change.newScore}/4
+                            {change.newScore}/5
                           </span>
                         </div>
                       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { Info } from "lucide-react";
 import {
   Users,
   Search,
@@ -61,7 +62,7 @@ const TeamAssessment = () => {
     const [skills, setSkills] = useState<Skill[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTab, setSelectedTab] = useState("pending");
-    
+    const [curLeadScore,setCurLeadScore]=useState();
     const [openDropdowns, setOpenDropdowns] = useState<{
         [key: string]: boolean;
     }>({});
@@ -81,12 +82,27 @@ const TeamAssessment = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [selectedAssessmentHistory, setSelectedAssessmentHistory] = useState<AssessmentWithHistory | null>(null);
+    
+    //Skill description
+    const [showSkillDescriptionModal, setShowSkillDescriptionModal] = useState(false);
+    const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
     useEffect(() => {
         if (user?.role?.name === "lead") {
             loadTeamData();
         }
     }, [user]);
+
+    const handleViewSkillDescription = (skill: Skill) => {
+    setSelectedSkill(skill);
+    setShowSkillDescriptionModal(true);
+    };
+
+    const closeSkillDescriptionModal = () => {
+    setSelectedSkill(null);
+    setShowSkillDescriptionModal(false);
+    };
+
 
     const loadTeamData = async () => {
         setIsLoading(true);
@@ -193,7 +209,7 @@ const TeamAssessment = () => {
 
     const handleViewScores=async(member:TeamMember)=>{
         try{
-            const response= await assessmentService.getUserLatestApprovedScoresByUserId(parseInt(member.id));
+            const response= await assessmentService.getUserLatestApprovedScoresByUserId(member.id);
             const scores=response.success?response.data:[];
             setSkillModalData({
                 memberName:member.name,
@@ -252,19 +268,40 @@ const TeamAssessment = () => {
         }
     };
 
-    const handleWriteAssessment = (assessment: AssessmentWithHistory) => {
-        setSelectedAssessment(assessment);
-        // Initialize skill scores from existing assessment or empty
-        const initialScores: { [skillId: number]: number } = {};
-        assessment.detailedScores?.forEach((score: DetailedScore) => {
-            if (score.leadScore) {
-                initialScores[score.skillId] = score.leadScore;
+const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
+    setSelectedAssessment(assessment);
+    console.log("current detailedScores", assessment.detailedScores);
+
+    const initialScores: { [skillId: number]: number } = {};
+
+    // Use current assessment if it has leadScores
+    assessment.detailedScores?.forEach((score) => {
+        if (score.leadScore != null) {
+            initialScores[score.skillId] = score.leadScore;
+        }
+    });
+
+    // additionally fetch latest approved scores and merge
+    const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
+
+const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
+
+    if (latestRes.success) {
+        latestRes.data.forEach((latest) => {
+            // Only set if no score yet
+            if (!initialScores[latest.skill_id]) {
+                initialScores[latest.skill_id] = latest.lead_score ?? 0;
             }
         });
-        setSkillScores(initialScores);
-        setComments("");
-        setShowWriteAssessmentModal(true);
-    };
+    }
+
+    console.log("final initialScores", initialScores);
+
+    setSkillScores(initialScores);
+    setComments("");
+    setShowWriteAssessmentModal(true);
+};
+
 
     const handleSubmitAssessment = async () => {
         if (!selectedAssessment) return;
@@ -446,6 +483,7 @@ const TeamAssessment = () => {
             {/* Write Assessment Modal */}
             {showWriteAssessmentModal && selectedAssessment && (
                 <WriteAssessmentModal 
+                    data={curLeadScore}
                     assessment={selectedAssessment}
                     skills={skills}
                     skillScores={skillScores}
@@ -454,6 +492,7 @@ const TeamAssessment = () => {
                     setComments={setComments}
                     isSubmitting={isSubmitting}
                     onSubmit={handleSubmitAssessment}
+                    handleViewSkillDescription={handleViewSkillDescription}
                     onClose={() => setShowWriteAssessmentModal(false)}
                 />
             )}
@@ -475,6 +514,67 @@ const TeamAssessment = () => {
                     data={skillModalData}
                     onClose={() => setShowSkillModal(false)}
                 />
+            )}
+
+            {/* Skill Description Modal */}
+            {showSkillDescriptionModal && selectedSkill && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-[700px] w-full">
+                        <div className="flex items-center justify-between p-4 border-b">
+                            <h2 className="text-lg font-semibold">
+                                {selectedSkill.name} - Description
+                            </h2>
+                            <button
+                                onClick={closeSkillDescriptionModal}
+                                className="p-1 hover:bg-gray-100 rounded-full"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-4 text-sm max-h-[472px] overflow-y-auto space-y-4">
+  {[
+    { stars: 1, title: "Beginner", text: selectedSkill?.low || "Beginner" },
+    { stars: 2, title: "Intermediate", text: selectedSkill?.medium || "Intermediate" },
+    { stars: 3, title: "Advanced", text: selectedSkill?.average || "Advanced" },
+    { stars: 4, title: "Expert", text: selectedSkill?.high || "Expert"},
+    { stars: 5, title: "Master", text: "Mastery" }
+  ].map(({ stars, title, text }, idx) => (
+    <div
+      key={idx}
+      className="flex flex-col md:flex-row md:items-center gap-4 p-4 border rounded-lg shadow-sm hover:shadow transition"
+    >
+      {/* Left: Stars */}
+      <div className="flex gap-1 text-yellow-400 text-xl min-w-[110px]">
+        {[1,2,3,4,5].map(i => (
+          <span key={i} className={`${i <= stars ? 'text-yellow-400' : 'text-gray-300'}`}>
+            ★
+          </span>
+        ))}
+      </div>
+
+      {/* Middle: Info */}
+      <div className="flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <h4 className="text-lg font-semibold text-gray-800">{title}</h4>
+        </div>
+        <p className="text-gray-600">{text}</p>
+
+        {/* Progress Bar */}
+        <div className="mt-2 w-full bg-gray-200 rounded-full h-1">
+          <div
+            className="h-1 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
+            style={{ width: `${(stars/5)*100}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+                        
+                    </div>
+                </div>
             )}
         </div>
     );
@@ -811,11 +911,28 @@ const WriteAssessmentModal: React.FC<{
     setComments: (comments: string) => void;
     isSubmitting: boolean;
     onSubmit: () => void;
+    data:SkillModalData;
+    handleViewSkillDescription:(skill:Skill)=>void;
     onClose: () => void;
-}> = ({ assessment, skills, skillScores, setSkillScores, comments, setComments, isSubmitting, onSubmit, onClose }) => {
+}> = ({ assessment, skills, skillScores, setSkillScores, comments, setComments, isSubmitting, onSubmit,data,handleViewSkillDescription, onClose }) => {
     const handleScoreChange = (skillId: number, score: number) => {
+        const current=skillScores[skillId]||0;
+        if(score>=current){
+            setSkillScores({
+                ...skillScores,
+                [skillId]:score
+            });
+        }else{
+            console.log("Cannot reduce the score. Only increase or keep same.");
+        }
         setSkillScores({ ...skillScores, [skillId]: score });
     };
+    const [leadscore,setCurLeadScore]=useState(0);
+    useEffect(()=>{
+        if(data?.skills?.length){
+            setCurLeadScore(data.skills[0].lead_score || 0);
+        }
+    },[data]);
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -837,37 +954,42 @@ const WriteAssessmentModal: React.FC<{
 
                 <div className="p-6 space-y-6">
                     <div>
-                        <h3 className="text-lg font-medium mb-4">Rate Skills (1-4 scale)</h3>
+                        <h3 className="text-lg font-medium mb-4">Rate Skills (1-5 scale)</h3>
                         <div className="space-y-4">
                             {assessment.detailedScores?.map((score: DetailedScore) => {
                                 const skill = skills.find(s => s.id === score.skillId);
+                                const currentScore=skillScores[score.skillId] || 0;
                                 return (
                                     <div key={score.skillId} className="border border-gray-200 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-3">
                                             <h4 className="font-medium">{skill?.name || score.Skill?.name}</h4>
-                                            <span className="text-sm text-gray-500">
-                                                Current: {skillScores[score.skillId] || 1}/4
-                                            </span>
+                                            <button
+                                                onClick={() => handleViewSkillDescription(skill || score.Skill)}
+                                                className="text-blue-500 hover:text-blue-700"
+                                                title="View skill description"
+                                            >
+                                             <Info className="w-5 h-5"/>
+                                            </button>
                                         </div>
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4].map((rating) => (
+                                       <div className="flex gap-1">
+                                            {[1, 2, 3, 4, 5].map((rating) => (
                                                 <button
-                                                    key={rating}
-                                                    onClick={() => handleScoreChange(score.skillId, rating)}
-                                                    className={`p-2 rounded-md transition-colors ${
-                                                        skillScores[score.skillId] === rating
-                                                            ? "text-yellow-500"
-                                                            : "text-gray-300 hover:text-yellow-400"
-                                                    }`}
+                                                key={rating}
+                                                onClick={() => handleScoreChange(score.skillId, rating) }
+                                                   className={`p-1 ${rating<currentScore ? "cursor-not-allowed opacity-50":""}`}
                                                 >
-                                                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                                                        <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/>
-                                                    </svg>
+                                                <svg
+                                                    className={`w-6 h-6 fill-current ${
+                                                    (currentScore) >= rating
+                                                        ? "text-yellow-500"
+                                                        : "text-gray-300 hover:text-yellow-400"
+                                                    }`}
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                                                </svg>
                                                 </button>
                                             ))}
-                                        </div>
-                                        <div className="mt-2 text-xs text-gray-500">
-                                            1: Low | 2: Medium | 3: Average | 4: High
                                         </div>
                                     </div>
                                 );
@@ -972,7 +1094,7 @@ const AssessmentHistoryModal: React.FC<{
                                         <div className="flex items-center gap-2">
                                             {score.leadScore !== null && (
                                                 <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                                                    Lead: {score.leadScore}/4
+                                                    Lead: {score.leadScore}/5
                                                 </span>
                                             )}
                                             {score.leadScore === null && (
@@ -1052,8 +1174,9 @@ const SkillScoresModal: React.FC<{
                                 <div key={index} className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
                                     <span className="font-medium">{skill.skill_name}</span>
                                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                                        {skill.lead_score}/4
+                                        {skill.lead_score}/5
                                     </span>
+                                    setCurLeadScore(skill.lead_score);
                                 </div>
                             ))}
                         </div>
