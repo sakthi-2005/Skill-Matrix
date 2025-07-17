@@ -96,7 +96,8 @@ const UserController: Controller = {
           const positions = await UserService.getAllPositions();
           const roles = await UserService.getAllRoles();
           const teams = await UserService.getAllTeams();
-          return h.response({ positions, roles, teams }).code(200);
+          const subTeams = await UserService.getAllSubTeams();
+          return h.response({ positions, roles, teams, subTeams }).code(200);
         case "position":
            data = await UserService.getAllPositions();
           break;
@@ -105,6 +106,9 @@ const UserController: Controller = {
           break;
         case "team":
           data = await UserService.getAllTeams();
+          break;
+        case "subteam":
+          data = await UserService.getAllSubTeams();
           break;
         default:
           return h.response({ error: "Invalid type parameter" }).code(400);
