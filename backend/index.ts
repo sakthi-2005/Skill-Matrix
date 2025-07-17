@@ -12,7 +12,6 @@ import assessmentRoutes from "./routes/assessment/AssessmentRoutes";
 import TeamAssessmentRoutes from "./routes/team/TeamAssessmentRoutes";
 import assessmentCycleRoutes from "./routes/cycle/AssessmentCycleRoutes";
 import requestRoutes from "./routes/skill/SkillUpdateRequestRoute";
-import AssessmentLegacyRoutes from "./routes/AssessmentLegacyRoutes";
 import AssessmentCronJobs from "./services/assessment/AssessmentCronJobs";
 import { HRAdminRoutes } from "./routes/admin/HRAdminRoutes";
 
@@ -124,14 +123,6 @@ const init = async () => {
     options: {},
     routes: {
       prefix: "/api/targets",
-    },
-  });
-
-  await server.register({
-    plugin: AssessmentLegacyRoutes,
-    options: {},
-    routes: {
-      prefix: "/api/assessment-legacy",
     },
   });
 
