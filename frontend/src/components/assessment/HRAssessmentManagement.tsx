@@ -207,7 +207,7 @@ const HRAssessmentManagement: React.FC = () => {
   };
 
   const handleBulkInitiate = async () => {
-    if (selectedSkills.length === 0 || !bulkTitle.trim()) {
+    if (!bulkTitle.trim()) {
       toast({
         title: "Error",
         description: "Please provide a title and select at least one skill",
@@ -228,7 +228,6 @@ const HRAssessmentManagement: React.FC = () => {
     setIsSubmitting(true);
     try {
       const response = await assessmentService.initiateBulkAssessment({
-        skillIds: selectedSkills,
         assessmentTitle: bulkTitle,
         includeTeams: selectedTeams.length > 0 ? selectedTeams : ["all"],
         scheduledDate: scheduledDate || undefined,
@@ -565,7 +564,6 @@ const HRAssessmentManagement: React.FC = () => {
         <BulkAssessmentModal
           teams={teams}
           users={users}
-          skills={skills}
           bulkTitle={bulkTitle}
           setBulkTitle={setBulkTitle}
           selectedTeams={selectedTeams}
@@ -1160,7 +1158,6 @@ const InitiateAssessmentModal: React.FC<{
 const BulkAssessmentModal: React.FC<{
   teams: Team[];
   users: User[];
-  skills: Skill[];
   bulkTitle: string;
   setBulkTitle: (title: string) => void;
   selectedTeams: string[];
@@ -1183,7 +1180,6 @@ const BulkAssessmentModal: React.FC<{
 }> = ({ 
   teams, 
   users, 
-  skills, 
   bulkTitle, 
   setBulkTitle, 
   selectedTeams, 
@@ -1285,7 +1281,7 @@ const BulkAssessmentModal: React.FC<{
             </div>
 
             {/* Skills Selection */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Skills to Assess *
               </label>
@@ -1306,13 +1302,13 @@ const BulkAssessmentModal: React.FC<{
                       />
                       {skill.name}
                     </label>
-                  ))} */}
+                  ))} 
                 </div>
               </div>
               <p className="text-sm text-gray-500 mt-1">
                 Selected: {selectedSkills.length} skills
               </p>
-            </div>
+            </div> */}
           </div>
 
           {/* Exclude Users */}
@@ -1320,7 +1316,7 @@ const BulkAssessmentModal: React.FC<{
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Exclude Users (Optional)
             </label>
-            <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-3">
+            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-3 pt-0">
               <div className="space-y-2">
                 <SearchableCheckboxList
                   items={users}
@@ -1419,7 +1415,7 @@ const BulkAssessmentModal: React.FC<{
           </button>
           <button
             onClick={onSubmit}
-            disabled={isSubmitting || !bulkTitle.trim() || selectedSkills.length === 0}
+            disabled={isSubmitting || !bulkTitle.trim()}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
           >
             {isSubmitting && (

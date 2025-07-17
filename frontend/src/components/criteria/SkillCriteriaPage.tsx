@@ -40,6 +40,7 @@ const SkillCriteriaPage = () => {
   });
   const [positions, setPositions] = useState<{ id: number; name: string }[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [ filterTerm, setFilterTerm ] = useState(0)
 
   const canEdit = user?.role?.name === "hr";
 
@@ -53,7 +54,6 @@ const SkillCriteriaPage = () => {
     setExpandedItems(newExpanded);
   };
 
-  useEffect(() => {
     const fetchSkillCriteria = async () => {
       try {
         setLoading(true);
@@ -78,31 +78,11 @@ const SkillCriteriaPage = () => {
       }
     };
 
+  useEffect(() => {
     fetchSkillCriteria();
   }, [user]);
 
   const refreshData = () => {
-    const fetchSkillCriteria = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        let skillsData;
-        if (!(user?.role?.name === "hr")) {
-          skillsData = await skillService.getSkillsByPosition();
-        } else {
-          skillsData = await skillService.getAllSkills();
-        }
-        setCriteria(skillsData);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch skill criteria"
-        );
-        console.error("Error fetching skill criteria:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSkillCriteria();
   };
 
@@ -140,7 +120,7 @@ const SkillCriteriaPage = () => {
       await skillService.deleteSkill(skillToDelete.id);
 
       // Remove from local state
-      setCriteria(criteria.filter((c) => c.id !== skillToDelete.id));
+      // setCriteria(criteria.filter((c) => c.id !== skillToDelete.id));
 
       // Close modal and reset state
       setIsDeleteModalOpen(false);
@@ -156,9 +136,9 @@ const SkillCriteriaPage = () => {
     setSkillToDelete(null);
   };
 
-  const getPositionNames = (positionIds: number[]) => {
-    const positionName = positions.filter((p) => positionIds.includes(p.id)).map((p) => p.name.toUpperCase()).join(", ");
-    return positionName || "Not specified";
+  const getPositionNames = (positionIds: number) => {
+    let position = positions.filter((p)=>p.id === positionIds)
+    return position[0].name || "Not specified";
   };
 
   if (loading) {
@@ -177,11 +157,18 @@ const SkillCriteriaPage = () => {
     );
   }
 
-  const filteredCriteria = criteria.filter((criterion) => {
+  let filteredCriteria = criteria.filter((criterion) => {
+
+    let filter = criterion.positionId === filterTerm;
+    if(filterTerm === 0){
+      filter = true;
+    }
+
     const matchesSearch = criterion.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-  return matchesSearch;
+
+    return matchesSearch && filter;
   });
 
   return (
@@ -229,15 +216,10 @@ const SkillCriteriaPage = () => {
           <select
             className="pl-10 w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none"
             onChange={(e) => {
-              const positionId = parseInt(e.target.value);
-              if (positionId) {
-                setCriteria(criteria.filter(c => c.position.includes(positionId)));
-              } else {
-                refreshData();
-              }
+                setFilterTerm(parseInt(e.target.value))
             }}
           >
-            <option value="">All Positions</option>
+            <option value="0">All Positions</option>
             {positions.map((position) => (
               <option key={position.id} value={position.id}>
                 {position.name}
@@ -314,7 +296,7 @@ const SkillCriteriaPage = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {getPositionNames(criterion.position || [])}
+                        {getPositionNames(criterion.positionId)}
                       </span>
                       {criterion.createdBy && (<span className="text-sm text-gray-500">
                         Created by {criterion.createdBy}
@@ -349,13 +331,26 @@ const SkillCriteriaPage = () => {
                 {expandedItems.has(criterion.id) && (
                   <div className="border-t border-gray-100 bg-gray-50">
                     <div className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        {/* basic Level */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <h4 className="font-semibold text-gray-700">
+                              Basic Level
+                            </h4>
+                          </div>
+                          <p className="text-sm text-gray-600 bg-white p-3 rounded-md border border-gray-200 min-h-[80px]">
+                            {criterion.basic || "Not defined"}
+                          </p>
+                        </div>
+
                         {/* Low Level */}
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-red-400"></div>
                             <h4 className="font-semibold text-gray-700">
-                              Low Level
+                              low Level
                             </h4>
                           </div>
                           <p className="text-sm text-gray-600 bg-white p-3 rounded-md border border-gray-200 min-h-[80px]">
@@ -376,20 +371,20 @@ const SkillCriteriaPage = () => {
                           </p>
                         </div>
 
-                        {/* Average Level */}
+                        {/* high Level */}
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-blue-400"></div>
                             <h4 className="font-semibold text-gray-700">
-                              Average Level
+                              high Level
                             </h4>
                           </div>
                           <p className="text-sm text-gray-600 bg-white p-3 rounded-md border border-gray-200 min-h-[80px]">
-                            {criterion.average || "Not defined"}
+                            {criterion.high || "Not defined"}
                           </p>
                         </div>
 
-                        {/* High Level */}
+                        {/* High Level
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-green-400"></div>
@@ -399,6 +394,20 @@ const SkillCriteriaPage = () => {
                           </div>
                           <p className="text-sm text-gray-600 bg-white p-3 rounded-md border border-gray-200 min-h-[80px]">
                             {criterion.high || "Not defined"}
+                          </p>
+                        </div>
+                      </div> */}
+
+                      {/* Expert Level */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                            <h4 className="font-semibold text-gray-700">
+                              Expert Level
+                            </h4>
+                          </div>
+                          <p className="text-sm text-gray-600 bg-white p-3 rounded-md border border-gray-200 min-h-[80px]">
+                            {criterion.expert || "Not defined"}
                           </p>
                         </div>
                       </div>

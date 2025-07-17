@@ -36,11 +36,11 @@ const skillTargetService = {
                         skillId: skill.id
                     }
                 })
-                if(score.leadScore === 4){
+                if(score.score === 4){
                     await SkillTargetRepo.delete({id: target.id});
                     continue;
                 }
-                target.fromLevel = score.leadScore
+                target.fromLevel = score.score
 
                 SkillTargetRepo.save(target)
             }

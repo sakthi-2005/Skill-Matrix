@@ -1,32 +1,20 @@
-import { Repository, Not, IsNull } from "typeorm";
-import { AppDataSource } from "../../config/dataSource";
-import { Team } from "../../entities/Team";
-import { SubTeam } from "../../entities/SubTeam";
-import { Position } from "../../entities/Position";
-import { TeamType, SubTeamType, PositionType } from "../../types/entities";
-import { HTTP_STATUS } from "../../enum/enum";
+import { Not, IsNull } from "typeorm";
+import { teamRepo,subTeamRepo,positionRepo } from "../../config/dataSource";
+import { TeamType, subTeamType, PositionType } from "../../types/entities";
 import * as Boom from "@hapi/boom";
 
-export class HRAdminService {
-  private teamRepository: Repository<TeamType>;
-  private subTeamRepository: Repository<SubTeamType>;
-  private positionRepository: Repository<PositionType>;
+export const HRAdminService = {
 
-  constructor() {
-    this.teamRepository = AppDataSource.getRepository(Team);
-    this.subTeamRepository = AppDataSource.getRepository(SubTeam);
-    this.positionRepository = AppDataSource.getRepository(Position);
-  }
 
   // ============ TEAMS ============
 
   async createTeam(teamData: Partial<TeamType>): Promise<TeamType> {
     try {
       // Check if team name already exists (only among active teams)
-      const existingTeam = await this.teamRepository.findOne({
+      const existingTeam = await teamRepo.findOne({
         where: {
           name: teamData.name,
-          deletedAt: null,
+          isActive: true,
         },
       });
 
@@ -34,44 +22,43 @@ export class HRAdminService {
         throw Boom.conflict("Team name already exists");
       }
 
-      const team = this.teamRepository.create({
+      const team = teamRepo.create({
         name: teamData.name,
-        description: teamData.description,
         isActive: true,
       });
 
-      return await this.teamRepository.save(team);
+      return await teamRepo.save(team);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
       throw Boom.internal("Failed to create team");
     }
-  }
+  },
 
   async getAllTeams(includeDeleted: boolean = false): Promise<TeamType[]> {
     try {
-      const whereCondition = includeDeleted ? {} : { deletedAt: null };
+      const whereCondition = includeDeleted ? {} : { isActive: true };
       
-      return await this.teamRepository.find({
+      return await teamRepo.find({
         where: whereCondition,
-        relations: ["subTeams", "users"],
+        relations: ["subteam", "user"],
         order: { createdAt: "DESC" },
       });
     } catch (error) {
       throw Boom.internal("Failed to fetch teams");
     }
-  }
+  },
 
   async getTeamById(id: number, includeDeleted: boolean = false): Promise<TeamType> {
     try {
       const whereCondition = includeDeleted 
         ? { id } 
-        : { id, deletedAt: null };
+        : { id, isActive: null };
 
-      const team = await this.teamRepository.findOne({
+      const team = await teamRepo.findOne({
         where: whereCondition,
-        relations: ["subTeams", "users"],
+        relations: ["subTeam", "user"],
       });
 
       if (!team) {
@@ -85,7 +72,7 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to fetch team");
     }
-  }
+  },
 
   async updateTeam(id: number, updateData: Partial<TeamType>): Promise<TeamType> {
     try {
@@ -93,10 +80,10 @@ export class HRAdminService {
 
       // Check if new name conflicts with existing teams
       if (updateData.name && updateData.name !== team.name) {
-        const existingTeam = await this.teamRepository.findOne({
+        const existingTeam = await teamRepo.findOne({
           where: {
             name: updateData.name,
-            deletedAt: null,
+            isActive: null,
           },
         });
 
@@ -105,7 +92,7 @@ export class HRAdminService {
         }
       }
 
-      await this.teamRepository.update(id, {
+      await teamRepo.update(id, {
         ...updateData,
         updatedAt: new Date(),
       });
@@ -117,25 +104,23 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to update team");
     }
-  }
+  },
 
   async softDeleteTeam(id: number): Promise<void> {
     try {
       const team = await this.getTeamById(id);
       
       // Soft delete all sub-teams first
-      await this.subTeamRepository.update(
-        { teamId: id, deletedAt: null },
+      await subTeamRepo.update(
+        { teamId: id, isActive: null },
         { 
-          deletedAt: new Date(),
           isActive: false,
           updatedAt: new Date(),
         }
       );
 
       // Soft delete the team
-      await this.teamRepository.update(id, {
-        deletedAt: new Date(),
+      await teamRepo.update(id, {
         isActive: false,
         updatedAt: new Date(),
       });
@@ -145,18 +130,17 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to delete team");
     }
-  }
+  },
 
   async restoreTeam(id: number): Promise<TeamType> {
     try {
       const team = await this.getTeamById(id, true);
       
-      if (!team.deletedAt) {
+      if (!team.isActive) {
         throw Boom.badRequest("Team is not deleted");
       }
 
-      await this.teamRepository.update(id, {
-        deletedAt: null,
+      await teamRepo.update(id, {
         isActive: true,
         updatedAt: new Date(),
       });
@@ -168,7 +152,7 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to restore team");
     }
-  }
+  },
 
   async activateTeam(id: number): Promise<TeamType> {
     try {
@@ -178,7 +162,7 @@ export class HRAdminService {
         throw Boom.badRequest("Team is already active");
       }
 
-      await this.teamRepository.update(id, {
+      await teamRepo.update(id, {
         isActive: true,
         updatedAt: new Date(),
       });
@@ -190,7 +174,7 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to activate team");
     }
-  }
+  },
 
   async deactivateTeam(id: number): Promise<TeamType> {
     try {
@@ -200,7 +184,7 @@ export class HRAdminService {
         throw Boom.badRequest("Team is already inactive");
       }
 
-      await this.teamRepository.update(id, {
+      await teamRepo.update(id, {
         isActive: false,
         updatedAt: new Date(),
       });
@@ -212,68 +196,68 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to deactivate team");
     }
-  }
+  },
 
   // ============ SUB-TEAMS ============
 
-  async createSubTeam(subTeamData: Partial<SubTeamType>): Promise<SubTeamType> {
+  async createsubTeam(subTeamData: Partial<subTeamType>): Promise<subTeamType> {
     try {
       // Verify parent team exists
       await this.getTeamById(subTeamData.teamId!);
 
       // Check if sub-team name already exists within the same team
-      const existingSubTeam = await this.subTeamRepository.findOne({
+      const existingsubTeam = await subTeamRepo.findOne({
         where: {
           name: subTeamData.name,
           teamId: subTeamData.teamId,
-          deletedAt: null,
+          isActive: null,
         },
       });
 
-      if (existingSubTeam) {
+      if (existingsubTeam) {
         throw Boom.conflict("Sub-team name already exists within this team");
       }
 
-      const subTeam = this.subTeamRepository.create({
+      const subTeam = subTeamRepo.create({
         name: subTeamData.name,
-        description: subTeamData.description,
         teamId: subTeamData.teamId,
         isActive: true,
       });
 
-      return await this.subTeamRepository.save(subTeam);
+      return await subTeamRepo.save(subTeam);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
       throw Boom.internal("Failed to create sub-team");
     }
-  }
+  },
 
-  async getAllSubTeams(teamId?: number, includeDeleted: boolean = false): Promise<SubTeamType[]> {
+  async getAllsubTeams(teamId?: number, includeDeleted: boolean = false): Promise<subTeamType[]> {
     try {
-      const whereCondition: any = includeDeleted ? {} : { deletedAt: null };
+      const whereCondition: any = includeDeleted ? {} : { isActive: null };
       if (teamId) {
         whereCondition.teamId = teamId;
       }
 
-      return await this.subTeamRepository.find({
+      return await subTeamRepo.find({
         where: whereCondition,
-        relations: ["Team", "users"],
+        relations: ["teams", "user"],
         order: { createdAt: "DESC" },
       });
     } catch (error) {
+      console.log("subTeam error",error)
       throw Boom.internal("Failed to fetch sub-teams");
     }
-  }
+  },
 
-  async getSubTeamById(id: number, includeDeleted: boolean = false): Promise<SubTeamType> {
+  async getsubTeamById(id: number, includeDeleted: boolean = false): Promise<subTeamType> {
     try {
       const whereCondition = includeDeleted 
         ? { id } 
-        : { id, deletedAt: null };
+        : { id, isActive: null };
 
-      const subTeam = await this.subTeamRepository.findOne({
+      const subTeam = await subTeamRepo.findOne({
         where: whereCondition,
         relations: ["Team", "users"],
       });
@@ -289,47 +273,46 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to fetch sub-team");
     }
-  }
+  },
 
-  async updateSubTeam(id: number, updateData: Partial<SubTeamType>): Promise<SubTeamType> {
+  async updatesubTeam(id: number, updateData: Partial<subTeamType>): Promise<subTeamType> {
     try {
-      const subTeam = await this.getSubTeamById(id);
+      const subTeam = await this.getsubTeamById(id);
 
       // Check if new name conflicts with existing sub-teams in the same team
       if (updateData.name && updateData.name !== subTeam.name) {
-        const existingSubTeam = await this.subTeamRepository.findOne({
+        const existingsubTeam = await subTeamRepo.findOne({
           where: {
             name: updateData.name,
             teamId: updateData.teamId || subTeam.teamId,
-            deletedAt: null,
+            isActive: null,
           },
         });
 
-        if (existingSubTeam && existingSubTeam.id !== id) {
+        if (existingsubTeam && existingsubTeam.id !== id) {
           throw Boom.conflict("Sub-team name already exists within this team");
         }
       }
 
-      await this.subTeamRepository.update(id, {
+      await subTeamRepo.update(id, {
         ...updateData,
         updatedAt: new Date(),
       });
 
-      return await this.getSubTeamById(id);
+      return await this.getsubTeamById(id);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
       throw Boom.internal("Failed to update sub-team");
     }
-  }
+  },
 
-  async softDeleteSubTeam(id: number): Promise<void> {
+  async softDeletesubTeam(id: number): Promise<void> {
     try {
-      await this.getSubTeamById(id);
+      await this.getsubTeamById(id);
       
-      await this.subTeamRepository.update(id, {
-        deletedAt: new Date(),
+      await subTeamRepo.update(id, {
         isActive: false,
         updatedAt: new Date(),
       });
@@ -339,40 +322,39 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to delete sub-team");
     }
-  }
+  },
 
-  async restoreSubTeam(id: number): Promise<SubTeamType> {
+  async restoresubTeam(id: number): Promise<subTeamType> {
     try {
-      const subTeam = await this.getSubTeamById(id, true);
+      const subTeam = await this.getsubTeamById(id, true);
       
-      if (!subTeam.deletedAt) {
+      if (!subTeam.isActive) {
         throw Boom.badRequest("Sub-team is not deleted");
       }
 
-      await this.subTeamRepository.update(id, {
-        deletedAt: null,
+      await subTeamRepo.update(id, {
         isActive: true,
         updatedAt: new Date(),
       });
 
-      return await this.getSubTeamById(id);
+      return await this.getsubTeamById(id);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
       throw Boom.internal("Failed to restore sub-team");
     }
-  }
+  },
 
   // ============ POSITIONS ============
 
   async createPosition(positionData: Partial<PositionType>): Promise<PositionType> {
     try {
       // Check if position name already exists
-      const existingPosition = await this.positionRepository.findOne({
+      const existingPosition = await positionRepo.findOne({
         where: {
           name: positionData.name,
-          deletedAt: null,
+          isActive: null,
         },
       });
 
@@ -380,42 +362,42 @@ export class HRAdminService {
         throw Boom.conflict("Position name already exists");
       }
 
-      const position = this.positionRepository.create({
+      const position = positionRepo.create({
         name: positionData.name,
-        description: positionData.description,
         isActive: true,
       });
 
-      return await this.positionRepository.save(position);
+      return await positionRepo.save(position);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
       throw Boom.internal("Failed to create position");
     }
-  }
+  },
 
   async getAllPositions(includeDeleted: boolean = false): Promise<PositionType[]> {
     try {
-      const whereCondition = includeDeleted ? {} : { deletedAt: null };
+      const whereCondition = includeDeleted ? {} : { isActive: true };
       
-      return await this.positionRepository.find({
+      return await positionRepo.find({
         where: whereCondition,
-        relations: ["users"],
+        relations: ["user"],
         order: { createdAt: "DESC" },
       });
     } catch (error) {
+      console.log(error)
       throw Boom.internal("Failed to fetch positions");
     }
-  }
+  },
 
   async getPositionById(id: number, includeDeleted: boolean = false): Promise<PositionType> {
     try {
       const whereCondition = includeDeleted 
         ? { id } 
-        : { id, deletedAt: null };
+        : { id, isActive: null };
 
-      const position = await this.positionRepository.findOne({
+      const position = await positionRepo.findOne({
         where: whereCondition,
         relations: ["users"],
       });
@@ -431,7 +413,7 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to fetch position");
     }
-  }
+  },
 
   async updatePosition(id: number, updateData: Partial<PositionType>): Promise<PositionType> {
     try {
@@ -439,10 +421,10 @@ export class HRAdminService {
 
       // Check if new name conflicts with existing positions
       if (updateData.name && updateData.name !== position.name) {
-        const existingPosition = await this.positionRepository.findOne({
+        const existingPosition = await positionRepo.findOne({
           where: {
             name: updateData.name,
-            deletedAt: null,
+            isActive: null,
           },
         });
 
@@ -451,7 +433,7 @@ export class HRAdminService {
         }
       }
 
-      await this.positionRepository.update(id, {
+      await positionRepo.update(id, {
         ...updateData,
         updatedAt: new Date(),
       });
@@ -463,14 +445,13 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to update position");
     }
-  }
+  },
 
   async softDeletePosition(id: number): Promise<void> {
     try {
       await this.getPositionById(id);
       
-      await this.positionRepository.update(id, {
-        deletedAt: new Date(),
+      await positionRepo.update(id, {
         isActive: false,
         updatedAt: new Date(),
       });
@@ -480,18 +461,17 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to delete position");
     }
-  }
+  },
 
   async restorePosition(id: number): Promise<PositionType> {
     try {
       const position = await this.getPositionById(id, true);
       
-      if (!position.deletedAt) {
+      if (!position.isActive) {
         throw Boom.badRequest("Position is not deleted");
       }
 
-      await this.positionRepository.update(id, {
-        deletedAt: null,
+      await positionRepo.update(id, {
         isActive: true,
         updatedAt: new Date(),
       });
@@ -503,19 +483,19 @@ export class HRAdminService {
       }
       throw Boom.internal("Failed to restore position");
     }
-  }
+  },
 
   // ============ STATISTICS ============
 
   async getOrganizationStats() {
     try {
-      const [activeTeams, deletedTeams, activeSubTeams, deletedSubTeams, activePositions, deletedPositions] = await Promise.all([
-        this.teamRepository.count({ where: { deletedAt: IsNull() } }),
-        this.teamRepository.count({ where: { deletedAt: Not(IsNull()) } }),
-        this.subTeamRepository.count({ where: { deletedAt: IsNull() } }),
-        this.subTeamRepository.count({ where: { deletedAt: Not(IsNull()) } }),
-        this.positionRepository.count({ where: { deletedAt: IsNull() } }),
-        this.positionRepository.count({ where: { deletedAt: Not(IsNull()) } }),
+      const [activeTeams, deletedTeams, activesubTeams, deletedsubTeams, activePositions, deletedPositions] = await Promise.all([
+        teamRepo.count({ where: { isActive: true } }),
+        teamRepo.count({ where: { isActive: false } }),
+        subTeamRepo.count({ where: { isActive: true } }),
+        subTeamRepo.count({ where: { isActive: false } }),
+        positionRepo.count({ where: { isActive: true } }),
+        positionRepo.count({ where: { isActive: false } }),
       ]);
 
       return {
@@ -525,9 +505,9 @@ export class HRAdminService {
           total: activeTeams + deletedTeams,
         },
         subTeams: {
-          active: activeSubTeams,
-          deleted: deletedSubTeams,
-          total: activeSubTeams + deletedSubTeams,
+          active: activesubTeams,
+          deleted: deletedsubTeams,
+          total: activesubTeams + deletedsubTeams,
         },
         positions: {
           active: activePositions,

@@ -33,7 +33,6 @@ const AssessmentController: Controller = {
       const assessment = await AssessmentService.initiateAssessment(
         hrId,
         targetUserId,
-        skillIds,
         scheduledDate ? new Date(scheduledDate) : undefined,
         scheduleType ?? AssessmentScheduleType.QUARTERLY,
         finalDeadlineDays,

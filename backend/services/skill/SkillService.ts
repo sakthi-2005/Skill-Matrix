@@ -1,9 +1,8 @@
 import { AppDataSource, skillRepo } from "../../config/dataSource";
-import { SkillData } from "../../types/services";
 import { SkillType } from "../../types/entities";
 
 const SkillService = {
-  createSkill: async (skillData: SkillData): Promise<SkillType> => {
+  createSkill: async (skillData: SkillType): Promise<SkillType> => {
     try {
       // Reset sequence to ensure proper ID generation
       await AppDataSource.query(`
@@ -28,7 +27,7 @@ const SkillService = {
     }
   },
 
-  updateSkill: async (updateData: SkillData): Promise<SkillType> => {
+  updateSkill: async (updateData: SkillType): Promise<SkillType> => {
     try {
       const { id } = updateData;
       const skill = await skillRepo.findOneBy({ id });

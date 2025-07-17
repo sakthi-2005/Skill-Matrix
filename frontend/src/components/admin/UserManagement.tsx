@@ -759,54 +759,40 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {user.email && (
                     <div className="flex items-center space-x-2">
                       <Mail className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600 truncate">{user.email}</span>
+                      <span className="text-sm text-gray-600 truncate">{user.email || "N/A"}</span>
                     </div>
-                  )}
                   
-                  {user.role && (
                     <div className="flex items-center space-x-2">
                       <Shield className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.role.name}</span>
+                      <span className="text-sm text-gray-600">{user.role?.name || "N/A"}</span>
                     </div>
-                  )}
                   
-                  {user.position && (
                     <div className="flex items-center space-x-2">
                       <MapPin className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.position.name}</span>
+                      <span className="text-sm text-gray-600">{user.position?.name || "N/A"}</span>
                     </div>
-                  )}
                   
-                  {user.Team && (
                     <div className="flex items-center space-x-2">
                       <Building className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.Team.name}</span>
+                      <span className="text-sm text-gray-600">{user.Team?.name || "N/A"}</span>
                     </div>
-                  )}
                   
-                  {user.SubTeam && (
                     <div className="flex items-center space-x-2">
                       <Users className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.SubTeam.name}</span>
+                      <span className="text-sm text-gray-600">{user.SubTeam?.name || "N/A"}</span>
                     </div>
-                  )}
                   
-                  {user.lead && (
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm text-gray-600">TL: {user.lead.name}</span>
+                      <span className="text-sm text-gray-600">TL: {user.lead?.name || "N/A"}</span>
                     </div>
-                  )}
                   
-                  {user.hr && (
                     <div className="flex items-center space-x-2">
                       <Shield className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-gray-600">HR: {user.hr.name}</span>
+                      <span className="text-sm text-gray-600">HR: {user.hr?.name || "N/A"}</span>
                     </div>
-                  )}
 
                   <div className="flex justify-end space-x-2">
                     {user.deletedAt ? (

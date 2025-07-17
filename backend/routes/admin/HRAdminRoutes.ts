@@ -3,7 +3,6 @@ import { HRAdminController } from "../../controllers/admin/HRAdminController";
 import authorizeRoles from "../../middlewares/authorizeRole";
 import Joi from "joi";
 
-const hrAdminController = new HRAdminController();
 
 const teamCreateSchema = Joi.object({
   name: Joi.string().required().min(1).max(255),
@@ -48,7 +47,7 @@ export const HRAdminRoutes = (server: Server) => {
         payload: teamCreateSchema,
       },
     },
-    handler: hrAdminController.createTeam,
+    handler: HRAdminController.createTeam,
   });
 
   server.route({
@@ -62,7 +61,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.getAllTeams,
+    handler: HRAdminController.getAllTeams,
   });
 
   server.route({
@@ -79,7 +78,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.getTeamById,
+    handler: HRAdminController.getTeamById,
   });
 
   server.route({
@@ -94,7 +93,7 @@ export const HRAdminRoutes = (server: Server) => {
         payload: teamUpdateSchema,
       },
     },
-    handler: hrAdminController.updateTeam,
+    handler: HRAdminController.updateTeam,
   });
 
   server.route({
@@ -108,7 +107,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.deleteTeam,
+    handler: HRAdminController.deleteTeam,
   });
 
   server.route({
@@ -122,7 +121,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.restoreTeam,
+    handler: HRAdminController.restoreTeam,
   });
 
   server.route({
@@ -136,7 +135,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.activateTeam,
+    handler: HRAdminController.activateTeam,
   });
 
   server.route({
@@ -150,7 +149,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.deactivateTeam,
+    handler: HRAdminController.deactivateTeam,
   });
 
   // ============ SUB-TEAMS ============
@@ -163,7 +162,7 @@ export const HRAdminRoutes = (server: Server) => {
         payload: subTeamCreateSchema,
       },
     },
-    handler: hrAdminController.createSubTeam,
+    handler: HRAdminController.createSubTeam,
   });
 
   server.route({
@@ -178,7 +177,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.getAllSubTeams,
+    handler: HRAdminController.getAllSubTeams,
   });
 
   server.route({
@@ -195,7 +194,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.getSubTeamById,
+    handler: HRAdminController.getSubTeamById,
   });
 
   server.route({
@@ -210,7 +209,7 @@ export const HRAdminRoutes = (server: Server) => {
         payload: subTeamUpdateSchema,
       },
     },
-    handler: hrAdminController.updateSubTeam,
+    handler: HRAdminController.updateSubTeam,
   });
 
   server.route({
@@ -224,7 +223,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.deleteSubTeam,
+    handler: HRAdminController.deleteSubTeam,
   });
 
   server.route({
@@ -238,7 +237,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.restoreSubTeam,
+    handler: HRAdminController.restoreSubTeam,
   });
 
   // ============ POSITIONS ============
@@ -251,7 +250,7 @@ export const HRAdminRoutes = (server: Server) => {
         payload: positionCreateSchema,
       },
     },
-    handler: hrAdminController.createPosition,
+    handler: HRAdminController.createPosition,
   });
 
   server.route({
@@ -265,7 +264,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.getAllPositions,
+    handler: HRAdminController.getAllPositions,
   });
 
   server.route({
@@ -282,7 +281,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.getPositionById,
+    handler: HRAdminController.getPositionById,
   });
 
   server.route({
@@ -297,7 +296,7 @@ export const HRAdminRoutes = (server: Server) => {
         payload: positionUpdateSchema,
       },
     },
-    handler: hrAdminController.updatePosition,
+    handler: HRAdminController.updatePosition,
   });
 
   server.route({
@@ -311,7 +310,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.deletePosition,
+    handler: HRAdminController.deletePosition,
   });
 
   server.route({
@@ -325,7 +324,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: hrAdminController.restorePosition,
+    handler: HRAdminController.restorePosition,
   });
 
   // ============ STATISTICS ============
@@ -335,6 +334,6 @@ export const HRAdminRoutes = (server: Server) => {
     options: {
       ...authorizeRoles(["hr"]),
     },
-    handler: hrAdminController.getOrganizationStats,
+    handler: HRAdminController.getOrganizationStats,
   });
 };

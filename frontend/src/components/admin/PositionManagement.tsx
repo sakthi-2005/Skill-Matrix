@@ -88,7 +88,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         // Calculate skill count for each position
         const positionsWithSkillCount = positionsData.map((position: Position) => {
           const skillCount = skillsData.filter((skill: any) => 
-            skill.position && skill.position.includes(position.id)
+            skill.positionId === position.id
           ).length;
           
           return {
@@ -346,7 +346,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center space-x-1">
                       <Users className="h-4 w-4" />
-                      <span>{position.users?.length || 0} users</span>
+                      <span>{position.user?.length || 0} users</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Target className="h-4 w-4" />
@@ -354,8 +354,8 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                     </div>
                   </div>
 
-                  <div className="flex justify-end space-x-2">
-                    {position.deletedAt ? (
+                  <div className="flex overflow-hidden justify-center space-x-2">
+                    {/* {position.deletedAt ? (
                       <Button
                         variant="outline"
                         size="sm"
@@ -369,7 +369,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                         <span>Restore</span>
                       </Button>
                     ) : (
-                      <>
+                      <> */}
                         <Button
                           variant="outline"
                           size="sm"
@@ -436,8 +436,8 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                           <Trash2 className="h-3 w-3" />
                           <span>Delete</span>
                         </Button>
-                      </>
-                    )}
+                      {/* </>
+                    )} */}
                   </div>
                 </div>
               </CardContent>

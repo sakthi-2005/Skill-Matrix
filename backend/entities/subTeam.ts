@@ -1,9 +1,9 @@
 import { EntitySchema } from "typeorm";
-import { TeamType } from "../types/entities";
+import { subTeamType } from "../types/entities";
 
-export const Team = new EntitySchema<TeamType>({
-  name: "Team",
-  tableName: "teams",
+export const subTeam = new EntitySchema<subTeamType>({
+  name: "subTeam",
+  tableName: "subteams",
   columns: {
     id: {
       primary: true,
@@ -13,6 +13,10 @@ export const Team = new EntitySchema<TeamType>({
     name: {
       type: "varchar",
       unique: true,
+    },
+    teamId: {
+      type: "int",
+      name: "team_id",
     },
     isActive: {
       type: "boolean",
@@ -34,12 +38,15 @@ export const Team = new EntitySchema<TeamType>({
     user: {
       target: "User",
       type: "one-to-many",
-      inverseSide: "Team",
+      inverseSide: "subTeam",
     },
-    subteam: {
-      target: "subTeam",
-      type: "one-to-many",
-      inverseSide: 'teams'
-    }
-  }
+    teams: {
+      target: "Team",
+      type: "many-to-one",
+      joinColumn: {
+        name: "team_id",
+        referencedColumnName: "id",
+      },
+    },
+  },
 });

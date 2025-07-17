@@ -169,8 +169,8 @@ export default [
     "userId": "LMT20508",
     "name": "Sakthikumar Anbazhagan",
     "email": "SakthikumarA@lumel.com",
-    "roleId": 3,
-    "positionId": 4,
+    "roleId": 7,
+    "positionId": null,
     "teamId": null,
     "leadId": null,
     "hrId": null

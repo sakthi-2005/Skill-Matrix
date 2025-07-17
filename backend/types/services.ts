@@ -40,7 +40,7 @@ export interface BulkAssessmentResult {
   title: string;
   totalAssessments: number;
   targetUsers: number;
-  skills: number[];
+  // skills: number[];
   createdAt: Date;
 }
 
@@ -64,10 +64,11 @@ export interface UserData {
 export interface SkillData {
   id?: number;
   name: string;
+  basic?: string
   low?: string;
   medium?: string;
-  average?: string;
   high?: string;
+  expert?: string;
   createdBy?: string;
   position?: number[];
   [key: string]: any;

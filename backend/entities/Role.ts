@@ -20,6 +20,11 @@ export const Role = new EntitySchema<RoleType>({
       target: "User",
       type: "one-to-many",
       inverseSide: "roles",
+    },
+    position: {
+      target: "Position",
+      type: "one-to-many",
+      inverseSide: "role"
     }
   },
 });

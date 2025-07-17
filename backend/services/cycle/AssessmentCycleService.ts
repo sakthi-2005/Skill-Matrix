@@ -1,5 +1,5 @@
 import { In } from "typeorm";
-import { assessmentRequestRepo, scoreRepo, userRepo, skillRepo, AuditRepo, assessmentCycleRepo, assessmentCycleSkillRepo } from "../../config/dataSource";
+import { assessmentRequestRepo, scoreRepo, userRepo, skillRepo, AuditRepo, assessmentCycleRepo, assessmentCycleSkillRepo, positionRepo } from "../../config/dataSource";
 import { BulkAssessmentResult } from "../../types/services";
 import { AssessmentCycleType, UserType } from "../../types/entities";
 import { AssessmentStatus, role, AssessmentScheduleType } from "../../enum/enum";
@@ -9,7 +9,6 @@ const AssessmentCycleService = {
 // HR initiates bulk assessment for all users or specific teams
   initiateBulkAssessment: async (
     hrId: string,
-    skillIds: number[],
     assessmentTitle: string,
     includeTeams: string[],
     scheduledDate?: Date,
@@ -20,14 +19,11 @@ const AssessmentCycleService = {
   ): Promise<BulkAssessmentResult> => {
     try {
       // Parallel validation
-      const [hrUser, validSkills] = await Promise.all([
+      const [hrUser] = await Promise.all([
         ValidationHelpers.validateHRUser(hrId),
-        skillRepo.findBy({ id: In(skillIds) })
+        // skillRepo.findBy({ id: In(skillIds) })
       ]);
 
-      if (validSkills.length !== skillIds.length) {
-        throw new Error("One or more skills not found");
-      }
 
       UtilityHelpers.validateDeadlineDays(deadlineDays);
 
@@ -60,9 +56,6 @@ const AssessmentCycleService = {
       if (includeTeams.includes('all')) {
         // Get all employees and team leads
         targetUsers = await userRepo.find({
-          where: {
-            role: { name: In([role.EMPLOYEE, role.LEAD]) }
-          },
           relations: ["role", "Team"]
         });
         console.log('DEBUG: Found users (all):', targetUsers.length);
@@ -104,15 +97,23 @@ const AssessmentCycleService = {
       // Create score entries and audit entries in parallel
       const scoreAndAuditPromises = assessments.map(async (assessment, index) => {
         const user = eligibleUsers[index];
+
+        const userPosition = await userRepo.findOneBy({ id: assessment.userId });
+        let skills = await skillRepo.find({
+          where:{
+            positionId: userPosition.positionId
+          }
+        });
+        // skills = skills.map(e=>e.id);
         
         // Create score entries for this assessment
-        const scorePromises = skillIds.map(async (skillId) => {
-          const skill = await skillRepo.findOneBy({ id: skillId });
+        const scorePromises = skills.map(async (skill) => {
+          // const skill = await skillRepo.findOneBy({ id: skill.id });
           if (skill) {
             const score = scoreRepo.create({
               assessmentId: assessment.id,
-              skillId: skillId,
-              leadScore: null
+              skillId: skill.id,
+              score: null
             });
             return await scoreRepo.save(score);
           }
@@ -130,21 +131,21 @@ const AssessmentCycleService = {
           status: 'ASSESSMENT_INITIATED'
         });
 
-        return await Promise.all([Promise.all(scorePromises), auditPromise]);
+        return await auditPromise;
       });
 
       await Promise.all(scoreAndAuditPromises);
 
       // Link skills to cycle in parallel
-      const cycleSkillPromises = skillIds.map(async (skillId) => {
-        const cycleSkill = assessmentCycleSkillRepo.create({
-          cycleId: savedCycle.id,
-          skillId: skillId
-        });
-        return await assessmentCycleSkillRepo.save(cycleSkill);
-      });
+      // const cycleSkillPromises = skillIds.map(async (skillId) => {
+      //   const cycleSkill = assessmentCycleSkillRepo.create({
+      //     cycleId: savedCycle.id,
+      //     skillId: skillId
+      //   });
+      //   return await assessmentCycleSkillRepo.save(cycleSkill);
+      // });
 
-      await Promise.all(cycleSkillPromises);
+      // await Promise.all(cycleSkillPromises);
 
       // Update cycle with assessment count
       savedCycle.totalAssessments = assessments.length;
@@ -155,7 +156,7 @@ const AssessmentCycleService = {
         title: savedCycle.title,
         totalAssessments: assessments.length,
         targetUsers: eligibleUsers.length,
-        skills: skillIds,
+        // skills: skillIds,
         createdAt: savedCycle.createdAt
       };
     } catch (error: any) {

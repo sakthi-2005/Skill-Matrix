@@ -88,7 +88,7 @@ const Index = () => {
       case "hr":
         return <HRDashboard onNavigate={handleNavigate} />;
       default:
-        return <EmployeeDashboard onNavigate={handleNavigate} />;
+        return <HRDashboard onNavigate={handleNavigate} />;
     }
   };
 

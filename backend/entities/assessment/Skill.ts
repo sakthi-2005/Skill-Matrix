@@ -12,23 +12,21 @@ export const Skill = new EntitySchema<SkillType>({
     },
     name: {
       type: "varchar",
-      unique: true,
+    },
+    basic:{
+      type: 'text',
     },
     low: {
       type: "text",
-      nullable: true,
     },
     medium: {
       type: "text",
-      nullable: true,
-    },
-    average: {
-      type: "text",
-      nullable: true,
     },
     high: {
       type: "text",
-      nullable: true,
+    },
+    expert:{
+      type: 'text'
     },
     createdAt: {
       type: "timestamp",
@@ -38,10 +36,9 @@ export const Skill = new EntitySchema<SkillType>({
       type: "varchar",
       nullable: true,
     },
-    position: {
-      type: "int",
-      array: true,
-      nullable: true,
+    positionId: {
+      name: "position_id",
+      type: "integer",
     },
   },
   relations: {
@@ -59,6 +56,15 @@ export const Skill = new EntitySchema<SkillType>({
       target: "target",
       type: "one-to-many",
       inverseSide: "skill",
+    },
+    position: {
+      target: "Position",
+      type: "many-to-one",
+      inverseSide: 'skill',
+      joinColumn: {
+        name: "position_id",
+        referencedColumnName: "id",
+      },
     }
   },
 });
