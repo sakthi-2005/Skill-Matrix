@@ -12,8 +12,8 @@ import assessmentRoutes from "./routes/assessment/AssessmentRoutes";
 import TeamAssessmentRoutes from "./routes/team/TeamAssessmentRoutes";
 import assessmentCycleRoutes from "./routes/cycle/AssessmentCycleRoutes";
 import requestRoutes from "./routes/skill/SkillUpdateRequestRoute";
-import AssessmentLegacyRoutes from "./routes/AssessmentLegacyRoutes";
 import AssessmentCronJobs from "./services/assessment/AssessmentCronJobs";
+import { HRAdminRoutes } from "./routes/admin/HRAdminRoutes";
 
 
 dotenv.config();
@@ -127,18 +127,22 @@ const init = async () => {
   });
 
   await server.register({
-    plugin: AssessmentLegacyRoutes,
-    options: {},
-    routes: {
-      prefix: "/api/assessment-legacy",
-    },
-  });
-
-  await server.register({
     plugin: authRoutes,
     options: {},
     routes: {
       prefix: "/api/auth",
+    },
+  });
+
+  // Register HR Admin routes
+  await server.register({
+    plugin: {
+      name: 'hr-admin-routes',
+      register: HRAdminRoutes
+    },
+    options: {},
+    routes: {
+      prefix: "/api",
     },
   });
 
