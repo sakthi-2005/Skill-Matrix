@@ -394,7 +394,7 @@ const TeamOverviewPage = () => {
                     height={80}
                     interval={0}
                   />
-                  <YAxis domain={[0, 4]} />
+                  <YAxis domain={[0, 5]} />
                   <Tooltip
                     formatter={(value: number, name: string) => [
                       `${value}/5`,
