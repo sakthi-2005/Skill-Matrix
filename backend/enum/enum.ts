@@ -14,24 +14,12 @@ export enum AssessmentStatus{
     COMPLETED = 'COMPLETED'
 }
 
-export enum position {
-  FRONTEND = 'frontend',
-  BACKEND = 'backend',
-  TESTING = 'testing',
-  HR = 'hr'
-};
-
 export enum role{
   EMPLOYEE = "employee",
   LEAD = "lead",
   HR = "hr",
 }
 
-export enum teamName{
-  INFORIVER = "inforiver",
-  INFOBRIDGE = "infobridge",
-  VALQ = "valq",
-}
 
 export enum AssessmentScheduleType {
   MONTHLY = "MONTHLY",
@@ -85,7 +73,6 @@ export const MESSAGES = {
     CANNOT_CANCEL_COMPLETED: "Cannot cancel completed assessments"
   }
 } as const;
-
 
 // Constants
 export const TIME_CONSTANTS = {

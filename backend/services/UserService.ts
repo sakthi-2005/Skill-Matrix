@@ -6,11 +6,12 @@ import {
   roleRepo,
   positionRepo,
   teamRepo,
+  subTeamRepo,
   assessmentRequestRepo,
   scoreRepo,
 } from '../config/dataSource';
 import { AssessmentStatus } from '../enum/enum';
-import { PositionType, RoleType, TeamType, UserType } from "../types/entities";
+import { PositionType, RoleType, TeamType, SubTeamType, UserType } from "../types/entities";
 
 const UserService = {
   // General user operations
@@ -20,10 +21,9 @@ const UserService = {
       .leftJoinAndSelect("user.role", "role")
       .leftJoinAndSelect("user.position", "position")
       .leftJoinAndSelect("user.Team", "team")
-      .leftJoin("user.hrId", "hr")
-      .addSelect(["hr.name"])
-      .leftJoin("user.leadId", "lead")
-      .addSelect(["lead.name"])
+      .leftJoinAndSelect("user.SubTeam", "subteam")
+      .leftJoinAndSelect("user.hr", "hr")
+      .leftJoinAndSelect("user.lead", "lead")
       .where("user.id = :id", { id })
       .getOne();
 
@@ -50,7 +50,7 @@ const UserService = {
     }
     return await userRepo.find({
       where,
-      relations:["role","position","Team"],
+      relations:["role","position","Team","SubTeam","lead","hr"],
     })
   },
 
@@ -309,6 +309,14 @@ const UserService = {
 
   getAllTeams: async (): Promise<TeamType[]> => {
     return await teamRepo.find();
+  },
+
+  getAllSubTeams: async (): Promise<SubTeamType[]> => {
+    return await subTeamRepo.find({
+      where: { deletedAt: null },
+      relations: ['Team'],
+      order: { name: 'ASC' }
+    });
   },
 };
 

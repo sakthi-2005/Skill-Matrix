@@ -8,6 +8,7 @@ import { Position } from "../entities/Position";
 import { Role } from "../entities/Role";
 import { Score } from "../entities/assessment/Score";
 import { Team } from "../entities/Team";
+import { SubTeam } from "../entities/SubTeam";
 import { Skill } from "../entities/assessment/Skill";
 import { User } from "../entities/User";
 import { SkillUpgradeGuide } from "../entities/assessment/SkillUpgradeGuide";
@@ -23,7 +24,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  synchronize: false, // Disable to avoid conflicts with existing schema
+  synchronize: true, // Disable to avoid conflicts with existing schema
   logging: false,
   entities: [
     Skill,
@@ -34,6 +35,7 @@ export const AppDataSource = new DataSource({
     Role,
     Score,
     Team,
+    SubTeam,
     Position,
     User,
     Audit,
@@ -50,6 +52,7 @@ export const userRepo = AppDataSource.getRepository(User);
 export const roleRepo = AppDataSource.getRepository(Role);
 export const positionRepo = AppDataSource.getRepository(Position);
 export const teamRepo = AppDataSource.getRepository(Team);
+export const subTeamRepo = AppDataSource.getRepository(SubTeam);
 export const assessmentRequestRepo = AppDataSource.getRepository(AssessmentRequest);
 export const assessmentCycleRepo = AppDataSource.getRepository(AssessmentCycle);
 export const assessmentCycleSkillRepo = AppDataSource.getRepository(AssessmentCycleSkill);

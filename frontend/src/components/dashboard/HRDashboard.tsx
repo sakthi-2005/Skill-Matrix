@@ -153,6 +153,8 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
             </div>
           </CardContent>
         </Card>
+
+
       </div>
     </div>
   );

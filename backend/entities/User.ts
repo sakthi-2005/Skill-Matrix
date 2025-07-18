@@ -32,6 +32,11 @@ export const User = new EntitySchema<UserType>({
       name: "team_id",
       nullable: true,
     },
+    subTeamId: {
+      type: "integer",
+      name: "sub_team_id",
+      nullable: true,
+    },
     positionId: {
       type: "integer",
       name: "position_id",
@@ -51,13 +56,28 @@ export const User = new EntitySchema<UserType>({
       type: "text",
       nullable: true,
     },
+    isActive: {
+      type: "boolean",
+      default: true,
+      name: "is_active",
+    },
     createdAt: {
       type: "timestamp",
       createDate: true,
     },
+    updatedAt: {
+      type: "timestamp",
+      updateDate: true,
+      name: "updated_at",
+    },
+    deletedAt: {
+      type: "timestamp",
+      nullable: true,
+      name: "deleted_at",
+    },
   },
   relations: {
-    leadId: {
+    lead: {
       target: "User",
       type: "many-to-one",
       joinColumn: {
@@ -65,7 +85,7 @@ export const User = new EntitySchema<UserType>({
         referencedColumnName: "id",
       },
     },
-    hrId: {
+    hr: {
       target: "User",
       type: "many-to-one",
       joinColumn: {
@@ -99,6 +119,14 @@ export const User = new EntitySchema<UserType>({
       type: "many-to-one",
       joinColumn: {
         name: "team_id",
+        referencedColumnName: "id",
+      },
+    },
+    SubTeam: {
+      target: "SubTeam",
+      type: "many-to-one",
+      joinColumn: {
+        name: "sub_team_id",
         referencedColumnName: "id",
       },
     },
