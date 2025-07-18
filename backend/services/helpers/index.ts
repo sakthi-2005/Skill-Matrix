@@ -117,7 +117,7 @@ export const UtilityHelpers = {
 
   createScoreSnapshot: (scores: any[]) => {
     return scores.map(score => 
-      `${score.Skill?.name || `Skill ${score.skillId}`}: ${score.leadScore || 'N/A'}/4`
+      `${score.Skill?.name || `Skill ${score.skillId}`}: ${score.leadScore || 'N/A'}/5`
     ).join(', ');
   },
 

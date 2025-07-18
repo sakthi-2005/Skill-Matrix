@@ -394,10 +394,10 @@ const TeamOverviewPage = () => {
                     height={80}
                     interval={0}
                   />
-                  <YAxis domain={[0, 4]} />
+                  <YAxis domain={[0, 5]} />
                   <Tooltip
                     formatter={(value: number, name: string) => [
-                      `${value}/4`,
+                      `${value}/5`,
                       name === "averageScore" ? "Average Score" : name,
                     ]}
                     labelFormatter={(label) => `Skill: ${label}`}
@@ -446,7 +446,7 @@ const TeamOverviewPage = () => {
                           {member.name}
                         </span>
                         <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <span>Avg: {member.avgScore}/4</span>
+                          <span>Avg: {member.avgScore}/5</span>
                           <span>•</span>
                           <span>{member.assessmentCount} skills</span>
                         </div>
@@ -461,7 +461,7 @@ const TeamOverviewPage = () => {
                       </div>
                     </div>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {member.avgScore}/4
+                      {member.avgScore}/5
                     </span>
                   </div>
                 ))}
@@ -523,7 +523,7 @@ const TeamOverviewPage = () => {
                         getAverageSkillLevel(member)
                       )}`}
                     >
-                      {getAverageSkillLevel(member).toFixed(1)}/4
+                      {getAverageSkillLevel(member).toFixed(1)}/5
                     </span> */}
                     {user?.role?.name === "hr" && (
                       <div className="relative">
@@ -644,7 +644,7 @@ const TeamOverviewPage = () => {
                             skill.lead_score
                           )}`}
                         >
-                          {skill.lead_score}/4
+                          {skill.lead_score}/5
                         </span>
                       </div>
 
@@ -653,7 +653,7 @@ const TeamOverviewPage = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Lead Score:</span>
                           <span className="font-medium">
-                            {skill.lead_score}/4
+                            {skill.lead_score}/5
                           </span>
                         </div>
                         <div className="flex justify-between">

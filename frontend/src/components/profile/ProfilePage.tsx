@@ -259,7 +259,7 @@ const ProfilePage = () => {
                         </div>
                         <div className="flex flex-col items-end">
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                            Level {skill.lead_score}/4
+                            Level {skill.lead_score}/5
                           </span>
                           {skill.targetLevel &&
                             skill.targetLevel > skill.lead_score && (

@@ -24,7 +24,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  synchronize: false, // Disable to avoid conflicts with existing schema
+  synchronize: true, // Disable to avoid conflicts with existing schema
   logging: false,
   entities: [
     Skill,

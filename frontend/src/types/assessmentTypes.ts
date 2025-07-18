@@ -2,6 +2,11 @@
 export interface Skill {
   id: number;
   name: string;
+  low: string;
+  medium: string;
+  average: string;
+  high: string;
+  position: number[];
 }
 
 export interface SkillCategory {
