@@ -6,8 +6,8 @@ export interface Team {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
-  subTeams?: SubTeam[];
-  users?: User[];
+  subteam?: SubTeam[];
+  user?: User[];
 }
 
 export interface SubTeam {
@@ -19,7 +19,7 @@ export interface SubTeam {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
-  Team?: Team;
+  teams?: Team;
   users?: User[];
 }
 
@@ -31,7 +31,7 @@ export interface Position {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
-  users?: User[];
+  user?: User[];
 }
 
 export interface User {

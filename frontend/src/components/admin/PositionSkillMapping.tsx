@@ -23,11 +23,12 @@ import { toast } from 'sonner';
 interface Skill {
   id: number;
   name: string;
+  basic:string
   low: string;
   medium: string;
-  average: string;
   high: string;
-  position: number[];
+  expert: string;
+  positionId: number;
 }
 
 interface Position {
@@ -72,10 +73,13 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
       ]);
 
       if (skillsResponse) {
-        setSkills(skillsResponse);
+        setSkills(skillsResponse
+          // .filter((skill: Skill) => skill.positionId == positionId)
+          // .map((skill: Skill) => skill.id)
+        );
         // Set currently mapped skills for this position
         const mappedSkills = skillsResponse
-          .filter((skill: Skill) => skill.position && skill.position.includes(positionId))
+          .filter((skill: Skill) => skill.positionId == positionId)
           .map((skill: Skill) => skill.id);
         setSelectedSkills(new Set(mappedSkills));
       }
@@ -106,30 +110,30 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
       setSaving(true);
       
       // Update each skill's position array
-      const updatePromises = skills.map(async (skill) => {
-        const currentPositions = skill.position || [];
-        const shouldIncludePosition = selectedSkills.has(skill.id);
-        const currentlyIncluded = currentPositions.includes(positionId);
+      // const updatePromises = skills.map(async (skill) => {
+      //   const currentPositions = skill.positionId;
+      //   const shouldIncludePosition = selectedSkills.has(skill.id);
+      //   const currentlyIncluded = currentPositions == positionId;
 
-        if (shouldIncludePosition && !currentlyIncluded) {
-          // Add position to skill
-          const updatedPositions = [...currentPositions, positionId];
-          return skillService.updateSkill({
-            ...skill,
-            position: updatedPositions
-          });
-        } else if (!shouldIncludePosition && currentlyIncluded) {
-          // Remove position from skill
-          const updatedPositions = currentPositions.filter(id => id !== positionId);
-          return skillService.updateSkill({
-            ...skill,
-            position: updatedPositions
-          });
-        }
-        return Promise.resolve();
-      });
+      //   if (shouldIncludePosition && !currentlyIncluded) {
+      //     // Add position to skill
+      //     const updatedPositions = [currentPositions, positionId];
+      //     return skillService.updateSkill({
+      //       ...skill,
+      //       position: updatedPositions
+      //     });
+      //   } else if (!shouldIncludePosition && currentlyIncluded) {
+      //     // Remove position from skill
+      //     // const updatedPositions = currentPositions.filter(id => id !== positionId);
+      //     return skillService.updateSkill({
+      //       ...skill,
+      //       position: []
+      //     });
+      //   }
+      //   return Promise.resolve();
+      // });
 
-      await Promise.all(updatePromises);
+      // await Promise.all(updatePromises);
       toast.success('Position skill requirements updated successfully');
       onSave?.(); // Call the onSave callback to refresh parent data
       onClose();
@@ -149,7 +153,7 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Target className="h-5 w-5" />
@@ -174,13 +178,13 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
           </div>
 
           {/* Skills List */}
-          <div className="border rounded-lg max-h-96 overflow-y-auto">
+          <div className="border rounded-lg max-h-80">
             {loading ? (
               <div className="flex items-center justify-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : (
-              <div className="space-y-2 p-4">
+              <div className="space-y-2 p-4 max-h-[45vh] overflow-y-scroll">
                 {filteredSkills.length === 0 ? (
                   <div className="text-center text-gray-500 py-8">
                     No skills found matching your search.
@@ -205,30 +209,28 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
                           {skill.name}
                         </label>
                         <div className="mt-2 space-y-1 text-xs text-gray-600">
+                          {skill.basic && (
+                            <div><span className="font-medium">Basic:</span> {skill.basic}</div>
+                          )}
                           {skill.low && (
                             <div><span className="font-medium">Low:</span> {skill.low}</div>
                           )}
                           {skill.medium && (
                             <div><span className="font-medium">Medium:</span> {skill.medium}</div>
                           )}
-                          {skill.average && (
-                            <div><span className="font-medium">Average:</span> {skill.average}</div>
-                          )}
                           {skill.high && (
                             <div><span className="font-medium">High:</span> {skill.high}</div>
                           )}
+                          {skill.expert && (
+                            <div><span className="font-medium">Expert:</span> {skill.expert}</div>
+                          )}
                         </div>
-                        {skill.position && skill.position.length > 0 && (
+                        
                           <div className="mt-2">
                             <span className="text-xs text-gray-500">
-                              Also required for: {skill.position
-                                .filter(id => id !== positionId)
-                                .map(id => positions.find(p => p.id === id)?.name)
-                                .filter(Boolean)
-                                .join(', ') || 'None'}
+                              Assigned to: {positions.find(p => p.id === skill.positionId)?.name || 'None'}
                             </span>
                           </div>
-                        )}
                       </div>
                     </div>
                   ))

@@ -306,11 +306,11 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     <div className="flex items-center space-x-1">
                       <Users className="h-4 w-4" />
-                      <span>{team.subTeams?.length || 0} sub-teams</span>
+                      <span>{team.subteam?.length || 0} sub-teams</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Users className="h-4 w-4" />
-                      <span>{team.users?.length || 0} users</span>
+                      <span>{team.user?.length || 0} users</span>
                     </div>
                   </div>
 

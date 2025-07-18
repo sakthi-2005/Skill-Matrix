@@ -9,17 +9,18 @@ export interface SkillCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  editSkill?: SkillData & { id: number; position?: number[] };
+  editSkill?: SkillData & { id: number; positionId?: number };
   mode?: "create" | "edit";
 }
 
 export interface SkillData {
   name: string;
+  basic: string;
   low: string;
   medium: string;
-  average: string;
   high: string;
-  position?: number[];
+  expert: string;
+  positionId?: number;
 }
 
 export interface UpgradeGuide {
@@ -35,11 +36,12 @@ export interface UpgradeGuide {
 export interface SkillCriterion {
   id: number;
   name: string;
+  basic: string
   low: string;
   medium: string;
-  average: string;
   high: string;
+  expert: string;
   createdAt: string;
   createdBy: string;
-  position: number[];
+  positionId: number;
 }

@@ -194,7 +194,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
   const filteredSubTeams = subTeams.filter(subTeam => {
     const matchesSearch = subTeam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (subTeam.description && subTeam.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (subTeam.Team && subTeam.Team.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      (subTeam.teams && subTeam.teams.name.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesActiveFilter = showInactive ? true : subTeam.isActive;
     
@@ -342,7 +342,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <Building className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">{subTeam.Team?.name}</span>
+                    <span className="text-sm text-gray-600">{subTeam.teams?.name}</span>
                   </div>
                   
                   {subTeam.description && (

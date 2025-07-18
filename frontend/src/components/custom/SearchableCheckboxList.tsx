@@ -35,9 +35,9 @@ const SearchableCheckboxList: React.FC<Props> = ({
         placeholder="Search..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full p-1 mb-2 border rounded"
+        className="w-full p-1 mb-2 border rounded sticky top-2"
       />
-      <div className="max-h-40 overflow-y-auto border p-2 rounded">
+      {/* <div className="max-h-40 overflow-y-auto border p-2 rounded"> */}
         {filtered.map((item) => (
           <label key={item.id} className="flex items-center gap-2 mb-1">
             <input
@@ -49,7 +49,7 @@ const SearchableCheckboxList: React.FC<Props> = ({
           </label>
         ))}
         {filtered.length === 0 && <p className="text-sm text-gray-500">No results</p>}
-      </div>
+      {/* </div> */}
     </div>
   );
 };

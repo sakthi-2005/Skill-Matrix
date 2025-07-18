@@ -11,12 +11,12 @@ export const Position = new EntitySchema<PositionType>({
       generated: true,
     },
     name: {
-      type: "varchar",
-      length: 255,
+     type: "varchar",
+     unique: true,
     },
-    description: {
-      type: "text",
-      nullable: true,
+    roleId: {
+      type: "integer",
+      name: "role_id"
     },
     isActive: {
       type: "boolean",
@@ -33,25 +33,25 @@ export const Position = new EntitySchema<PositionType>({
       updateDate: true,
       name: "updated_at",
     },
-    deletedAt: {
-      type: "timestamp",
-      nullable: true,
-      name: "deleted_at",
-    },
   },
   relations: {
-    users: {
+    user: {
       target: "User",
       type: "one-to-many",
       inverseSide: "position",
-    }
-  },
-  indices: [
-    {
-      name: "IDX_POSITION_NAME",
-      columns: ["name"],
-      unique: true,
-      where: "deleted_at IS NULL",
     },
-  ],
+    role: {
+      target: "Role",
+      type: "many-to-one",
+      joinColumn: {
+        name: "role_id",
+        referencedColumnName: "id",
+      },
+    },
+    skill: {
+      target: "Skill",
+      type: "one-to-many",
+      inverseSide: "position"
+    }
+  }
 });

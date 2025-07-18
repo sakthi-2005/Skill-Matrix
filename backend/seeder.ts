@@ -5,6 +5,7 @@ import { SkillUpgradeGuide } from "./entities/assessment/SkillUpgradeGuide";
 import { Role } from "./entities/Role";
 import { Position } from "./entities/Position";
 import { Team } from "./entities/Team";
+import { subTeam } from "./entities/subTeam";
 import { Auth } from "./entities/Auth";
 import skillData from "./data/skill";
 import userData from "./data/user";
@@ -13,6 +14,7 @@ import roleData from './data/role';
 import positionData from './data/position';
 import teamData from './data/team';
 import authData from './data/auth';
+import subTeamData from './data/subTeam';
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -25,6 +27,7 @@ const roles = roleData;
 const positions = positionData;
 const teams = teamData;
 const auths = authData;
+const subTeams = subTeamData;
 
 export async function seedInitialData(): Promise<void> {
   try {
@@ -35,6 +38,7 @@ export async function seedInitialData(): Promise<void> {
     const positionRepo = AppDataSource.getRepository(Position);
     const teamRepo = AppDataSource.getRepository(Team);
     const authRepo = AppDataSource.getRepository(Auth);
+    const subTeamRepo = AppDataSource.getRepository(subTeam);
 
     console.log("🌱 Starting data seeding...");
 
@@ -47,6 +51,9 @@ export async function seedInitialData(): Promise<void> {
 
     console.log("   📝 Inserting teams...");
     await teamRepo.save(teamRepo.create(teams));
+
+    console.log("   📝 Inserting sub-teams...");
+    await subTeamRepo.save(subTeamRepo.create(subTeams));
 
     console.log("   📝 Inserting skills...");
     await skillRepo.save(skillRepo.create(skills));

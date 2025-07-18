@@ -65,24 +65,23 @@ export interface UserType {
   email: string;
   roleId?: number;
   teamId?: number;
-  subTeamId?: number;
+  subTeamId?: number,
   positionId?: number;
   leadId?: string;
   hrId?: string;
   profilePhoto?: string;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   
   // Relations
+  lead?: UserType,
+  hr?: UserType,
   Requests?: AssessmentRequestType;
   role?: RoleType;
   position?: PositionType;
   Team?: TeamType;
-  SubTeam?: SubTeamType;
-  lead?: UserType;
-  hr?: UserType;
+  subTeam?: subTeamType
   Audit?: AuditType;
   target?: targetType
 }
@@ -90,30 +89,26 @@ export interface UserType {
 export interface TeamType {
   id: number;
   name: string;
-  description?: string;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   
   // Relations
-  users?: UserType[];
-  subTeams?: SubTeamType[];
+  user?: UserType;
+  subteam?: subTeamType;
 }
 
-export interface SubTeamType {
+export interface subTeamType {
   id: number;
   name: string;
-  description?: string;
   teamId: number;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   
   // Relations
-  Team?: TeamType;
-  users?: UserType[];
+  user?: UserType;
+  teams?: TeamType
 }
 
 export interface SkillUpgradeGuideType {
@@ -129,27 +124,28 @@ export interface SkillUpgradeGuideType {
 }
 
 export interface SkillType {
-  id: number;
+  id?: number;
   name: string;
-  low?: string;
-  medium?: string;
-  average?: string;
-  high?: string;
-  createdAt: Date;
+  basic: string
+  low: string;
+  medium: string;
+  high: string;
+  expert: string;
+  createdAt?: Date;
   createdBy?: string;
-  position?: number[];
+  positionId: number;
   
   // Relations
   upgradeGuides?: SkillUpgradeGuideType;
   assessmentRequest?: AssessmentRequestType;
   target?: targetType
+  position?: PositionType
 }
 
 export interface ScoreType {
   id: number;
   assessmentId: number;
-  selfScore?: number;
-  leadScore?: number;
+  score?: number;
   updatedAt: Date;
   skillId: number;
   
@@ -164,19 +160,21 @@ export interface RoleType {
   
   // Relations
   user?: UserType;
+  position?: PositionType;
 }
 
 export interface PositionType {
   id: number;
   name: string;
-  description?: string;
+  roleId?: number;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   
   // Relations
-  users?: UserType[];
+  user?: UserType;
+  role?: RoleType;
+  skill?: SkillType;
 }
 
 export interface AuditType {

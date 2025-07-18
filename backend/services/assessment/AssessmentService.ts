@@ -1,5 +1,5 @@
 import { In } from "typeorm";
-import { assessmentRequestRepo, scoreRepo, userRepo, AuditRepo } from "../../config/dataSource";
+import { assessmentRequestRepo, scoreRepo, userRepo, AuditRepo, skillRepo } from "../../config/dataSource";
 import {  AssessmentWithHistory, LeadSkillAssessmentData, LatestScore } from "../../types/services";
 import { AssessmentStatus, role, AssessmentScheduleType } from "../../enum/enum";
 import { AssessmentRequestType } from "../../types/entities";
@@ -11,7 +11,6 @@ const AssessmentService = {
   initiateAssessment: async (
     hrId: string,
     targetUserId: string,
-    skillIds: number[],
     scheduledDate?: Date,
     scheduleType: AssessmentScheduleType = AssessmentScheduleType.QUARTERLY,
     deadlineDays: number = 7,
@@ -28,6 +27,14 @@ const AssessmentService = {
 
       const finalScheduledDate = scheduledDate ?? UtilityHelpers.getCurrentTime();
       const deadlineDate = UtilityHelpers.calculateDeadlineDate(finalScheduledDate, deadlineDays);
+      const skills = skillRepo.find({
+        where:{
+          positionId: targetUser.positionId
+        }
+      })
+
+      const skillIds = (await skills).map(e=>e.id);
+
 
       const assessment = assessmentRequestRepo.create({
         userId: targetUserId,
@@ -118,10 +125,10 @@ const AssessmentService = {
 
           if (!score) return null;
 
-          const previousScore = score.leadScore;
+          const previousScore = score.score;
           const newScore = skillScore.leadScore;
           
-          score.leadScore = newScore;
+          score.score = newScore;
           await scoreRepo.save(score);
 
           // Record score change for audit
@@ -216,7 +223,7 @@ const AssessmentService = {
       });
 
       const scoresSnapshot = currentScores.map(score => 
-        `${score.Skill?.name}: ${score.leadScore}/4`
+        `${score.Skill?.name}: ${score.score}/4`
       ).join(', ');
 
       // Update assessment status based on employee decision
@@ -391,7 +398,7 @@ const AssessmentService = {
 
       console.log(`DEBUG: getAssessmentWithHistory - Assessment ${assessmentId} has ${scores.length} scores`);
       scores.forEach(score => {
-        console.log(`DEBUG: Score ${score.id} - Skill ${score.skillId} (${score.Skill?.name}) - Lead Score: ${score.leadScore}`);
+        console.log(`DEBUG: Score ${score.id} - Skill ${score.skillId} (${score.Skill?.name}) - Lead Score: ${score.score}`);
       });
 
       // Enhance history entries using utility helper
@@ -581,7 +588,7 @@ const AssessmentService = {
         });
   
         // Filter scores to only include those with lead scores
-        const scoresWithLeadScore = allScores.filter(score => score.leadScore !== null);
+        const scoresWithLeadScore = allScores.filter(score => score.score !== null);
   
         // Group scores by skill and get the latest for each skill
         const latestScoresBySkill = new Map<number, any>();
@@ -595,7 +602,7 @@ const AssessmentService = {
                 assessment.requestedAt > latestScoresBySkill.get(skillId).requestedAt) {
               latestScoresBySkill.set(skillId, {
                 id: score.id,
-                lead_score: score.leadScore,
+                lead_score: score.score,
                 updated_at: score.updatedAt,
                 skill_name: score.Skill.name,
                 skill_id: skillId,

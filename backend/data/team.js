@@ -1,12 +1,10 @@
-import { teamName } from "../enum/enum";
-
 export default [
     {
         "id": 1,
-        "name": teamName.INFORIVER
+        "name": "product"
     },
     {
         "id": 2,
-        "name": teamName.VALQ
+        "name": "accounts"
     }
 ]

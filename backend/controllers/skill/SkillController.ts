@@ -3,6 +3,7 @@ import UserService from "../../services/UserService";
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import { Controller, AuthRequest } from '../../types/hapi';
 import { SkillData } from "../../types/controller";
+import { SkillType } from "../../types/entities";
 
 const SkillController: Controller = {
   createSkill: async (req: AuthRequest, h: ResponseToolkit) => {
@@ -11,14 +12,15 @@ const SkillController: Controller = {
       if (!payload.name || !payload.position) {
         throw new Error("Name and position are required");
       }
-      const SkillData: SkillData = {
+      const SkillData: SkillType = {
         name: payload.name,
+        basic: payload.basic,
         low: payload.low,
         medium: payload.medium,
-        average: payload.average,
         high: payload.high,
+        expert: payload.expert,
         createdBy: req.auth.credentials.user.id,
-        position: payload.position,
+        positionId: payload.position,
       };
       const createdSkill = await SkillService.createSkill(SkillData);
       // Handle different possible return types from the service
@@ -47,7 +49,7 @@ const SkillController: Controller = {
 
   updateSkill: async (req: Request, h: ResponseToolkit) => {
     try {
-      const updatedSkill = await SkillService.updateSkill(req.payload as SkillData);
+      const updatedSkill = await SkillService.updateSkill(req.payload as SkillType);
       return h
         .response({
           message: "Skill Updated Successfully!",

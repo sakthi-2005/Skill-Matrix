@@ -125,13 +125,13 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
             <CardHeader>
               <CardTitle className="text-lg flex items-center space-x-2">
                 <Users className="h-5 w-5" />
-                <span>Sub-Teams ({team.subTeams?.length || 0})</span>
+                <span>Sub-Teams ({team.subteam?.length || 0})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {team.subTeams && team.subTeams.length > 0 ? (
+              {team.subteam && team.subteam.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {team.subTeams.map((subTeam) => (
+                  {team.subteam.map((subTeam) => (
                     <div key={subTeam.id} className="border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium">{subTeam.name}</h4>
@@ -160,13 +160,13 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
             <CardHeader>
               <CardTitle className="text-lg flex items-center space-x-2">
                 <User className="h-5 w-5" />
-                <span>Team Members ({team.users?.length || 0})</span>
+                <span>Team Members ({team.user?.length || 0})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {team.users && team.users.length > 0 ? (
+              {team.user && team.user.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {team.users.map((user) => (
+                  {team.user.map((user) => (
                     <div key={user.id} className="border rounded-lg p-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">

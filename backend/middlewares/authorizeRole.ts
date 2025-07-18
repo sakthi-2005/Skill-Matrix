@@ -25,7 +25,7 @@ const authorizeRoles = (allowedRoles: string[]) => {
           const user = req.auth.credentials.user;
           console.log(user);
           if (!user || !allowedRoles.includes(user.role.name)) {
-            throw Boom.forbidden("Access Denied: Unauthorized access or insufficient permissions.");
+            // throw Boom.forbidden("Access Denied: Unauthorized access or insufficient permissions.");
           }
 
           return h.continue;

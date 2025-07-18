@@ -9,8 +9,7 @@ const AssessmentCycleController: Controller = {
   // HR initiates bulk assessment for all users or specific teams
   initiateBulkAssessment: async (req: AuthRequest, h: ResponseToolkit) => {
     try {
-      const { skillIds, assessmentTitle, includeTeams, scheduledDate, scheduleType, deadlineDays, comments, excludeUsers } = req.payload as {
-        skillIds: number[];
+      const {assessmentTitle, includeTeams, scheduledDate, scheduleType, deadlineDays, comments, excludeUsers } = req.payload as {
         assessmentTitle: string;
         includeTeams: string[];
         scheduledDate?: string;
@@ -34,7 +33,6 @@ const AssessmentCycleController: Controller = {
       
       const result = await AssessmentCycleService.initiateBulkAssessment(
         hrId,
-        skillIds,
         assessmentTitle,
         includeTeams,
         scheduledDate ? new Date(scheduledDate) : undefined,
