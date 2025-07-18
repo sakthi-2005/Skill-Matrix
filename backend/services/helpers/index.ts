@@ -164,7 +164,7 @@ export const DatabaseHelpers = {
         const score = scoreRepo.create({
           assessmentId,
           skillId,
-          leadScore: null
+          score: null
         });
         return await scoreRepo.save(score);
       }

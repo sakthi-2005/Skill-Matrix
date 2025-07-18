@@ -230,7 +230,6 @@ export const assessmentService = {
 
   // Bulk assessment for HR
   initiateBulkAssessment: (data: {
-    skillIds: number[];
     assessmentTitle: string;
     includeTeams: string[];
     scheduledDate?: string;

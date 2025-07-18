@@ -1,16 +1,30 @@
-import { role } from "../enum/enum";
-
 export default [
     {
         "id": 1,
-        "name": role.EMPLOYEE
+        "name": "Product Engineer"
     },
     {
         "id": 2,
-        "name": role.LEAD
+        "name": "Quality Assurance"
     },
     {
         "id": 3,
-        "name": role.HR
+        "name": "Quality Assurance Automation"
+    },
+    {
+        "id": 4,
+        "name": "COE/Product Management"
+    },
+    {
+        "id": 5,
+        "name": "product Design"
+    },
+    {
+        "id": 6,
+        "name": "Product Support"
+    },
+    {
+        "id": 7,
+        "name": "hr"
     }
 ]

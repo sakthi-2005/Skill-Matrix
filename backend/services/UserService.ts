@@ -11,7 +11,7 @@ import {
   scoreRepo,
 } from '../config/dataSource';
 import { AssessmentStatus } from '../enum/enum';
-import { PositionType, RoleType, TeamType, SubTeamType, UserType } from "../types/entities";
+import { PositionType, RoleType, TeamType, subTeamType, UserType } from "../types/entities";
 
 const UserService = {
   // General user operations
@@ -21,7 +21,7 @@ const UserService = {
       .leftJoinAndSelect("user.role", "role")
       .leftJoinAndSelect("user.position", "position")
       .leftJoinAndSelect("user.Team", "team")
-      .leftJoinAndSelect("user.SubTeam", "subteam")
+      .leftJoinAndSelect("user.subTeam", "subteam")
       .leftJoinAndSelect("user.hr", "hr")
       .leftJoinAndSelect("user.lead", "lead")
       .where("user.id = :id", { id })
@@ -50,7 +50,7 @@ const UserService = {
     }
     return await userRepo.find({
       where,
-      relations:["role","position","Team","SubTeam","lead","hr"],
+      relations:["role","position","Team","subTeam","lead","hr"],
     })
   },
 
@@ -199,7 +199,7 @@ const UserService = {
       return scores.map((score) => ({
         skillId: score.skillId,
         skillName: score.Skill.name,
-        Score: score.leadScore as number
+        Score: score.score
       }));
     } catch (error: any) {
       console.error(`Error getting recent scores for user ${userId}:`, error);
@@ -311,10 +311,10 @@ const UserService = {
     return await teamRepo.find();
   },
 
-  getAllSubTeams: async (): Promise<SubTeamType[]> => {
+  getAllSubTeams: async (): Promise<subTeamType[]> => {
     return await subTeamRepo.find({
-      where: { deletedAt: null },
-      relations: ['Team'],
+      where: { isActive: true },
+      relations: ['teams'],
       order: { name: 'ASC' }
     });
   },
