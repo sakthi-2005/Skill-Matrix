@@ -21,6 +21,7 @@ import {
   ClipboardCheck,
   Menu,
   X,
+  Settings,
 } from "lucide-react";
 import { userService } from "@/services/api";
 import { UserInfo } from "os";
@@ -144,8 +145,16 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onTabChange("profile")}>
+                  <User className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
+                {user?.role?.name === "hr" && (
+                  <DropdownMenuItem onClick={() => onTabChange("admin-dashboard")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
