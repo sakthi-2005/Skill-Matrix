@@ -8,6 +8,7 @@ import { Users, FileText, BarChart3 } from "lucide-react";
 import { TeamMember } from "@/types/teamTypes";
 import { userService,assessmentService } from "@/services/api";
 import {toast} from "../../hooks/use-toast";
+import { verifyLead } from "@/utils/helper";
 const TeamLeadDashboard = ({
   onNavigate,
 }: {
@@ -78,18 +79,11 @@ const TeamLeadDashboard = ({
 
   const fetchTeamData = async () => {
       try {
+
         let data;
-        if (user?.role?.name === "hr") {
-          // HR sees all members
-          data = await userService.getFullMatrix();
-        } else if (user?.role?.name === "lead") {
-          // Team lead sees team members
-          data = await userService.getTeamMatrix(user?.Team?.name);
-        } else {
-          // Regular users see team members
+        if(verifyLead(user.id)){
           data = await userService.getTeamMatrix(user?.Team?.name);
         }
-        console.log(data);
         setTeamMembers(data);
         fetchScoreData(data);
       } catch (err) {

@@ -36,9 +36,8 @@ const UserService = {
     console.log(filter);
 
     // Handle filtering by related entities
-    if (filter.role) {
-      const role = await roleRepo.findOneBy({ name: filter.role });
-      if (role) where.roleId = role.id;
+    if (filter.leadId) {
+      where.leadId = filter.leadId;
     }
     if (filter.position) {
       const position = await positionRepo.findOneBy({ name: filter.position });

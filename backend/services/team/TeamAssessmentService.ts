@@ -10,12 +10,8 @@ const TeamAssessmentService = {
     getTeamAssessments: async (leadId: string): Promise<AssessmentWithHistory[]> => {
     try {
       // Validate team lead
-      const leadUser = await userRepo.findOne({ 
-        where: { id: leadId },
-        relations: ["role"]
-      });
       
-      if (!leadUser || leadUser.role?.name !== role.LEAD) {
+      if (!await ValidationHelpers.validateTeamLead(leadId)) {
         throw new Error("Only team leads can access team assessments");
       }
 
@@ -87,11 +83,7 @@ const TeamAssessmentService = {
     getTeamAssessmentStatistics: async (leadId: string): Promise<any> => {
       try {
         // Validate team lead
-        const leadUser = await userRepo.findOne({ 
-          where: { id: leadId },
-          relations: ["role"]
-        });
-        if (!leadUser || leadUser.role?.name !== role.LEAD) {
+        if (!ValidationHelpers.validateTeamLead(leadId)) {
           throw new Error("Only team leads can access team statistics");
         }
   
@@ -175,11 +167,7 @@ const TeamAssessmentService = {
     getTeamMemberAssessment: async (leadId: string, targetUserId: string): Promise<AssessmentWithHistory[]> => {
       try {
         // Validate team lead
-        const leadUser = await userRepo.findOne({ 
-          where: { id: leadId },
-          relations: ["role"]
-        });
-        if (!leadUser || leadUser.role?.name !== role.LEAD) {
+        if (!await ValidationHelpers.validateTeamLead(leadId)) {
           throw new Error("Only team leads can access team member assessments");
         }
   

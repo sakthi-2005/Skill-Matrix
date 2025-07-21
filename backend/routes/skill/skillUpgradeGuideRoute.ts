@@ -1,7 +1,6 @@
 import SkillUpgradeGuideController from "../../controllers/skill/SkillUpgradeGuideController";
 import { role } from "../../enum/enum";
 import authorizeRoles from "../../middlewares/authorizeRole";
-import { ServerRegisterOptions } from "@hapi/hapi";
 
 const guideRoutes = {
   name: "skillupgrade-routes",

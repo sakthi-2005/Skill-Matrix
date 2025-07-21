@@ -7,7 +7,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { exportPDF, getAverageSkillLevel, getSkillLevelColor, getSkillScore } from "@/utils/helper";
+import { exportPDF, getAverageSkillLevel, getSkillLevelColor, getSkillScore, verifyLead } from "@/utils/helper";
 import {SkillScore,SkillMatrixData,Skill} from "../../types/matrixTypes";
 
 const SkillMatrixPage = () => {
@@ -20,9 +20,9 @@ const SkillMatrixPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const canViewAll = user?.role.name === "hr" || user?.role.name === "lead";
+  const canViewAll = user?.role.name === "hr" || verifyLead(user.id);
   const isHR = user?.role.name === "hr";
-  const isLead = user?.role.name === "lead";
+  const isLead = verifyLead(user.id);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,7 +39,7 @@ const SkillMatrixPage = () => {
         if (user.role.name === "hr") {
           // HR can see full matrix
           matrixResponse = await userService.getFullMatrix();
-        } else if (user.role.name === "lead" && user.Team?.name) {
+        } else if (verifyLead(user.id)) {
           // Lead can see their team matrix
           matrixResponse = await userService.getTeamMatrix(user.Team.name);
         } else {

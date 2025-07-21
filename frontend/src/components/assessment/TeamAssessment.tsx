@@ -26,6 +26,7 @@ import PendingActionsTab from "./PendingActionsTab";
 import WriteAssessmentModal from "./WriteAssessmentModal";
 import AssessmentHistoryModal from "./AssessmentHistoryModal";
 import SkillScoresModal from "./SkillScoresModal";
+import { verifyLead } from "@/utils/helper";
 
 interface Skill {
   id: number;
@@ -66,9 +67,7 @@ const TeamAssessment = () => {
     const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
     useEffect(() => {
-        if (user?.role?.name === "lead") {
-            loadTeamData();
-        }
+        loadTeamData();
     }, [user]);
 
     const handleViewSkillDescription = (skill: Skill) => {
@@ -83,6 +82,7 @@ const TeamAssessment = () => {
 
 
     const loadTeamData = async () => {
+        console.log('loading...');
         setIsLoading(true);
         try {
             const [membersRes, assessmentsRes, pendingRes, statsRes, skillsRes] = await Promise.all([
