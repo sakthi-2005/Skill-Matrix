@@ -224,7 +224,7 @@ const AssessmentService = {
 
       const scoresSnapshot = currentScores.map(score => 
 
-        `${score.Skill?.name}: ${score.leadScore}/5`
+        `${score.Skill?.name}: ${score.score}/5`
 
       ).join(', ');
 
