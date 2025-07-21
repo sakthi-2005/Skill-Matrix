@@ -10,18 +10,24 @@ export const ValidationHelpers = {
       relations: ["role"]
     });
     if (!user || user.role?.name !== role.HR) {
-      throw new Error("Only HR can perform this operation");
+      // console.log('not hr',user);
+      // throw new Error("Only HR can perform this operation");
+      return null;
     }
     return user;
   },
 
   validateTeamLead: async (userId: string) => {
+    const check_user = await userRepo.findOne({ 
+      where: { leadId: userId },
+    });
     const user = await userRepo.findOne({ 
       where: { id: userId },
       relations: ["role"]
     });
-    if (!user || user.role?.name !== role.LEAD) {
-      throw new Error("Only team leads can perform this operation");
+    if (!check_user) {
+      // throw new Error("Only team leads can perform this operation");
+      return null;
     }
     return user;
   },

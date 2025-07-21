@@ -1,7 +1,6 @@
 import SkillUpdateRequestController from "../../controllers/skill/SkillUpdateRequestController";
 import { role } from "../../enum/enum";
 import authorizeRoles from "../../middlewares/authorizeRole";
-import { ServerRegisterOptions } from "@hapi/hapi";
 
 const requestRoutes = {
   name: "request-routes",

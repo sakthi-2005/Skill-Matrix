@@ -23,6 +23,7 @@ import {
   DetailedScore,
   AuditEntry,
 } from "@/types/assessmentTypes";
+import { verifyLead } from "@/utils/helper";
 
 const EmployeeAssessmentReview: React.FC = () => {
   const { user } = useAuth();
@@ -36,9 +37,7 @@ const EmployeeAssessmentReview: React.FC = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   useEffect(() => {
-    if (user?.role?.name === "employee") {
-      loadEmployeeAssessments();
-    }
+    loadEmployeeAssessments();
   }, [user]);
 
   const loadEmployeeAssessments = async () => {
