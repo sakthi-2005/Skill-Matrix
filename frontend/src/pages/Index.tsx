@@ -19,6 +19,7 @@ import TeamAssessment from "@/components/assessment/TeamAssessment";
 import EmployeeAssessmentReview from "@/components/assessment/EmployeeAssessmentReview";
 import HRAssessmentManagement from "@/components/assessment/HRAssessmentManagement";
 import HRAdminDashboard from "@/components/admin/HRAdminDashboard";
+import { verifyLead } from "@/utils/helper";
 
 
 const Index = () => {
@@ -26,8 +27,18 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const location = useLocation();
   const navigate = useNavigate();
+  const [Dashboard,setDashboard] = useState(<></>);
+
+
+  // useEffect(()=>{
+
+  // },[])
 
   useEffect(() => {
+    async function dashboard(){
+      await renderDashboard();
+    }
+    dashboard();
     const path = location.pathname;
     if (path === "/") {
       setActiveTab("dashboard");
@@ -79,16 +90,16 @@ const Index = () => {
     return <OAuthLoginForm />;
   }
   
-  const renderDashboard = () => {
-    switch (user?.role.name) {
-      case "employee":
-        return <EmployeeDashboard onNavigate={handleNavigate} />;
-      case "lead":
-        return <TeamLeadDashboard onNavigate={handleNavigate} />;
-      case "hr":
-        return <HRDashboard onNavigate={handleNavigate} />;
-      default:
-        return <HRDashboard onNavigate={handleNavigate} />;
+  const renderDashboard = async() => {
+    
+    if(user.role.name == 'hr'){
+      setDashboard(<HRDashboard onNavigate={handleNavigate} />);
+    }
+    else if(await verifyLead(user.id)){
+      setDashboard(<TeamLeadDashboard onNavigate={handleNavigate} />);
+    }
+    else{
+      setDashboard(<EmployeeDashboard onNavigate={handleNavigate} />);
     }
   };
 
@@ -142,7 +153,7 @@ const Index = () => {
       <TopNavigation activeTab={activeTab} onTabChange={handleNavigate} />
       <main className="p-8">
         <Routes>
-          <Route path="/" element={renderDashboard()} />
+          <Route path="/" element={Dashboard} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/team-overview" element={<TeamOverviewPage />} />
           <Route path="/skill-criteria" element={<SkillCriteriaPage />} />

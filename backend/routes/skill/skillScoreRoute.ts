@@ -18,21 +18,21 @@ const skillScoreRoutes = {
       {
         method: "GET",
         path: "/create",
-        // options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
+        options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
         handler: SkillTargetController.createTarget,
       },
 
       {
         method: "GET",
         path: "/skillTarget",
-        // options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
+        options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
         handler: SkillTargetController.getTarget,
       },
 
       {
         method: "DELETE",
         path: "/create",
-        // options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
+        options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
         handler: SkillTargetController.createTarget,
       },
 

@@ -16,7 +16,6 @@ const userRoutes = {
       {
         method: "POST",
         path: "/all-users", // has filters role, position
-        options: authorizeRoles([role.LEAD,role.HR]),
         handler: UserController.getAllUsers,
       },
       {

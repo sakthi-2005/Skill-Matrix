@@ -224,7 +224,7 @@ const AssessmentService = {
 
       const scoresSnapshot = currentScores.map(score => 
 
-        `${score.Skill?.name}: ${score.leadScore}/5`
+        `${score.Skill?.name}: ${score.score}/5`
 
       ).join(', ');
 
@@ -479,29 +479,46 @@ const AssessmentService = {
     try {
       let whereConditions: any = {};
       
-      switch (userRole) {
-        case role.HR:
-          // HR can see all assessments
-          whereConditions = {};
-          break;
-        case role.LEAD:
-          // Lead can see assessments for their team members
-          const teamMembers = await userRepo.find({
+      // switch (userRole) {
+      //   case role.HR:
+      //     // HR can see all assessments
+      //     whereConditions = {};
+      //     break;
+      //   case role.LEAD:
+      //     // Lead can see assessments for their team members
+      //     const teamMembers = await userRepo.find({
+      //       where: { leadId: userId }
+      //     });
+      //     const teamMemberIds = teamMembers.map(member => member.id);
+      //     whereConditions = {
+      //       userId: In(teamMemberIds)
+      //     };
+      //     break;
+      //   case role.EMPLOYEE:
+      //     // Employee can only see their own assessments
+      //     whereConditions = {
+      //       userId: userId
+      //     };
+      //     break;
+      //   default:
+      //     throw new Error("Invalid user role");
+      // }
+      if(await ValidationHelpers.validateHRUser(userId)){
+        whereConditions = {};
+      }
+      else if(await ValidationHelpers.validateTeamLead(userId)){
+        const teamMembers = await userRepo.find({
             where: { leadId: userId }
           });
           const teamMemberIds = teamMembers.map(member => member.id);
           whereConditions = {
             userId: In(teamMemberIds)
           };
-          break;
-        case role.EMPLOYEE:
-          // Employee can only see their own assessments
+      }
+      else{
           whereConditions = {
             userId: userId
           };
-          break;
-        default:
-          throw new Error("Invalid user role");
       }
 
       const assessments = await assessmentRequestRepo.find({

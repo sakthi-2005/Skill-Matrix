@@ -94,7 +94,7 @@ export const authService = {
 export const userService = {
   getProfile: () => apiRequest("/users/profile"),
 
-  getAllUsers: (filters: { role?: string; position?: string } = {}) =>
+  getAllUsers: (filters: { role?: string; position?: string; leadId?: string } = {}) =>
     apiRequest("/users/all-users", { method: "POST", body: filters }),
 
   getTeamMatrix: (teamName: string) =>

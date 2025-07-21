@@ -28,6 +28,7 @@ const PendingActionsTab: React.FC<Props> = ({
   getStatusIcon,
   formatDate,
 }) => {
+  console.log(pendingAssessments);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -48,6 +49,8 @@ const PendingActionsTab: React.FC<Props> = ({
   const newAssessments = leadWritingAssessments.filter(
     (a) => !a.wasRecentlyRejected
   );
+
+  console.log(leadWritingAssessments,rejectedAssessments,newAssessments);
 
   return (
     <div className="space-y-6">

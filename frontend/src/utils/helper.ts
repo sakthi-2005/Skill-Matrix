@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import {SkillMatrixData,Skill} from "../types/matrixTypes";
+import { userService } from '../services/api';
   const getRoleColor = (role: string) => {
     switch (role) {
       case "hr":
@@ -13,6 +14,11 @@ import {SkillMatrixData,Skill} from "../types/matrixTypes";
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  const verifyLead = async(id:string)=>{
+    const users = await userService.getAllUsers({leadId:id});
+    return users.length != 0
+  }
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
@@ -47,7 +53,7 @@ import {SkillMatrixData,Skill} from "../types/matrixTypes";
     return total / employee.mostRecentAssessmentScores.length;
   };
 
-  const exportPDF = ( filteredData: SkillMatrixData[], relevantSkills:Skill[], searchTerm:string, isHR:boolean, isLead:boolean, selectedTeam:string, selectedPosition:string ) => {
+  const exportPDF = ( filteredData: SkillMatrixData[], relevantSkills:Skill[], searchTerm:string, isHR:boolean, isLead:Promise<boolean>, selectedTeam:string, selectedPosition:string ) => {
       const doc = new jsPDF("l", "mm", "a4"); 
   
       // Add title
@@ -179,4 +185,4 @@ import {SkillMatrixData,Skill} from "../types/matrixTypes";
     return "bg-gray-100 text-gray-600";
   };
 
-    export { getRoleColor, getRoleDisplayName, exportPDF, getSkillScore, getAverageSkillLevel, getSkillLevelColor };
+    export { getRoleColor, getRoleDisplayName, exportPDF, getSkillScore, getAverageSkillLevel, getSkillLevelColor, verifyLead };

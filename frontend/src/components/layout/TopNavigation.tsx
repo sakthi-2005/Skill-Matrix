@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { userService } from "@/services/api";
 import { UserInfo } from "os";
+import { verifyLead } from "@/utils/helper";
 
 interface TopNavigationProps {
   activeTab: string;
@@ -35,16 +36,18 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [useNavigation,setUseNavigation] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const profileData = await userService.getProfile();
       setUserProfile(profileData);
+      await getMenuItems();
     };
     fetchData();
   }, []);
 
-  const getMenuItems = () => {
+  const getMenuItems = async() => {
     const baseItems = [
       { id: "dashboard", label: "Dashboard", icon: BarChart3 },
       { id: "skill-criteria", label: "Skill Criteria", icon: Target },
@@ -58,7 +61,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
         { id: "skill-matrix", label: "Skill Matrix", icon: Grid3X3 },
         { id: "hr-assessment-management", label: "HR Assessment", icon: ClipboardCheck }
       );
-    } else if (user?.role?.name === "lead") {
+    } else if (await verifyLead(user.id)) {
       baseItems.splice(
         2,
         0,
@@ -67,7 +70,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
         { id: "team-assessment", label: "Team Assessment", icon: ClipboardCheck },
         { id: "skill-upgrade", label: "Upgrade Guide", icon: TrendingUp }
       );
-    } else if (user?.role?.name === "employee") {
+    } else if (!await verifyLead(user.id)) {
       baseItems.splice(
         2,
         0,
@@ -76,7 +79,8 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
       );
     }
 
-    return baseItems;
+    // return baseItems;
+    setUseNavigation(baseItems);
   };
 
 
@@ -93,7 +97,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
             {/* Desktop Navigation */}
             <div className="hidden md:block ml-8">
               <nav className="flex space-x-1">
-                {getMenuItems().map((item) => {
+                {useNavigation.map((item) => {
                   const Icon = item.icon;
                   return (
                     <Button
@@ -181,7 +185,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t bg-white">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {getMenuItems().map((item) => {
+              {useNavigation.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Button

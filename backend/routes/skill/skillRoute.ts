@@ -1,7 +1,6 @@
 import SkillController from "../../controllers/skill/SkillController";
 import { role } from "../../enum/enum";
 import authorizeRoles from "../../middlewares/authorizeRole";
-import { ServerRegisterOptions } from "@hapi/hapi";
 
 const skillRoutes = {
   name: "skill-routes",
