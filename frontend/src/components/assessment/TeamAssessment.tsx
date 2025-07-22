@@ -180,39 +180,39 @@ const TeamAssessment = () => {
         }
     };
 
-const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
-    setSelectedAssessment(assessment);
-    setSelectedTab("writeAssessment");
-    console.log("current detailedScores", assessment.detailedScores);
+    const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
+        setSelectedAssessment(assessment);
+        setSelectedTab("writeAssessment");
+        console.log("current detailedScores", assessment.detailedScores);
 
-    const initialScores: { [skillId: number]: number } = {};
+        const initialScores: { [skillId: number]: number } = {};
 
-    // Use current assessment if it has leadScores
-    assessment.detailedScores?.forEach((score) => {
-        if (score.leadScore != null) {
-            initialScores[score.skillId] = score.leadScore;
-        }
-    });
-
-    // additionally fetch latest approved scores and merge
-    const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
-
-const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
-
-    if (latestRes.success) {
-        latestRes.data.forEach((latest) => {
-            // Only set if no score yet
-            if (!initialScores[latest.skill_id]) {
-                initialScores[latest.skill_id] = latest.lead_score ?? 0;
+        // Use current assessment if it has leadScores
+        assessment.detailedScores?.forEach((score) => {
+            if (score.score != null) {
+                initialScores[score.skillId] = score.score;
             }
         });
-    }
 
-    console.log("final initialScores", initialScores);
+        // additionally fetch latest approved scores and merge
+        const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
 
-    setSkillScores(initialScores);
-    setComments("");
-};
+    const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
+
+        if (latestRes.success) {
+            latestRes.data.forEach((latest) => {
+                // Only set if no score yet
+                if (!initialScores[latest.skill_id]) {
+                    initialScores[latest.skill_id] = latest.lead_score ?? 0;
+                }
+            });
+        }
+
+        console.log("final initialScores", initialScores);
+
+        setSkillScores(initialScores);
+        setComments("");
+    };
 
 
     const handleSubmitAssessment = async () => {

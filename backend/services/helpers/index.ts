@@ -10,8 +10,6 @@ export const ValidationHelpers = {
       relations: ["role"]
     });
     if (!user || user.role?.name !== role.HR) {
-      // console.log('not hr',user);
-      // throw new Error("Only HR can perform this operation");
       return null;
     }
     return user;

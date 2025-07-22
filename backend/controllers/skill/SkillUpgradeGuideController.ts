@@ -24,8 +24,6 @@ const SkillUpgradeGuideController: Controller = {
       const newGuide = await SkillUpgradeGuideService.createGuide(payload);
       return h.response({success: true, message:"New Guide Created successfully!"}).code(201);
     } catch (err: any) {
-      console.log('hit error', err);
-      
       return h.response({ error: err.message }).code(400);
     }
   },

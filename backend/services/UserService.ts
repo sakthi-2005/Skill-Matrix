@@ -33,7 +33,6 @@ const UserService = {
 
   getAllUsers: async (filter: FilterOptions = {}): Promise<UserType[]> => {
     const where: FindOptionsWhere<UserType> = {};
-    console.log(filter);
 
     // Handle filtering by related entities
     if (filter.leadId) {

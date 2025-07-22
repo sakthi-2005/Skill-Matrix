@@ -84,9 +84,9 @@ const AssessmentHistoryModal: React.FC<Props> = ({
                   >
                     <span className="font-medium">{score.Skill?.name}</span>
                     <div className="flex items-center gap-2">
-                      {score.leadScore !== null ? (
+                      {score.score !== null ? (
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                          Lead: {score.leadScore}/5
+                          Lead: {score.score}/5
                         </span>
                       ) : (
                         <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">

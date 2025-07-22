@@ -67,11 +67,11 @@ const WriteAssessmentPanel: React.FC<Props> = ({
             const currentScore = skillScores[score.skillId] || 0;
 
             const levelDescriptions = [
-              score.Skill?.low || "Beginner",
-              score.Skill?.medium || "Intermediate",
-              score.Skill?.average || "Advanced",
+              score.Skill?.basic || "Beginner",
+              score.Skill?.low || "Intermediate",
+              score.Skill?.medium || "Advanced",
               score.Skill?.high || "Expert",
-              score.Skill?.mastery || "Master",
+              score.Skill?.expert || "Master",
             ];
 
             return (

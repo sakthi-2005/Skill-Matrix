@@ -13,7 +13,7 @@ import TeamOverviewPage from "../components/team/TeamOverviewPage";
 import SkillCriteriaPage from "../components/criteria/SkillCriteriaPage";
 import SkillMatrixPage from "../components/matrix/SkillMatrixPage";
 import SkillUpgradePage from "../components/upgrade/SkillUpgradePage";
-import SkillAssessmentPage from "../components/assessment/SkillAssessmentPage";
+// import SkillAssessmentPage from "../components/assessment/SkillAssessmentPage";
 import PendingAssessmentsPage from "../components/assessment/PendingAssessmentsPage";
 import TeamAssessment from "@/components/assessment/TeamAssessment";
 import EmployeeAssessmentReview from "@/components/assessment/EmployeeAssessmentReview";
@@ -159,7 +159,7 @@ const Index = () => {
           <Route path="/skill-criteria" element={<SkillCriteriaPage />} />
           <Route path="/skill-matrix" element={<SkillMatrixPage />} />
           <Route path="/skill-upgrade" element={<SkillUpgradePage />} />
-          <Route path="/skill-assessment" element={<SkillAssessmentPage />} />
+          {/* <Route path="/skill-assessment" element={<SkillAssessmentPage />} /> */}
           <Route path="/team-assessment" element={<TeamAssessment/>}/>
           <Route path="/employee-assessment-review" element={<EmployeeAssessmentReview/>}/>
           <Route path="/hr-assessment-management" element={<HRAssessmentManagement/>}/>

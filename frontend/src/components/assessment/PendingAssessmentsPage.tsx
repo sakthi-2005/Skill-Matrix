@@ -70,12 +70,12 @@ const PendingAssessmentsPage = () => {
     // Initialize score updates with existing lead scores if any, or self scores as default
     const initialScores: { [key: number]: number } = {};
     assessment.detailedScores.forEach((score) => {
-      if (score.leadScore) {
+      if (score.score) {
         // Use existing lead score if available
-        initialScores[score.skillId] = score.leadScore;
+        initialScores[score.skillId] = score.score;
       } else {
         // Otherwise use self score as a starting point
-        initialScores[score.skillId] = score.selfScore;
+        initialScores[score.skillId] = score.score;
       }
     });
     setScoreUpdates(initialScores);
@@ -381,7 +381,7 @@ const PendingAssessmentsPage = () => {
                                   {score.skill.name}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {getScoreBadge(score.selfScore)}
+                                  {getScoreBadge(score.score)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                   {isHR ? (
