@@ -453,12 +453,9 @@ const ReviewAssessmentModal: React.FC<{
                     <span className="font-medium">{score.Skill?.name}</span>
                     <div className="flex items-center gap-2">
                       <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                        {score.leadScore}/5
+                        {score.score}/5
                       </span>
                     </div>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-500">
-                    1: Low | 2: Medium | 3: Average | 4: High
                   </div>
                 </div>
               ))}
@@ -582,12 +579,12 @@ const AssessmentHistoryModal: React.FC<{
                   <div key={score.skillId} className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
                     <span className="font-medium">{score.Skill?.name}</span>
                     <div className="flex items-center gap-2">
-                      {score.leadScore !== null && (
+                      {score.score !== null && (
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                          Lead: {score.leadScore}/5
+                          Lead: {score.score}/5
                         </span>
                       )}
-                      {score.leadScore === null && (
+                      {score.score === null && (
                         <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">
                           Not assessed
                         </span>

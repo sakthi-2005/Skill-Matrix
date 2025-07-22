@@ -118,11 +118,16 @@ export interface DetailedScore {
   id: number;
   assessmentId: number;
   skillId: number;
-  leadScore: number | null;
+  score: number | null;
   updatedAt: string;
   Skill: {
     id: number;
     name: string;
+    basic: string;
+    low: string;
+    medium: string;
+    high: string;
+    expert: string;
   };
 }
 

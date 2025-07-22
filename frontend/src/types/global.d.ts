@@ -126,8 +126,7 @@ declare global {
   interface Score extends BaseEntity {
     assessmentId: number;
     skillId: number;
-    selfScore?: number;
-    leadScore?: number;
+    score?: number;
     updatedAt: string;
 
     // Relations

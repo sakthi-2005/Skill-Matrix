@@ -27,8 +27,7 @@ export interface TeamMember {
 
 export interface SkillScore {
   id: number;
-  self_score: number;
-  lead_score: number;
+  score: number;
   updated_at: string;
   skill_name: string;
   skill_id: number;

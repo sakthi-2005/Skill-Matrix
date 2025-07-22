@@ -25,16 +25,13 @@ const authorizeRoles = (allowedRoles: string[]) => {
       {
         method: async(req: AuthenticatedRequest, h: ResponseToolkit) => {
           const user = req.auth.credentials.user;
-          // console.log('entered',user);
 
           if(!user){
-            console.log('user.name');
             throw Boom.forbidden("Access Denied: Unauthorized access");
           }
 
           const lead = await ValidationHelpers.validateTeamLead(user.id);
           const hr = await ValidationHelpers.validateHRUser(user.id);
-          // let hr;
 
           if(lead && allowedRoles.includes('lead')){
             return h.continue;
@@ -45,7 +42,6 @@ const authorizeRoles = (allowedRoles: string[]) => {
           if(!lead && !hr && (allowedRoles.length == 0 || allowedRoles.includes('employee'))){
             return h.continue
           }
-          console.log('not allowed',lead,hr,allowedRoles);
           throw Boom.forbidden("Access Denied: insufficient permissions.");
 
         },

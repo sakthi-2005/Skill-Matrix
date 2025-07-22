@@ -92,7 +92,7 @@ const SkillService = {
     try {
       const skills = await skillRepo
         .createQueryBuilder("skill")
-        .where(":position", { position })
+        .where({ positionId: position })
         .orderBy("skill.id", "ASC")
         .getMany();
 

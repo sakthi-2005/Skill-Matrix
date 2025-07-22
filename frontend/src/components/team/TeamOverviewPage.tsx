@@ -30,6 +30,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import{TeamMember,SkillScore,SkillModalData} from "../../types/teamTypes";
+import { verifyLead } from "@/utils/helper";
 
 const TeamOverviewPage = () => {
   const { user } = useAuth();
@@ -273,7 +274,7 @@ const TeamOverviewPage = () => {
       if (user?.role?.name === "hr") {
         // HR sees all members
         data = await userService.getFullMatrix();
-      } else if (user?.role?.name === "lead") {
+      } else if (verifyLead(user.id)) {
         // Team lead sees team members
         data = await userService.getTeamMatrix(user?.Team?.name);
       } else {
@@ -574,7 +575,7 @@ const TeamOverviewPage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Building2 className="h-4 w-4 text-gray-400" />
-                    <span>{member.position.name}</span>
+                    <span>{member.position?.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-gray-400" />
@@ -641,10 +642,10 @@ const TeamOverviewPage = () => {
                         <h3 className="font-medium">{skill.skill_name}</h3>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSkillLevelColor(
-                            skill.lead_score
+                            skill.score
                           )}`}
                         >
-                          {skill.lead_score}/5
+                          {skill.score}/5
                         </span>
                       </div>
 
@@ -653,7 +654,7 @@ const TeamOverviewPage = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Lead Score:</span>
                           <span className="font-medium">
-                            {skill.lead_score}/5
+                            {skill.score}/5
                           </span>
                         </div>
                         <div className="flex justify-between">

@@ -1485,7 +1485,7 @@ const HRReviewModal: React.FC<{
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{score.Skill?.name}</span>
                     <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                      {score.leadScore}/5
+                      {score.score}/5
                     </span>
                   </div>
                 </div>
@@ -1655,9 +1655,9 @@ const UserHistoryModal: React.FC<{
                         {assessment.detailedScores.map((score: DetailedScore) => (
                           <div key={score.skillId} className="flex items-center justify-between text-sm bg-gray-50 rounded p-2">
                             <span className="text-gray-700">{score.Skill?.name}</span>
-                            {score.leadScore !== null ? (
+                            {score.score !== null ? (
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                                {score.leadScore}/5
+                                {score.score}/5
                               </span>
                             ) : (
                               <span className="text-gray-400 text-xs">Not scored</span>

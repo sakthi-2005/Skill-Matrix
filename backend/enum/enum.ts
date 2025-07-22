@@ -80,7 +80,7 @@ export const TIME_CONSTANTS = {
   THIRTY_DAYS_MS: 30 * 24 * 60 * 60 * 1000,
   ONE_DAY_MS: 24 * 60 * 60 * 1000,
   SCORE_MIN: 1,
-  SCORE_MAX: 4,
+  SCORE_MAX: 5,
   MIN_DEADLINE_DAYS: 1,
   MAX_DEADLINE_DAYS: 30
 } as const;
