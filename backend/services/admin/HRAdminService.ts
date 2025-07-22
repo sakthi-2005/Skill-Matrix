@@ -246,7 +246,6 @@ export const HRAdminService = {
         order: { createdAt: "DESC" },
       });
     } catch (error) {
-      console.log("subTeam error",error)
       throw Boom.internal("Failed to fetch sub-teams");
     }
   },
@@ -386,7 +385,6 @@ export const HRAdminService = {
         order: { createdAt: "DESC" },
       });
     } catch (error) {
-      console.log(error)
       throw Boom.internal("Failed to fetch positions");
     }
   },

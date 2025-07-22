@@ -12,12 +12,12 @@ export default [
         "teamId": 2
     },
     {
-        "id": 1,
+        "id": 3,
         "name": "powerTable",
         "teamId": 2
     },
     {
-        "id": 2,
+        "id": 4,
         "name": "charts",
         "teamId":1
     }

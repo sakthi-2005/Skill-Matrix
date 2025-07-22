@@ -24,7 +24,6 @@ export const HRAdminController = {
   },
 
   async getAllTeams(request: Request, h: ResponseToolkit){
-    console.log('allTeams')
     try {
       const includeDeleted = request.query.includeDeleted === 'true';
       const teams = await HRAdminService.getAllTeams(includeDeleted);
@@ -34,7 +33,6 @@ export const HRAdminController = {
         data: teams,
       }).code(HTTP_STATUS.OK);
     } catch (error) {
-      console.log('allTeams error');
       if (error.isBoom) {
         throw error;
       }
