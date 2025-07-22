@@ -224,8 +224,14 @@ const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(us
                 skillId: score.skillId,
                 leadScore: skillScores[score.skillId] || 1,
             }));
+            const payload={
+                assessmentId:selectedAssessment.id,
+                skills:skillAssessments,
+                comments
+            };
+            console.log("Submitting payload:",payload);
 
-            const response = await assessmentService.writeLeadAssessment(
+            const response = await assessmentService.writeLeadAssessment(                
                 selectedAssessment.id,
                 skillAssessments,
                 comments
@@ -237,6 +243,9 @@ const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(us
                     description: "Assessment submitted successfully",
                 });
                 loadTeamData(); // Refresh data
+
+                setSelectedTab("pending");
+                setSelectedAssessment(null);
             }
         } catch (error) {
             console.error("Error submitting assessment:", error);

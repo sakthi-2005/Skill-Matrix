@@ -4,8 +4,8 @@ export default [
     "userId": "LMT20001",
     "name": "Malini Narayanan",
     "email": "malini@lumel.com",
-    "roleId": 3,
-    "positionId": 4,
+    "roleId": 7,
+    "positionId": null,
     "teamId": null,
     "leadId": null,
     "hrId": null
@@ -15,8 +15,8 @@ export default [
   "userId": "LMT20002",
   "name": "Neeraja",
   "email": "neeraja@lumel.com",
-  "roleId": 3,
-  "positionId": 4,
+  "roleId": 7,
+  "positionId": null,
   "teamId": null,
   "leadId": null
 },
@@ -25,9 +25,9 @@ export default [
     "userId": "LMT20601",
     "name": "Srikanth",
     "email": "srikanth@lumel.com",
-    "roleId": 2,
-    "positionId": 3,
-    "teamId": 2,
+    "roleId": 1,
+    "positionId": 6,
+    "teamId": 1,
     "leadId": null,
     "hrId": null
   },
@@ -37,7 +37,7 @@ export default [
     "name": "Murugan",
     "email": "murugan@lumel.com",
     "roleId": 2,
-    "positionId": 1,
+    "positionId": 12,
     "teamId": 2,
     "leadId": 3,
     "hrId": 1
@@ -47,8 +47,8 @@ export default [
     "userId": "LMT20501",
     "name": "Kesava Pradha",
     "email": "kesava@lumel.com",
-    "roleId": 2,
-    "positionId": 1,
+    "roleId": 1,
+    "positionId": 4,
     "teamId": 1,
     "leadId": null,
     "hrId": 1
@@ -59,10 +59,10 @@ export default [
     "name": "Arul Murugan",
     "email": "arul@lumel.com",
     "roleId": 1,
-    "positionId": 1,
-    "teamId": 2,
-    "leadId": 4,
-    "hrId": 2
+    "positionId": 2,
+    "teamId": 1,
+    "leadId": 5,
+    "hrId": 1
   },
   {
     "id":7,
@@ -71,8 +71,8 @@ export default [
     "email": "ajay@lumel.com",
     "roleId": 1,
     "positionId": 1,
-    "teamId": 2,
-    "leadId": 4,
+    "teamId": 1,
+    "leadId": 5,
     "hrId": 1
   },
   {
@@ -82,7 +82,7 @@ export default [
     "email": "abishek@lumel.com",
     "roleId": 1,
     "positionId": 2,
-    "teamId": 2,
+    "teamId": 1,
     "leadId": 4,
     "hrId": 2
   },
@@ -93,8 +93,8 @@ export default [
     "email": "reshma@lumel.com",
     "roleId": 1,
     "positionId": 3,
-    "teamId": 2,
-    "leadId": 4,
+    "teamId": 1,
+    "leadId": 5,
     "hrId": 1
   },
   {
@@ -106,7 +106,7 @@ export default [
     "positionId": 1,
     "teamId": 1,
     "leadId": 5,
-    "hrId": 2
+    "hrId": 1
   },
   {
     "id":11,
@@ -136,7 +136,7 @@ export default [
     "name": "Vimal Kanth",
     "email": "vimal@lumel.com",
     "roleId": 1,
-    "positionId": 2,
+    "positionId": 4,
     "teamId": 1,
     "leadId": 5,
     "hrId": 1
@@ -148,8 +148,8 @@ export default [
     "name": "Srinidhi",
     "email": "srinidhi@lumel.com",
     "roleId": 1,
-    "positionId": 3,
-    "teamId": 2,
+    "positionId": 5,
+    "teamId": 1,
     "leadId": 5,
     "hrId": 1
   },
@@ -158,32 +158,32 @@ export default [
     "userId": "LMT20507",
     "name": "HARISH K",
     "email": "harishk@lumel.com",
-    "roleId": 3,
-    "positionId": 4,
-    "teamId": null,
-    "leadId": null,
-    "hrId": null
+    "roleId": 1,
+    "positionId": 3,
+    "teamId": 1,
+    "leadId": 4,
+    "hrId": 1
   },
   {
     "id": 16,
     "userId": "LMT20508",
     "name": "Sakthikumar Anbazhagan",
     "email": "SakthikumarA@lumel.com",
-    "roleId": 7,
-    "positionId": null,
-    "teamId": null,
-    "leadId": null,
-    "hrId": null
+    "roleId": 1,
+    "positionId":6,
+    "teamId": 1,
+    "leadId": 3,
+    "hrId": 1
   },
   {
     "id": 17,
     "userId": "LMT20509",
     "name": "Sindhuja Sanmugam",
     "email": "sindhujas@lumel.com",
-    "roleId": 2,
-    "positionId": 1,
-    "teamId": 1,
+    "roleId": 7,
+    "positionId": null,
+    "teamId": null,
     "leadId": null,
-    "hrId": 1
+    "hrId": null
   }
 ]

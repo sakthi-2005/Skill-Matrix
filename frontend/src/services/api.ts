@@ -187,10 +187,10 @@ export const assessmentService = {
     comments?: string;
   }) => apiRequest("/assess/initiate", { method: "POST", body: data }),
 
-  writeLeadAssessment: (assessmentId: number, skillScores: Array<{ skillId: number; leadScore: number }>, comments?: string) => 
+  writeLeadAssessment: (assessmentId: number, skills: Array<{ skillId: number; leadScore: number }>, comments?: string) => 
     apiRequest(`/assess/lead-assessment/${assessmentId}`, { 
       method: "POST", 
-      body: { skillScores, comments } 
+      body: { skills, comments } 
     }),
 
   employeeReviewAssessment: (assessmentId: number, data: {

@@ -574,11 +574,11 @@ const TeamOverviewPage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Building2 className="h-4 w-4 text-gray-400" />
-                    <span>{member.position.name}</span>
+                    <span>{member.position?.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-gray-400" />
-                    <span>{member.Team?.name}</span>
+                    <span>{member.Team?.name }</span>
                   </div>
                   {member.email && (
                     <div className="flex items-center gap-2 text-sm">
