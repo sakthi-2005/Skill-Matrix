@@ -5,7 +5,7 @@ export default [
     "name": "Malini Narayanan",
     "email": "malini@lumel.com",
     "roleId": 3,
-    "positionId": 4,
+    "positionId": 14,
     "teamId": null,
     "leadId": null,
     "hrId": null
@@ -16,7 +16,7 @@ export default [
   "name": "Neeraja",
   "email": "neeraja@lumel.com",
   "roleId": 3,
-  "positionId": 4,
+  "positionId": 14,
   "teamId": null,
   "leadId": null
 },
@@ -26,7 +26,7 @@ export default [
     "name": "Srikanth",
     "email": "srikanth@lumel.com",
     "roleId": 2,
-    "positionId": 3,
+    "positionId": 8,
     "teamId": 2,
     "leadId": null,
     "hrId": null
@@ -37,7 +37,7 @@ export default [
     "name": "Murugan",
     "email": "murugan@lumel.com",
     "roleId": 2,
-    "positionId": 1,
+    "positionId": 7,
     "teamId": 2,
     "leadId": 3,
     "hrId": 1
@@ -48,7 +48,7 @@ export default [
     "name": "Kesava Pradha",
     "email": "kesava@lumel.com",
     "roleId": 2,
-    "positionId": 1,
+    "positionId": 10,
     "teamId": 1,
     "leadId": null,
     "hrId": 1
@@ -159,7 +159,7 @@ export default [
     "name": "HARISH K",
     "email": "harishk@lumel.com",
     "roleId": 3,
-    "positionId": 4,
+    "positionId": 15,
     "teamId": null,
     "leadId": null,
     "hrId": null
@@ -181,7 +181,7 @@ export default [
     "name": "Sindhuja Sanmugam",
     "email": "sindhujas@lumel.com",
     "roleId": 2,
-    "positionId": 1,
+    "positionId": 9,
     "teamId": 1,
     "leadId": null,
     "hrId": 1

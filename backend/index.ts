@@ -142,7 +142,7 @@ const init = async () => {
     },
     options: {},
     routes: {
-      prefix: "/api",
+      prefix: "/api/admin",
     },
   });
 

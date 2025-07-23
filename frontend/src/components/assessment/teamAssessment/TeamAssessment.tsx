@@ -13,20 +13,19 @@ import {
 } from "lucide-react";
 import { userService, assessmentService, skillService } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
-import { TeamMember, SkillModalData } from "../../types/teamTypes";
+import { TeamMember, SkillModalData } from "../../../types/teamTypes";
 import { 
   AssessmentWithHistory, 
   AssessmentStatus, 
   LeadSkillAssessment, 
   TeamStatistics,
   DetailedScore 
-} from "../../types/assessmentTypes";
+} from "../../../types/assessmentTypes";
 import AllAssessmentsTab from "./AllAssessmentsTab";
 import PendingActionsTab from "./PendingActionsTab";
 import WriteAssessmentModal from "./WriteAssessmentModal";
 import AssessmentHistoryModal from "./AssessmentHistoryModal";
 import SkillScoresModal from "./SkillScoresModal";
-import { verifyLead } from "@/utils/helper";
 
 interface Skill {
   id: number;

@@ -259,10 +259,10 @@ const ProfilePage = () => {
                         </div>
                         <div className="flex flex-col items-end">
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                            Level {skill.lead_score}/5
+                            Level {skill.score}/5
                           </span>
                           {skill.targetLevel &&
-                            skill.targetLevel > skill.lead_score && (
+                            skill.targetLevel > skill.score && (
                               <span className="text-xs text-gray-500 mt-1">
                                 Target: Level {skill.targetLevel}
                               </span>
@@ -280,18 +280,18 @@ const ProfilePage = () => {
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600"
                             style={{
-                              width: `${(skill.lead_score / 4) * 100}%`,
+                              width: `${(skill.score / 5) * 100}%`,
                             }}
                           ></div>
                         </div>
 
                         {/* Level Markers */}
                         <div className="flex justify-between px-0.5 mt-1">
-                          {[1, 2, 3, 4].map((level) => (
+                          {[1, 2, 3, 4, 5].map((level) => (
                             <div
                               key={level}
                               className={`w-4 h-4 rounded-full border-2 ${
-                                level <= skill.lead_score
+                                level <= skill.score
                                   ? "border-blue-500 bg-blue-50"
                                   : "border-gray-200 bg-gray-50"
                               }`}

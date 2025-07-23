@@ -60,7 +60,7 @@ class AdminService {
   // ============ TEAMS ============
 
   async createTeam(data: CreateTeamRequest): Promise<ApiResponse<Team>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/teams`, {
+    const response = await fetch(`${API_BASE_URL}/admin/teams`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -70,7 +70,7 @@ class AdminService {
 
   async getAllTeams(includeDeleted: boolean = false): Promise<ApiResponse<Team[]>> {
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/teams?includeDeleted=${includeDeleted}`,
+      `${API_BASE_URL}/admin/teams?includeDeleted=${includeDeleted}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -81,7 +81,7 @@ class AdminService {
 
   async getTeamById(id: number, includeDeleted: boolean = false): Promise<ApiResponse<Team>> {
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/teams/${id}?includeDeleted=${includeDeleted}`,
+      `${API_BASE_URL}/admin/teams/${id}?includeDeleted=${includeDeleted}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -91,7 +91,7 @@ class AdminService {
   }
 
   async updateTeam(id: number, data: UpdateTeamRequest): Promise<ApiResponse<Team>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/teams/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -100,7 +100,7 @@ class AdminService {
   }
 
   async deleteTeam(id: number): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/teams/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -108,7 +108,7 @@ class AdminService {
   }
 
   async restoreTeam(id: number): Promise<ApiResponse<Team>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/teams/${id}/restore`, {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}/restore`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -116,7 +116,7 @@ class AdminService {
   }
 
   async activateTeam(id: number): Promise<ApiResponse<Team>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/teams/${id}/activate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}/activate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -124,7 +124,7 @@ class AdminService {
   }
 
   async deactivateTeam(id: number): Promise<ApiResponse<Team>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/teams/${id}/deactivate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}/deactivate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -134,7 +134,7 @@ class AdminService {
   // ============ SUB-TEAMS ============
 
   async createSubTeam(data: CreateSubTeamRequest): Promise<ApiResponse<SubTeam>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams`, {
+    const response = await fetch(`${API_BASE_URL}/admin/sub-teams`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -151,7 +151,7 @@ class AdminService {
     }
 
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/sub-teams?${params.toString()}`,
+      `${API_BASE_URL}/admin/sub-teams?${params.toString()}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -162,7 +162,7 @@ class AdminService {
 
   async getSubTeamById(id: number, includeDeleted: boolean = false): Promise<ApiResponse<SubTeam>> {
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/sub-teams/${id}?includeDeleted=${includeDeleted}`,
+      `${API_BASE_URL}/admin/sub-teams/${id}?includeDeleted=${includeDeleted}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -172,7 +172,7 @@ class AdminService {
   }
 
   async updateSubTeam(id: number, data: UpdateSubTeamRequest): Promise<ApiResponse<SubTeam>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/sub-teams/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -181,7 +181,7 @@ class AdminService {
   }
 
   async deleteSubTeam(id: number): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/sub-teams/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -189,7 +189,7 @@ class AdminService {
   }
 
   async restoreSubTeam(id: number): Promise<ApiResponse<SubTeam>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams/${id}/restore`, {
+    const response = await fetch(`${API_BASE_URL}/admin/sub-teams/${id}/restore`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -197,7 +197,7 @@ class AdminService {
   }
 
   async activateSubTeam(id: number): Promise<ApiResponse<SubTeam>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams/${id}/activate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/sub-teams/${id}/activate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -205,7 +205,7 @@ class AdminService {
   }
 
   async deactivateSubTeam(id: number): Promise<ApiResponse<SubTeam>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/sub-teams/${id}/deactivate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/sub-teams/${id}/deactivate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -215,7 +215,7 @@ class AdminService {
   // ============ POSITIONS ============
 
   async createPosition(data: CreatePositionRequest): Promise<ApiResponse<Position>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/positions`, {
+    const response = await fetch(`${API_BASE_URL}/admin/positions`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -225,7 +225,7 @@ class AdminService {
 
   async getAllPositions(includeDeleted: boolean = false): Promise<ApiResponse<Position[]>> {
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/positions?includeDeleted=${includeDeleted}`,
+      `${API_BASE_URL}/admin/positions?includeDeleted=${includeDeleted}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -236,7 +236,7 @@ class AdminService {
 
   async getPositionById(id: number, includeDeleted: boolean = false): Promise<ApiResponse<Position>> {
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/positions/${id}?includeDeleted=${includeDeleted}`,
+      `${API_BASE_URL}/admin/positions/${id}?includeDeleted=${includeDeleted}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -246,7 +246,7 @@ class AdminService {
   }
 
   async updatePosition(id: number, data: UpdatePositionRequest): Promise<ApiResponse<Position>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/positions/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/positions/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -255,7 +255,7 @@ class AdminService {
   }
 
   async deletePosition(id: number): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/positions/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/positions/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -263,7 +263,7 @@ class AdminService {
   }
 
   async restorePosition(id: number): Promise<ApiResponse<Position>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/positions/${id}/restore`, {
+    const response = await fetch(`${API_BASE_URL}/admin/positions/${id}/restore`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -271,7 +271,7 @@ class AdminService {
   }
 
   async activatePosition(id: number): Promise<ApiResponse<Position>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/positions/${id}/activate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/positions/${id}/activate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -279,7 +279,7 @@ class AdminService {
   }
 
   async deactivatePosition(id: number): Promise<ApiResponse<Position>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/positions/${id}/deactivate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/positions/${id}/deactivate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -290,7 +290,7 @@ class AdminService {
 
   async getAllUsers(includeDeleted: boolean = false): Promise<ApiResponse<any[]>> {
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/users?includeDeleted=${includeDeleted}`,
+      `${API_BASE_URL}/admin/users?includeDeleted=${includeDeleted}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -301,7 +301,7 @@ class AdminService {
 
   async getUserById(id: number, includeDeleted: boolean = false): Promise<ApiResponse<any>> {
     const response = await fetch(
-      `${API_BASE_URL}/admin/hr/users/${id}?includeDeleted=${includeDeleted}`,
+      `${API_BASE_URL}/admin/users/${id}?includeDeleted=${includeDeleted}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -311,7 +311,7 @@ class AdminService {
   }
 
   async createUser(data: any): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/users`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -320,7 +320,7 @@ class AdminService {
   }
 
   async updateUser(id: number, data: any): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -329,7 +329,7 @@ class AdminService {
   }
 
   async deleteUser(id: number): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -337,7 +337,7 @@ class AdminService {
   }
 
   async restoreUser(id: number): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}/restore`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${id}/restore`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -345,7 +345,7 @@ class AdminService {
   }
 
   async activateUser(id: number): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}/activate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${id}/activate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -353,7 +353,7 @@ class AdminService {
   }
 
   async deactivateUser(id: number): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/users/${id}/deactivate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${id}/deactivate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
@@ -363,7 +363,7 @@ class AdminService {
   // ============ ROLES ============
 
   async getAllRoles(): Promise<ApiResponse<any[]>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/roles`, {
+    const response = await fetch(`${API_BASE_URL}/admin/roles`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });
@@ -373,7 +373,7 @@ class AdminService {
   // ============ STATISTICS ============
 
   async getOrganizationStats(): Promise<ApiResponse<OrganizationStats>> {
-    const response = await fetch(`${API_BASE_URL}/admin/hr/stats`, {
+    const response = await fetch(`${API_BASE_URL}/admin/stats`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });
