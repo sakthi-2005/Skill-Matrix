@@ -1,6 +1,6 @@
 import { EntitySchema } from "typeorm";
 import { subTeamType } from "../types/entities";
-
+ 
 export const subTeam = new EntitySchema<subTeamType>({
   name: "subTeam",
   tableName: "subteams",
@@ -50,3 +50,4 @@ export const subTeam = new EntitySchema<subTeamType>({
     },
   },
 });
+ 
