@@ -97,8 +97,8 @@ export const BulkAssessmentModal: React.FC<{
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Team Selection */}
+          {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Target Teams (leave empty for all teams)
@@ -110,7 +110,7 @@ export const BulkAssessmentModal: React.FC<{
                 items={teams}
                 selected={selectedTeams}
                 setSelected={setSelectedTeams}
-              />
+              /> */}
                   {/* {teams.map((team) => (
                     <label key={team.id} className="flex items-center">
                       <input
@@ -122,9 +122,9 @@ export const BulkAssessmentModal: React.FC<{
                       {team.name}
                     </label>
                   ))} */}
-                </div>
+                {/* </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Skills Selection */}
             {/* <div>
@@ -158,7 +158,7 @@ export const BulkAssessmentModal: React.FC<{
           </div>
 
           {/* Exclude Users */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Exclude Users (Optional)
             </label>
@@ -168,7 +168,7 @@ export const BulkAssessmentModal: React.FC<{
                   items={users}
                   selected={excludedUsers}
                   setSelected={setExcludedUsers}
-                />
+                /> */}
                 {/* {users.map((user) => (
                   <label key={user.id} className="flex items-center text-sm">
                     <input
@@ -180,12 +180,12 @@ export const BulkAssessmentModal: React.FC<{
                     {user.name}
                   </label>
                 ))} */}
-              </div>
+              {/* </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Scheduled Date */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Scheduled Date (Optional)
             </label>
@@ -195,10 +195,10 @@ export const BulkAssessmentModal: React.FC<{
               onChange={(e) => setScheduledDate(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-          </div>
+          </div> */}
 
           {/* Schedule Type */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Schedule Type
             </label>
@@ -215,10 +215,10 @@ export const BulkAssessmentModal: React.FC<{
             <p className="text-sm text-gray-500 mt-1">
               Determines when the next assessment will be automatically scheduled
             </p>
-          </div>
+          </div> */}
 
           {/* Deadline Days */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Deadline (Days to Complete)
             </label>
@@ -233,10 +233,10 @@ export const BulkAssessmentModal: React.FC<{
             <p className="text-sm text-gray-500 mt-1">
               Number of days from initiation to complete the assessment (1-30 days)
             </p>
-          </div>
+          </div> */}
 
           {/* Comments */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Comments
             </label>
@@ -249,7 +249,7 @@ export const BulkAssessmentModal: React.FC<{
               required
             />
           </div>
-        </div>
+        </div>*/}
 
         <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
           <button
@@ -269,7 +269,7 @@ export const BulkAssessmentModal: React.FC<{
             )}
             {isSubmitting ? "Initiating..." : "Initiate Bulk Assessment"}
           </button>
-        </div>
+        </div> 
       </div>
     </div>
   );

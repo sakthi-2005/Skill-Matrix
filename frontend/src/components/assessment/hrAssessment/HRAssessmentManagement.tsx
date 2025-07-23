@@ -22,7 +22,7 @@ import { UserHistoryModal } from "./userHostoryModel";
 import { ScoreHistoryModal } from "./scoreHistoryModel";
 import { HRReviewModal } from "./hrReviewModel";
 import { BulkAssessmentModal } from "./bulkAssessmentModel";
-import { InitiateAssessmentModal } from "./initiateAssessmentModel";
+//import { InitiateAssessmentModal } from "./initiateAssessmentModel";
 import { PendingReviewsTab } from "./pendingReviewsTab";
 import { AssessmentsTab } from "./assessmentsTab";
 import { CyclesTab } from "./cyclesTabl";
@@ -379,7 +379,7 @@ const HRAssessmentManagement: React.FC = () => {
           <p className="text-gray-600">Manage skill assessments across the organization</p>
         </div>
         <div className="flex gap-3">
-          <button
+          {/* <button
             onClick={() => {
               if (users.length === 0 || skills.length === 0) {
                 toast({
@@ -395,7 +395,7 @@ const HRAssessmentManagement: React.FC = () => {
           >
             <UserPlus className="h-4 w-4" />
             Initiate Assessment
-          </button>
+          </button> */}
           <button
             onClick={() => setShowBulkModal(true)}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
@@ -518,7 +518,7 @@ const HRAssessmentManagement: React.FC = () => {
       </div>
 
       {/* Modals */}
-      {showInitiateModal && users.length > 0 && skills.length > 0 && (
+      {/* {showInitiateModal && users.length > 0 && skills.length > 0 && (
         <InitiateAssessmentModal
           users={users}
           skills={skills}
@@ -538,7 +538,7 @@ const HRAssessmentManagement: React.FC = () => {
           onSubmit={handleInitiateAssessment}
           onClose={() => setShowInitiateModal(false)}
         />
-      )}
+      )} */}
 
       {showBulkModal && (
         <BulkAssessmentModal

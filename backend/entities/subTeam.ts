@@ -1,9 +1,9 @@
 import { EntitySchema } from "typeorm";
-import { SubTeamType } from "../types/entities";
-
-export const SubTeam = new EntitySchema<SubTeamType>({
-  name: "SubTeam",
-  tableName: "sub_teams",
+import { subTeamType } from "../types/entities";
+ 
+export const subTeam = new EntitySchema<subTeamType>({
+  name: "subTeam",
+  tableName: "subteams",
   columns: {
     id: {
       primary: true,
@@ -12,11 +12,7 @@ export const SubTeam = new EntitySchema<SubTeamType>({
     },
     name: {
       type: "varchar",
-      length: 255,
-    },
-    description: {
-      type: "text",
-      nullable: true,
+      unique: true,
     },
     teamId: {
       type: "int",
@@ -37,14 +33,14 @@ export const SubTeam = new EntitySchema<SubTeamType>({
       updateDate: true,
       name: "updated_at",
     },
-    deletedAt: {
-      type: "timestamp",
-      nullable: true,
-      name: "deleted_at",
-    },
   },
   relations: {
-    Team: {
+    user: {
+      target: "User",
+      type: "one-to-many",
+      inverseSide: "subTeam",
+    },
+    teams: {
       target: "Team",
       type: "many-to-one",
       joinColumn: {
@@ -52,18 +48,6 @@ export const SubTeam = new EntitySchema<SubTeamType>({
         referencedColumnName: "id",
       },
     },
-    users: {
-      target: "User",
-      type: "one-to-many",
-      inverseSide: "SubTeam",
-    },
   },
-  indices: [
-    {
-      name: "IDX_SUB_TEAM_NAME_TEAM",
-      columns: ["name", "teamId"],
-      unique: true,
-      where: "deleted_at IS NULL",
-    },
-  ],
 });
+ 
