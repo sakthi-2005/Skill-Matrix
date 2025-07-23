@@ -1,6 +1,6 @@
 import React from "react";
 import { X } from "lucide-react";
-import { SkillModalData } from "../../types/teamTypes";
+import { SkillModalData } from "../../../types/teamTypes";
 
 const SkillScoresModal: React.FC<{
   data: SkillModalData;

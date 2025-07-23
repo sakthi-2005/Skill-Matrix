@@ -14,10 +14,10 @@ import SkillCriteriaPage from "../components/criteria/SkillCriteriaPage";
 import SkillMatrixPage from "../components/matrix/SkillMatrixPage";
 import SkillUpgradePage from "../components/upgrade/SkillUpgradePage";
 // import SkillAssessmentPage from "../components/assessment/SkillAssessmentPage";
-import PendingAssessmentsPage from "../components/assessment/PendingAssessmentsPage";
-import TeamAssessment from "@/components/assessment/TeamAssessment";
-import EmployeeAssessmentReview from "@/components/assessment/EmployeeAssessmentReview";
-import HRAssessmentManagement from "@/components/assessment/HRAssessmentManagement";
+// import PendingAssessmentsPage from "../components/assessment/PendingAssessmentsPage";
+import TeamAssessment from "@/components/assessment/teamAssessment/TeamAssessment";
+import EmployeeAssessmentReview from "@/components/assessment/employeeAssessment/EmployeeAssessmentReview";
+import HRAssessmentManagement from "@/components/assessment/hrAssessment/HRAssessmentManagement";
 import HRAdminDashboard from "@/components/admin/HRAdminDashboard";
 import { verifyLead } from "@/utils/helper";
 
@@ -164,10 +164,10 @@ const Index = () => {
           <Route path="/employee-assessment-review" element={<EmployeeAssessmentReview/>}/>
           <Route path="/hr-assessment-management" element={<HRAssessmentManagement/>}/>
           <Route path="/admin-dashboard" element={<HRAdminDashboard/>}/>
-          <Route
+          {/* <Route
             path="/pending-assessments"
             element={<PendingAssessmentsPage />}
-          />
+          /> */}
           <Route path="/login" element={<OAuthLoginForm />} />
           <Route path="/legacy-login" element={<LoginForm />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
