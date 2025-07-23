@@ -86,7 +86,7 @@ const EmployeeDashboard = ({
           id: skill.skillId,
           name: skill.skill_name,
           current: skill.lead_score,
-          target: 4, //(skill.target_level) Need to change this later
+          target: 5, //(skill.target_level) Need to change this later
         }))
         .slice(0, 3);
 
@@ -146,7 +146,6 @@ const EmployeeDashboard = ({
                 <div key={skill.id || index} className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">{skill.name}</span>
-                    <Badge variant="outline">{skill.name.toUpperCase()}</Badge>
                   </div>
                   <div className="space-y-1">
                     <div className="flex justify-between text-sm text-gray-600">

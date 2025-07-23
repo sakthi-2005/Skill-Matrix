@@ -42,7 +42,7 @@ const SkillCriteriaPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [ filterTerm, setFilterTerm ] = useState(0)
 
-  const canEdit = user?.role?.name === "hr";
+  //const canEdit = user?.role?.name === "hr";
 
   const toggleAccordion = (id: number) => {
     const newExpanded = new Set(expandedItems);
@@ -236,7 +236,7 @@ const SkillCriteriaPage = () => {
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
-          {canEdit && (
+          {/* {canEdit && (
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors duration-150"
@@ -244,7 +244,7 @@ const SkillCriteriaPage = () => {
               <Plus className="h-4 w-4" />
               Add Criterion
             </button>
-          )}
+          )} */}
         </div>
             </div>
         </div>
@@ -261,7 +261,7 @@ const SkillCriteriaPage = () => {
               No skill criteria found for your position. Get started by adding
               your first criterion.
             </p>
-            {canEdit && (
+            {/* {canEdit && (
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
@@ -269,7 +269,7 @@ const SkillCriteriaPage = () => {
                 <Plus className="h-5 w-5" />
                 Add First Criterion
               </button>
-            )}
+            )} */}
           </div>
         ) : (
           <div className="space-y-3">
@@ -304,7 +304,7 @@ const SkillCriteriaPage = () => {
                     </div>
                   </div>
 
-                  {canEdit && (
+                  {/* {canEdit && (
                     <div
                       className="flex items-center gap-2"
                       onClick={(e) => e.stopPropagation()}
@@ -324,7 +324,7 @@ const SkillCriteriaPage = () => {
                         Delete
                       </button>
                     </div>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Accordion Content */}

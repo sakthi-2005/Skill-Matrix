@@ -1670,55 +1670,102 @@ const UserHistoryModal: React.FC<{
 
                   {/* Show assessment history/audit trail with enhanced score tracking */}
                   {assessment.history && assessment.history.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <h5 className="text-sm font-medium text-gray-700 mb-3">Assessment Timeline & Score Changes:</h5>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {assessment.history.map((audit, auditIndex) => {
-                          const isScoreChange = audit.auditType?.includes('SCORE');
-                          const isApproval = audit.auditType?.includes('APPROVED');
-                          const isRejection = audit.auditType?.includes('REJECTED');
-                          
-                          return (
-                            <div 
-                              key={auditIndex} 
-                              className={`p-2 rounded text-xs border-l-4 ${
-                                isScoreChange ? 'border-blue-400 bg-blue-50' :
-                                isApproval ? 'border-green-400 bg-green-50' :
-                                isRejection ? 'border-red-400 bg-red-50' :
-                                'border-gray-400 bg-gray-50'
-                              }`}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className={`font-medium ${
-                                      isScoreChange ? 'text-blue-700' :
-                                      isApproval ? 'text-green-700' :
-                                      isRejection ? 'text-red-700' :
-                                      'text-gray-700'
-                                    }`}>
-                                      {audit.auditType?.replace('_', ' ') || 'Unknown Action'}
-                                    </span>
-                                    <span className="text-gray-500">
-                                      by {(audit as any).editorName || 'System'}
-                                    </span>
-                                  </div>
-                                  {audit.comments && (
-                                    <div className="text-gray-600 mt-1">
-                                      {audit.comments}
-                                    </div>
-                                  )}
-                                </div>
-                                <span className="text-gray-400 text-xs whitespace-nowrap ml-2">
-                                  {formatDate(audit.auditedAt)}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+  <div className="mt-4 pt-4 border-t border-gray-100">
+    <h5 className="text-sm font-medium text-gray-700 mb-3">
+      Assessment Timeline & Score Changes:
+    </h5>
+
+    <div className="relative pl-8">
+      {/* vertical line */}
+      <div className="absolute left-9 top-0 bottom-0 w-px bg-gray-300"></div>
+
+      {assessment.history.map((audit, auditIndex) => {
+        const isScoreChange = audit.auditType?.includes("SCORE");
+        const isApproval = audit.auditType?.includes("APPROVED");
+        const isRejection = audit.auditType?.includes("REJECTED");
+
+        const color =
+          isApproval
+            ? "bg-green-500"
+            : isRejection
+            ? "bg-red-500"
+            : "bg-blue-500";
+
+        const textColor =
+          isApproval
+            ? "text-green-700"
+            : isRejection
+            ? "text-red-700"
+            : isScoreChange
+            ? "text-blue-700"
+            : "text-gray-700";
+
+        const bgColor =
+          isApproval
+            ? "bg-green-50"
+            : isRejection
+            ? "bg-red-50"
+            : isScoreChange
+            ? "bg-blue-50"
+            : "bg-gray-50";
+
+        // compute indent for rejections
+        const rejectedCount = assessment.history
+          .slice(0, auditIndex)
+          .filter(h => h.auditType?.includes("REJECTED")).length;
+
+        const indentStyle = { marginLeft: rejectedCount * 24 + "px" };
+
+        return (
+          <div
+            key={auditIndex}
+            className={`relative py-4 pl-8 ${bgColor} rounded`}
+            style={indentStyle}
+          >
+            {/* circle */}
+            <span
+              className={`absolute left-0 top-4 w-6 h-6 rounded-full flex items-center justify-center ${color} z-10`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3 text-white"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </span>
+
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`font-medium ${textColor}`}>
+                  {audit.auditType?.replace(/_/g, " ") || "Unknown Action"}
+                </span>
+                <span className="text-gray-500">
+                  by {(audit as any).editorName || "System"}
+                </span>
+              </div>
+              <span className="text-gray-400 text-xs whitespace-nowrap">
+                {formatDate(audit.auditedAt)}
+              </span>
+            </div>
+
+            {audit.comments && (
+              <div className="text-gray-600 mt-1 italic">
+                “{audit.comments}”
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
+
                 </div>
               ))}
             </div>
