@@ -1,3 +1,4 @@
+import { validate } from "node-cron";
 import { assessmentRequestRepo, scoreRepo, userRepo, skillRepo, AuditRepo } from "../../config/dataSource";
 import { AssessmentStatus,  role, TIME_CONSTANTS, AssessmentScheduleType } from "../../enum/enum";
 import { UserType } from "../../types/entities";
@@ -10,6 +11,17 @@ export const ValidationHelpers = {
       relations: ["role"]
     });
     if (!user || user.role?.name !== role.HR) {
+      return null;
+    }
+    return user;
+  },
+
+  validateAdmin: async(userId: string)=>{
+    const user = await userRepo.findOne({ 
+      where: { id: userId },
+      relations: ["role"]
+    });
+    if (!user || user.role?.name !== "admin") {
       return null;
     }
     return user;

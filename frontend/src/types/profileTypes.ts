@@ -1,7 +1,7 @@
 export interface Skill {
   skill_id: number;
   skill_name: string;
-  lead_score: number;
+  score: number;
   targetLevel?: 4;
 }
 

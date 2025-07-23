@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AssessmentWithHistory, DetailedScore } from "../../types/assessmentTypes";
-import { SkillModalData } from "../../types/teamTypes";
+import { AssessmentWithHistory, DetailedScore } from "../../../types/assessmentTypes";
+import { SkillModalData } from "../../../types/teamTypes";
 
 interface Skill {
   id: number;

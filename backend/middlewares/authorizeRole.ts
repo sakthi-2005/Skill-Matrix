@@ -30,6 +30,10 @@ const authorizeRoles = (allowedRoles: string[]) => {
             throw Boom.forbidden("Access Denied: Unauthorized access");
           }
 
+          const admin = await ValidationHelpers.validateAdmin(user.id);
+          if(admin && allowedRoles.includes('admin')){
+            return h.continue;
+          }
           const lead = await ValidationHelpers.validateTeamLead(user.id);
           const hr = await ValidationHelpers.validateHRUser(user.id);
 
