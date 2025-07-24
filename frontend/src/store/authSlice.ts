@@ -11,7 +11,7 @@ interface User {
   positionId: number;
   role: {
     id: string;
-    name: "employee" | "lead" | "hr";
+    name: "employee" | "lead" | "hr" | "admin";
   };
   Team?: {
     id: string;

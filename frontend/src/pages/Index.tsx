@@ -63,7 +63,21 @@ const Index = () => {
     } else if(path.startsWith("/hr-assessment-management")){
       setActiveTab("hr-assessment-management");
     } else if(path.startsWith("/admin-dashboard")){
-      setActiveTab("admin-dashboard");
+      const urlParams = new URLSearchParams(location.search);
+      const tab = urlParams.get('tab');
+      if (tab === 'users') {
+        setActiveTab("admin-users");
+      } else if (tab === 'teams') {
+        setActiveTab("admin-teams");
+      } else if (tab === 'subteams') {
+        setActiveTab("admin-subteams");
+      } else if (tab === 'positions') {
+        setActiveTab("admin-positions");
+      } else if (tab === 'skills') {
+        setActiveTab("admin-skills");
+      } else {
+        setActiveTab("admin-dashboard");
+      }
     }
     else {
       setActiveTab("dashboard");
@@ -92,7 +106,10 @@ const Index = () => {
   
   const renderDashboard = async() => {
     
-    if(user.role.name == 'hr'){
+    if(user.role.name == 'admin'){
+      setDashboard(<HRAdminDashboard />);
+    }
+    else if(user.role.name == 'hr'){
       setDashboard(<HRDashboard onNavigate={handleNavigate} />);
     }
     else if(await verifyLead(user.id)){
@@ -142,6 +159,21 @@ const Index = () => {
         break;
       case "admin-dashboard":
         navigate("/admin-dashboard");
+        break;
+      case "admin-users":
+        navigate("/admin-dashboard?tab=users");
+        break;
+      case "admin-teams":
+        navigate("/admin-dashboard?tab=teams");
+        break;
+      case "admin-subteams":
+        navigate("/admin-dashboard?tab=subteams");
+        break;
+      case "admin-positions":
+        navigate("/admin-dashboard?tab=positions");
+        break;
+      case "admin-skills":
+        navigate("/admin-dashboard?tab=skills");
         break;
       default:
         navigate("/");

@@ -18,6 +18,7 @@ export enum role{
   EMPLOYEE = "employee",
   LEAD = "lead",
   HR = "hr",
+  ADMIN = "admin",
 }
 
 

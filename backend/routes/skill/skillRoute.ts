@@ -14,25 +14,25 @@ const skillRoutes = {
       {
         method: "GET",
         path: "/all-skills",
-        options: authorizeRoles([role.HR, role.LEAD]),
+        options: authorizeRoles([role.HR, role.LEAD, role.ADMIN]),
         handler: SkillController.getAllSkills,
       },
       {
         method: "POST",
         path: "/create",
-        options: authorizeRoles([role.HR]),
+        options: authorizeRoles([role.HR, role.ADMIN]),
         handler: SkillController.createSkill,
       },
       {
         method: "POST",
         path: "/update",
-        options: authorizeRoles([role.HR]),
+        options: authorizeRoles([role.HR, role.ADMIN]),
         handler: SkillController.updateSkill,
       },
       {
         method: "DELETE",
         path: "/delete/{id}",
-        options: authorizeRoles([role.HR]),
+        options: authorizeRoles([role.HR, role.ADMIN]),
         handler: SkillController.deleteSkillById,
       },
       {
