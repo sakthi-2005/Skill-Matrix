@@ -5,7 +5,7 @@ export default [
     "name": "Malini Narayanan",
     "email": "malini@lumel.com",
     "roleId": 7,
-    "positionId": null,
+    "positionId": 14,
     "teamId": null,
     "leadId": null,
     "hrId": null
@@ -16,7 +16,7 @@ export default [
   "name": "Neeraja",
   "email": "neeraja@lumel.com",
   "roleId": 7,
-  "positionId": null,
+  "positionId": 14,
   "teamId": null,
   "leadId": null,
   "hrId": null

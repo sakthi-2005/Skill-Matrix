@@ -119,4 +119,30 @@
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+
+  /* Compact card styles for admin dashboard */
+  .compact-card {
+    @apply transition-all duration-200;
+  }
+  
+  .compact-card:hover {
+    @apply shadow-lg scale-[1.02];
+  }
+  
+  .compact-card .card-header {
+    @apply pb-2;
+  }
+  
+  .compact-card .card-content {
+    @apply pb-3;
+  }
+
+  /* Remove focus ring from buttons in compact cards */
+  .compact-card button:focus {
+    @apply outline-none ring-0;
+  }
+  
+  .compact-card button:focus-visible {
+    @apply outline-none ring-0;
+  }
 }

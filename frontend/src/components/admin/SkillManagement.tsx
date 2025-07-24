@@ -11,7 +11,8 @@ import {
   Search,
   Filter,
 } from "lucide-react";
-import { positionService, skillService } from "@/services/api";
+import { skillService } from "@/services/api";
+import { adminService } from "@/services/adminService";
 import SkillCreationModal from "../criteria/SkillCreationModal";
 import DeleteModal from "../../lib/DeleteModal";
 import { SkillCriterion } from "../../types/criteria";
@@ -54,9 +55,9 @@ const SkillManagement: React.FC<SkillManagementProps> = ({ onStatsUpdate }) => {
       
       // Always fetch all skills for HR Admin
       const skillsData = await skillService.getAllSkills();
-      const positionsData = await positionService.getAllPositions();
+      const positionsResponse = await adminService.getAllPositions(false);
       
-      setPositions(positionsData);
+      setPositions(positionsResponse.data || []);
       setCriteria(skillsData);
     } catch (err) {
       setError(

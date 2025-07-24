@@ -21,19 +21,19 @@ const userRoutes = {
       {
         method: "POST",
         path: "/create",
-        options: authorizeRoles([role.HR]),
+        options: authorizeRoles([role.HR, role.ADMIN]),
         handler: UserController.createUser,
       },
       {
         method: "POST",
         path: "/update",
-        options: authorizeRoles([role.HR]),
+        options: authorizeRoles([role.HR, role.ADMIN]),
         handler: UserController.updateUser,
       },
       {
         method: "DELETE",
         path: "/delete/{id}",
-        options: authorizeRoles([role.HR]),
+        options: authorizeRoles([role.HR, role.ADMIN]),
         handler: UserController.deleteUser,
       },
       {
