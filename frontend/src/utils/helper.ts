@@ -182,10 +182,11 @@ import { userService } from '../services/api';
 
     const getSkillLevelColor = (level: number) => {
     if (level === 0) return "bg-gray-100 text-gray-500 border border-gray-300";
-    if (level === 1) return "bg-red-400 text-red-700 border border-red-500";
-    if (level === 2) return "bg-orange-300 text-orange-700 border border-orange-500";
+    if (level === 1) return "bg-gray-400 text-gray-700 border border-gray-500";
+    if (level === 2) return "bg-red-300 text-red-700 border border-red-500";
     if (level === 3) return "bg-yellow-300 text-yellow-700 border border-yellow-500";
-    if (level === 4) return "bg-green-300 text-green-700 border border-green-500";
+    if (level === 4) return "bg-blue-300 text-blue-700 border border-blue-500";
+    if (level === 5) return "bg-green-300 text-green-700 border border-green-500";
     return "bg-gray-100 text-gray-600";
   };
 
