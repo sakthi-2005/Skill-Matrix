@@ -421,7 +421,7 @@ const HRAssessmentManagement: React.FC = () => {
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
           >
             <Users className="h-4 w-4" />
-            Bulk Assessment
+            Initiate Assessment
           </button>
         </div>
       </div>
