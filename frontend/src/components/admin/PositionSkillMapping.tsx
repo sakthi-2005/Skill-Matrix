@@ -17,7 +17,8 @@ import {
   Save,
   X
 } from 'lucide-react';
-import { skillService, positionService } from '../../services/api';
+import { skillService } from '../../services/api';
+import { adminService } from '../../services/adminService';
 import { toast } from 'sonner';
 
 interface Skill {
@@ -69,7 +70,7 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
       setLoading(true);
       const [skillsResponse, positionsResponse] = await Promise.all([
         skillService.getAllSkills(),
-        positionService.getAllPositions()
+        adminService.getAllPositions(false)
       ]);
 
       if (skillsResponse) {
@@ -84,8 +85,8 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
         setSelectedSkills(new Set(mappedSkills));
       }
 
-      if (positionsResponse) {
-        setPositions(positionsResponse);
+      if (positionsResponse?.data) {
+        setPositions(positionsResponse.data);
       }
     } catch (error) {
       console.error('Error loading data:', error);

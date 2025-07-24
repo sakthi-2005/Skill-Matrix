@@ -39,7 +39,7 @@ const SkillCriteriaPage = () => {
         setLoading(true);
         setError(null);
         let skillsData;
-        if (!(user?.role?.name === "hr")) {
+        if (!(user?.role?.name === "hr" || user?.role?.name === "admin")) {
           skillsData = await skillService.getSkillsByPosition();
         } else {
           skillsData = await skillService.getAllSkills();

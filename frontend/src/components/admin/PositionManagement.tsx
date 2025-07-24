@@ -317,128 +317,97 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           {filteredPositions.map((position) => (
             <Card 
               key={position.id} 
-              className={`cursor-pointer hover:shadow-md transition-shadow ${position.deletedAt ? 'opacity-60' : ''}`}
+              className={`cursor-pointer hover:shadow-md transition-shadow ${position.deletedAt ? 'opacity-60' : ''} compact-card`}
               onClick={() => openDetailModal(position)}
             >
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 px-4 pt-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center space-x-2">
-                    <Briefcase className="h-5 w-5" />
-                    <span>{position.name}</span>
+                  <CardTitle className="text-lg flex items-center space-x-2 flex-1 min-w-0">
+                    <Briefcase className="h-5 w-5 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate font-medium">{position.name}</span>
+                      <span className="text-sm text-gray-500 font-normal truncate">
+                        {position.user?.length || 0} users • {position.skillCount || 0} skills
+                      </span>
+                    </div>
                   </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    {position.deletedAt ? (
-                      <Badge variant="destructive">Deleted</Badge>
-                    ) : (
-                      <Badge variant={position.isActive ? 'default' : 'secondary'}>
-                        {position.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {position.description && (
-                    <p className="text-sm text-gray-600">{position.description}</p>
-                  )}
                   
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-4 w-4" />
-                      <span>{position.user?.length || 0} users</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Target className="h-4 w-4" />
-                      <span>{position.skillCount || 0} skills</span>
-                    </div>
-                  </div>
-
-                  <div className="flex overflow-hidden justify-center space-x-2">
-                    {/* {position.deletedAt ? (
+                  {/* Action buttons beside the name */}
+                  <div className="flex items-center space-x-1 flex-shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openSkillRequirementsModal(position);
+                      }}
+                      className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700"
+                      title="Manage Skills"
+                    >
+                      <Target className="h-3 w-3" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditDialog(position);
+                      }}
+                      className="h-7 w-7 p-0"
+                      title="Edit"
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                    
+                    {position.isActive ? (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRestore(position);
+                          openConfirmationModal('deactivate', position);
                         }}
-                        className="flex items-center space-x-1"
+                        className="h-7 w-7 p-0 text-orange-600 hover:text-orange-700"
+                        title="Deactivate"
                       >
-                        <RotateCcw className="h-3 w-3" />
-                        <span>Restore</span>
+                        <PowerOff className="h-3 w-3" />
                       </Button>
                     ) : (
-                      <> */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openSkillRequirementsModal(position);
-                          }}
-                          className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
-                        >
-                          <Target className="h-3 w-3" />
-                          <span>Skills</span>
-                        </Button>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditDialog(position);
-                          }}
-                          className="flex items-center space-x-1"
-                        >
-                          <Edit className="h-3 w-3" />
-                          <span>Edit</span>
-                        </Button>
-                        
-                        {position.isActive ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openConfirmationModal('deactivate', position);
-                            }}
-                            className="flex items-center space-x-1 text-orange-600 hover:text-orange-700"
-                          >
-                            <PowerOff className="h-3 w-3" />
-                            <span>Deactivate</span>
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openConfirmationModal('activate', position);
-                            }}
-                            className="flex items-center space-x-1 text-green-600 hover:text-green-700"
-                          >
-                            <Power className="h-3 w-3" />
-                            <span>Activate</span>
-                          </Button>
-                        )}
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openConfirmationModal('delete', position);
-                          }}
-                          className="flex items-center space-x-1 text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          <span>Delete</span>
-                        </Button>
-                      {/* </>
-                    )} */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openConfirmationModal('activate', position);
+                        }}
+                        className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                        title="Activate"
+                      >
+                        <Power className="h-3 w-3" />
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openConfirmationModal('delete', position);
+                      }}
+                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
+                </div>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <div className="space-y-3">
+                  {position.description && (
+                    <p className="text-sm text-gray-600">{position.description}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
