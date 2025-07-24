@@ -1,18 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/custom/Card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Users, MapPin, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Building, Users, MapPin, ArrowLeft, Target } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import TeamManagement from './TeamManagement';
 import SubTeamManagement from './SubTeamManagement';
 import PositionManagement from './PositionManagement';
 import UserManagement from './UserManagement';
 import OrganizationOverview from './OrganizationOverview';
+import SkillManagement from './SkillManagement';
 
 const HRAdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const tab = urlParams.get('tab');
+    if (tab && ['overview', 'users', 'teams', 'subteams', 'positions', 'skills'].includes(tab)) {
+      setActiveTab(tab);
+    } else {
+      setActiveTab('overview'); // Default to overview
+    }
+  }, [location.search]);
 
   const handleBackToDashboard = () => {
     navigate('/');
@@ -26,23 +38,10 @@ const HRAdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBackToDashboard}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Dashboard</span>
-          </Button>
-          <h1 className="text-2xl font-bold text-gray-900">HR Admin Dashboard</h1>
-        </div>
-      </div>
+      
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        {/* <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <Building className="h-4 w-4" />
             <span>Overview</span>
@@ -63,7 +62,11 @@ const HRAdminDashboard: React.FC = () => {
             <MapPin className="h-4 w-4" />
             <span>Positions</span>
           </TabsTrigger>
-        </TabsList>
+          <TabsTrigger value="skills" className="flex items-center space-x-2">
+            <Target className="h-4 w-4" />
+            <span>Skills</span>
+          </TabsTrigger>
+        </TabsList> */}
 
         <TabsContent value="overview" className="space-y-4">
           <OrganizationOverview />
@@ -83,6 +86,10 @@ const HRAdminDashboard: React.FC = () => {
 
         <TabsContent value="positions" className="space-y-4">
           <PositionManagement onStatsUpdate={handleStatsUpdate} />
+        </TabsContent>
+
+        <TabsContent value="skills" className="space-y-4">
+          <SkillManagement onStatsUpdate={handleStatsUpdate} />
         </TabsContent>
       </Tabs>
     </div>

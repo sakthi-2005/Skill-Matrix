@@ -42,7 +42,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/teams",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         payload: teamCreateSchema,
       },
@@ -54,7 +54,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "GET",
     path: "/teams",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         query: Joi.object({
           includeDeleted: Joi.boolean().default(false),
@@ -68,7 +68,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "GET",
     path: "/teams/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -85,7 +85,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "PUT",
     path: "/teams/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -100,7 +100,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "DELETE",
     path: "/teams/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -114,7 +114,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/teams/{id}/restore",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -128,7 +128,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/teams/{id}/activate",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -142,7 +142,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/teams/{id}/deactivate",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -157,7 +157,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/sub-teams",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         payload: subTeamCreateSchema,
       },
@@ -169,7 +169,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "GET",
     path: "/sub-teams",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         query: Joi.object({
           teamId: Joi.number().integer().optional(),
@@ -184,7 +184,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "GET",
     path: "/sub-teams/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -201,7 +201,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "PUT",
     path: "/sub-teams/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -216,7 +216,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "DELETE",
     path: "/sub-teams/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -230,7 +230,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/sub-teams/{id}/restore",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -245,7 +245,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/positions",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         payload: positionCreateSchema,
       },
@@ -257,7 +257,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "GET",
     path: "/positions",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         query: Joi.object({
           includeDeleted: Joi.boolean().default(false),
@@ -271,7 +271,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "GET",
     path: "/positions/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -288,7 +288,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "PUT",
     path: "/positions/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -303,7 +303,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "DELETE",
     path: "/positions/{id}",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -317,7 +317,7 @@ export const HRAdminRoutes = (server: Server) => {
     method: "POST",
     path: "/positions/{id}/restore",
     options: {
-      ...authorizeRoles(["admin"]),
+      ...authorizeRoles(["admin", "hr"]),
       validate: {
         params: Joi.object({
           id: Joi.number().integer().required(),
@@ -331,7 +331,7 @@ export const HRAdminRoutes = (server: Server) => {
   server.route({
     method: "GET",
     path: "/stats",
-    options: authorizeRoles(["admin"]),
+    options: authorizeRoles(["admin", "hr"]),
     handler: HRAdminController.getOrganizationStats,
   });
 };

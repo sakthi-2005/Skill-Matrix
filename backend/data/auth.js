@@ -66,5 +66,9 @@ export default [
   {
     "id": 17,
     "email": "sindhujas@lumel.com",
+  },
+  {
+    "id": 18,
+    "email": "admin@lumel.com",
   }
 ]

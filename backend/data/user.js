@@ -18,7 +18,8 @@ export default [
   "roleId": 7,
   "positionId": null,
   "teamId": null,
-  "leadId": null
+  "leadId": null,
+  "hrId": null
 },
 {
   "id":3,
@@ -158,11 +159,11 @@ export default [
     "userId": "LMT20507",
     "name": "HARISH K",
     "email": "harishk@lumel.com",
-    "roleId": 1,
-    "positionId": 3,
-    "teamId": 1,
-    "leadId": 4,
-    "hrId": 1
+    "roleId": 7,
+    "positionId": null,
+    "teamId": null,
+    "leadId": null,
+    "hrId": null
   },
   {
     "id": 16,
@@ -181,6 +182,17 @@ export default [
     "name": "Sindhuja Sanmugam",
     "email": "sindhujas@lumel.com",
     "roleId": 7,
+    "positionId": null,
+    "teamId": null,
+    "leadId": null,
+    "hrId": null
+  },
+  {
+    "id": 18,
+    "userId": "ADMIN001",
+    "name": "System Administrator",
+    "email": "admin@lumel.com",
+    "roleId": 8,
     "positionId": null,
     "teamId": null,
     "leadId": null,

@@ -5,6 +5,7 @@ declare global {
     EMPLOYEE: "employee";
     LEAD: "lead";
     HR: "hr";
+    ADMIN: "admin";
   }
 
 

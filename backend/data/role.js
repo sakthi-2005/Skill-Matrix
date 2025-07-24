@@ -26,5 +26,9 @@ export default [
     {
         "id": 7,
         "name": "hr"
+    },
+    {
+        "id": 8,
+        "name": "admin"
     }
 ]

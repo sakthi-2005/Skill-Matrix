@@ -53,7 +53,17 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
       { id: "skill-criteria", label: "Skill Criteria", icon: Target },
     ];
 
-    if (user?.role?.name === "hr") {
+    if (user?.role?.name === "admin") {
+      // Admin users get admin-specific navigation items
+      baseItems.splice(1,2,
+        { id: "admin-users", label: "Users", icon: Users },
+        { id: "admin-teams", label: "Teams", icon: Users },
+        { id: "admin-subteams", label: "SubTeams", icon: Users },
+        { id: "admin-positions", label: "Positions", icon: Target },
+        { id: "admin-skills", label: "Skills", icon: Target }
+      );
+    } else if (user?.role?.name === "hr") {
+      // HR users get HR-specific functionality (NO admin dashboard access)
       baseItems.splice(
         2,
         0,
@@ -152,12 +162,6 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
-                {user?.role?.name === "hr" && (
-                  <DropdownMenuItem onClick={() => onTabChange("admin-dashboard")}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Admin Dashboard
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
