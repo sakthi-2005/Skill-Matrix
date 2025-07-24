@@ -220,17 +220,17 @@ const HRAssessmentManagement: React.FC = () => {
       if (response.success) {
         toast({
           title: "Success",
-          description: `Bulk assessment initiated for ${response.data.totalAssessments} users`,
+          description: `Initiate assessment initiated for ${response.data.totalAssessments} users`,
         });
         setShowBulkModal(false);
         resetBulkForm();
         loadHRData();
       }
     } catch (error) {
-      console.error("Error initiating bulk assessment:", error);
+      console.error("Error initiating assessment:", error);
       toast({
         title: "Error",
-        description: "Failed to initiate bulk assessment",
+        description: "Failed to initiate assessment",
         variant: "destructive",
       });
     } finally {
@@ -401,7 +401,7 @@ const HRAssessmentManagement: React.FC = () => {
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
           >
             <Users className="h-4 w-4" />
-            Bulk Assessment
+            Initiate Assessment
           </button>
         </div>
       </div>
