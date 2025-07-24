@@ -46,14 +46,14 @@ const EmployeeDashboard = ({
       console.log(userSkills)
       // Calculate skill stats
       const skillStats = {
-        low: userSkills.filter((skill: any) => skill.lead_score <= 1).length,
+        low: userSkills.filter((skill: any) => skill.score <= 1).length,
         medium: userSkills.filter(
-          (skill: any) => skill.lead_score > 1 && skill.lead_score <= 2
+          (skill: any) => skill.score > 1 && skill.score <= 2
         ).length,
         average: userSkills.filter(
-          (skill: any) => skill.lead_score > 2 && skill.lead_score <= 3
+          (skill: any) => skill.score > 2 && skill.score <= 3
         ).length,
-        high: userSkills.filter((skill: any) => skill.lead_score > 3).length,
+        high: userSkills.filter((skill: any) => skill.score > 3).length,
       };
       setStats(skillStats);
 
@@ -81,11 +81,11 @@ const EmployeeDashboard = ({
 
       // Get skill progress 
       const skillProgressData = userSkills
-        .filter((skill: any) => 4 > skill.lead_score)
+        .filter((skill: any) => 4 > skill.score)
         .map((skill: any) => ({
           id: skill.skillId,
           name: skill.skill_name,
-          current: skill.lead_score,
+          current: skill.score,
           target: 5, //(skill.target_level) Need to change this later
         }))
         .slice(0, 3);
