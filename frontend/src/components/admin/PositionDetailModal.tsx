@@ -125,13 +125,13 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
             <CardHeader>
               <CardTitle className="text-lg flex items-center space-x-2">
                 <User className="h-5 w-5" />
-                <span>Position Holders ({position.users?.length || 0})</span>
+                <span>Position Holders ({position.user?.length || 0})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {position.users && position.users.length > 0 ? (
+              {position.user && position.user.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {position.users.map((user) => (
+                  {position.user.map((user) => (
                     <div key={user.id} className="border rounded-lg p-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -153,16 +153,16 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                             <Mail className="h-3 w-3" />
                             <span>{user.email}</span>
                           </div>
-                          {user.team && (
+                          {user.Team && (
                             <div className="flex items-center space-x-1 text-sm text-gray-500">
                               <Building className="h-3 w-3" />
-                              <span>{user.team.name}</span>
+                              <span>{user.Team.name}</span>
                             </div>
                           )}
-                          {user.subTeam && (
+                          {user.SubTeam && (
                             <div className="flex items-center space-x-1 text-sm text-gray-500">
                               <Users className="h-3 w-3" />
-                              <span>{user.subTeam.name}</span>
+                              <span>{user.SubTeam.name}</span>
                             </div>
                           )}
                           {user.role && (

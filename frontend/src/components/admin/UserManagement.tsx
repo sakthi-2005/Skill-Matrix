@@ -27,7 +27,7 @@ import {
   Filter
 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
-import { userService, roleService, positionService, teamService, subTeamService, skillService, assessmentService, adminService as apiAdminService } from '../../services/api';
+import { userService, roleService, skillService, assessmentService } from '../../services/api';
 import { toast } from 'sonner';
 import { UserDetailModal } from './UserDetailModal';
 import { ConfirmationModal } from './ConfirmationModal';
@@ -173,20 +173,20 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       setLoading(true);
       const [usersResponse, teamsResponse, subTeamsResponse, positionsResponse, rolesResponse] = await Promise.all([
         userService.getAllUsers({}), // Get all users
-        teamService.getAllTeams(),
-        subTeamService.getAllSubTeams(),
-        positionService.getAllPositions(),
+        adminService.getAllTeams(false),
+        adminService.getAllSubTeams(undefined, false),
+        adminService.getAllPositions(false),
         roleService.getAllRoles()
       ]);
 
       if (usersResponse) {
         console.log('Users response:', usersResponse);
         setUsers(usersResponse || []);
-        // Filter potential leads - only users with Lead roles
+        // For admin users, all users can potentially be leads (except deleted ones)
         const leads = usersResponse.filter((user: UserData) => 
-          user.role?.name === 'lead'
+          !user.deletedAt && user.isActive !== false
         );
-        // Filter potential HRs - only users with HR roles
+        // Filter potential HRs - only users with HR roles (for admin users to assign)
         const hrs = usersResponse.filter((user: UserData) => 
           user.role?.name === 'hr'
         );
@@ -195,14 +195,14 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         setPotentialLeads(leads || []);
         setPotentialHRs(hrs || []);
       }
-      if (teamsResponse) {
-        setTeams(teamsResponse || []);
+      if (teamsResponse?.data) {
+        setTeams(teamsResponse.data || []);
       }
-      if (subTeamsResponse) {
-        setSubTeams(subTeamsResponse || []);
+      if (subTeamsResponse?.data) {
+        setSubTeams(subTeamsResponse.data || []);
       }
-      if (positionsResponse) {
-        setPositions(positionsResponse || []);
+      if (positionsResponse?.data) {
+        setPositions(positionsResponse.data || []);
       }
       if (rolesResponse) {
         setRoles(rolesResponse || []);
@@ -362,39 +362,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
   const openDetailModal = async (user: UserData) => {
     try {
-      // Load user skills based on position and assessment status
-      let userWithSkills = { ...user };
-      
-      if (user.positionId) {
-        try {
-          // Get skills for the user's position
-          const positionSkills = await skillService.getSkillsByPosition();
-          const filteredSkills = positionSkills.filter((skill: any) => 
-            skill.position && skill.position.includes(user.positionId)
-          );
-          
-          // Get user's latest assessment scores
-          const userScores = await assessmentService.getUserLatestApprovedScoresByUserId(user.userId);
-          
-          // Combine skills with assessment data
-          const skillsWithAssessment = filteredSkills.map((skill: any) => {
-            const userScore = userScores?.find((score: any) => score.skillId === skill.id);
-            return {
-              id: skill.id,
-              name: skill.name,
-              level: userScore?.leadScore || 0,
-              lastAssessed: userScore?.updatedAt || null,
-            };
-          });
-          
-          userWithSkills.skills = skillsWithAssessment;
-        } catch (skillError) {
-          console.error('Error loading user skills:', skillError);
-          // Continue without skills if there's an error
-        }
-      }
-      
-      setSelectedUser(userWithSkills);
+      // For now, just show user details without skills since we need to implement 
+      // a proper API endpoint for getting skills by position for admin users
+      setSelectedUser(user);
       setIsDetailModalOpen(true);
     } catch (error) {
       console.error('Error opening detail modal:', error);
@@ -722,13 +692,13 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
           {filteredUsers.map((user) => (
             <Card 
               key={user.id} 
-              className={`cursor-pointer hover:shadow-md transition-shadow ${user.deletedAt ? 'opacity-60' : ''}`}
+              className={`cursor-pointer hover:shadow-md transition-shadow ${user.deletedAt ? 'opacity-60' : ''} compact-card`}
               onClick={() => openDetailModal(user)}
             >
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 px-4 pt-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <CardTitle className="text-base flex items-center space-x-2 flex-1 min-w-0">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                       {user.profilePhoto ? (
                         <img 
                           src={user.profilePhoto} 
@@ -741,60 +711,14 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         </span>
                       )}
                     </div>
-                    <div>
-                      <span className="block">{user.name}</span>
-                      <span className="text-xs text-gray-500 font-normal">{user.userId}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate font-medium">{user.name}</span>
+                      <span className="text-sm text-gray-500 font-normal truncate">{user.userId}</span>
                     </div>
                   </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    {user.deletedAt ? (
-                      <Badge variant="destructive">Deleted</Badge>
-                    ) : (
-                      <Badge variant={(user.isActive !== false) ? 'default' : 'secondary'}>
-                        {(user.isActive !== false) ? 'Active' : 'Inactive'}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Mail className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600 truncate">{user.email || "N/A"}</span>
-                    </div>
                   
-                    <div className="flex items-center space-x-2">
-                      <Shield className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.role?.name || "N/A"}</span>
-                    </div>
-                  
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.position?.name || "N/A"}</span>
-                    </div>
-                  
-                    <div className="flex items-center space-x-2">
-                      <Building className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.Team?.name || "N/A"}</span>
-                    </div>
-                  
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user.SubTeam?.name || "N/A"}</span>
-                    </div>
-                  
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm text-gray-600">TL: {user.lead?.name || "N/A"}</span>
-                    </div>
-                  
-                    <div className="flex items-center space-x-2">
-                      <Shield className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-gray-600">HR: {user.hr?.name || "N/A"}</span>
-                    </div>
-
-                  <div className="flex justify-end space-x-2">
+                  {/* Action buttons beside the name */}
+                  <div className="flex items-center space-x-1 flex-shrink-0">
                     {user.deletedAt ? (
                       <Button
                         variant="outline"
@@ -803,10 +727,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                           e.stopPropagation();
                           handleRestore(user);
                         }}
-                        className="flex items-center space-x-1"
+                        className="h-7 w-7 p-0"
+                        title="Restore"
                       >
                         <RotateCcw className="h-3 w-3" />
-                        <span>Restore</span>
                       </Button>
                     ) : (
                       <>
@@ -817,10 +741,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                             e.stopPropagation();
                             openEditDialog(user);
                           }}
-                          className="flex items-center space-x-1"
+                          className="h-7 w-7 p-0"
+                          title="Edit"
                         >
                           <Edit className="h-3 w-3" />
-                          <span>Edit</span>
                         </Button>
                         
                         {(user.isActive !== false) ? (
@@ -831,10 +755,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                               e.stopPropagation();
                               openConfirmationModal('deactivate', user);
                             }}
-                            className="flex items-center space-x-1 text-orange-600 hover:text-orange-700"
+                            className="h-7 w-7 p-0 text-orange-600 hover:text-orange-700"
+                            title="Deactivate"
                           >
                             <PowerOff className="h-3 w-3" />
-                            <span>Deactivate</span>
                           </Button>
                         ) : (
                           <Button
@@ -844,10 +768,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                               e.stopPropagation();
                               openConfirmationModal('activate', user);
                             }}
-                            className="flex items-center space-x-1 text-green-600 hover:text-green-700"
+                            className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                            title="Activate"
                           >
                             <Power className="h-3 w-3" />
-                            <span>Activate</span>
                           </Button>
                         )}
                         
@@ -858,14 +782,37 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                             e.stopPropagation();
                             openConfirmationModal('delete', user);
                           }}
-                          className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                          title="Delete"
                         >
                           <Trash2 className="h-3 w-3" />
-                          <span>Delete</span>
                         </Button>
                       </>
                     )}
                   </div>
+                </div>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <div className="space-y-3">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-600 truncate">{user.email || "N/A"}</span>
+                    </div>
+                  
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <Shield className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-600 truncate">{user.role?.name || "N/A"}</span>
+                    </div>
+                  
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-600 truncate">{user.position?.name || "N/A"}</span>
+                    </div>
+                  
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <Building className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-600 truncate">{user.Team?.name || "N/A"}</span>
+                    </div>
                 </div>
               </CardContent>
             </Card>
