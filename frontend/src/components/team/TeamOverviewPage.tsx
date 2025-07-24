@@ -526,7 +526,7 @@ const TeamOverviewPage = () => {
                     >
                       {getAverageSkillLevel(member).toFixed(1)}/5
                     </span> */}
-                    {user?.role?.name === "hr" && (
+                    {/* {user?.role?.name === "admin" && (
                       <div className="relative">
                         <button
                           className="h-8 w-8 p-0 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
@@ -564,7 +564,7 @@ const TeamOverviewPage = () => {
                           </div>
                         )}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
 
@@ -579,7 +579,7 @@ const TeamOverviewPage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-gray-400" />
-                    <span>{member.Team?.name}</span>
+                    <span>{member.Team?.name }</span>
                   </div>
                   {member.email && (
                     <div className="flex items-center gap-2 text-sm">
@@ -640,13 +640,7 @@ const TeamOverviewPage = () => {
                     <div key={skill.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-medium">{skill.skill_name}</h3>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSkillLevelColor(
-                            skill.score
-                          )}`}
-                        >
-                          {skill.score}/5
-                        </span>
+                       
                       </div>
 
                       <div className="space-y-2 text-sm">
