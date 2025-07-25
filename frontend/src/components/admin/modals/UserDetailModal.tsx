@@ -1,7 +1,7 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Badge } from '../ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { 
   User, 
   Calendar, 
@@ -14,51 +14,7 @@ import {
   Phone,
   UserCheck
 } from 'lucide-react';
-
-interface UserData {
-  id: number;
-  userId: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  profilePhoto?: string;
-  isActive?: boolean;
-  createdAt: string;
-  updatedAt?: string;
-  deletedAt?: string;
-  role?: {
-    id: number;
-    name: string;
-  };
-  position?: {
-    id: number;
-    name: string;
-  };
-  Team?: {
-    id: number;
-    name: string;
-  };
-  SubTeam?: {
-    id: number;
-    name: string;
-  };
-  lead?: {
-    id: number;
-    name: string;
-    userId: string;
-  };
-  hr?: {
-    id: number;
-    name: string;
-    userId: string;
-  };
-  skills?: Array<{
-    id: number;
-    name: string;
-    level: number;
-    lastAssessed?: string;
-  }>;
-}
+import { UserData } from '../../../types/admin';
 
 interface UserDetailModalProps {
   user: UserData | null;

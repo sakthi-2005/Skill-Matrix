@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 import { skillService } from "@/services/api";
 import { adminService } from "@/services/adminService";
-import SkillCreationModal from "../criteria/SkillCreationModal";
-import DeleteModal from "../../lib/DeleteModal";
-import { SkillCriterion } from "../../types/criteria";
+import SkillCreationModal from "../../criteria/SkillCreationModal";
+import DeleteModal from "../../../lib/DeleteModal";
+import { SkillCriterion } from "../../../types/criteria";
 import { toast } from "@/hooks/use-toast";
 
 interface SkillManagementProps {

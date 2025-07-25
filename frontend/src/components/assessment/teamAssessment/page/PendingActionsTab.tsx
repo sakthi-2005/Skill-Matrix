@@ -7,7 +7,7 @@ import {
   Edit,
   AlertCircle,
 } from "lucide-react";
-import { AssessmentWithHistory, AssessmentStatus } from "../../../types/assessmentTypes";
+import { AssessmentWithHistory, AssessmentStatus } from "../../../../types/assessmentTypes";
 
 interface Props {
   pendingAssessments: AssessmentWithHistory[];

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Button } from '../ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
+import { Button } from '../../ui/button';
 import { AlertTriangle, Trash2, PowerOff } from 'lucide-react';
 
 interface ConfirmationModalProps {

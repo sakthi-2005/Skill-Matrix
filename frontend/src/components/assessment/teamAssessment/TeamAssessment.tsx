@@ -21,11 +21,11 @@ import {
   TeamStatistics,
   DetailedScore 
 } from "../../../types/assessmentTypes";
-import AllAssessmentsTab from "./AllAssessmentsTab";
-import PendingActionsTab from "./PendingActionsTab";
+import AllAssessmentsTab from "./page/AllAssessmentsTab";
+import PendingActionsTab from "./page/PendingActionsTab";
 import WriteAssessmentModal from "./WriteAssessmentModal";
-import AssessmentHistoryModal from "./AssessmentHistoryModal";
-import SkillScoresModal from "./SkillScoresModal";
+import AssessmentHistoryModal from "./modals/AssessmentHistoryModal";
+import SkillScoresModal from "./modals/SkillScoresModal";
 
 interface Skill {
   id: number;

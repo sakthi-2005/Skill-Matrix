@@ -20,8 +20,8 @@ import {
   AssessmentStatus,
 } from "@/types/assessmentTypes";
 
-import { ReviewAssessmentModal } from "./reviewAssessmentModel";
-import { AssessmentHistoryModal } from "./assessmentHistoryModel";
+import { ReviewAssessmentModal } from "./modals/reviewAssessmentModel";
+import { AssessmentHistoryModal } from "./modals/assessmentHistoryModel";
 
 const EmployeeAssessmentReview: React.FC = () => {
   const { user } = useAuth();
