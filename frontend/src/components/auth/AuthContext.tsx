@@ -1,9 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, userService } from '@/services/api';
 import {jwtDecode} from "jwt-decode";
-import {Card,CardContent,} from "@/components/custom";
-import {BarChart3,Users,TrendingUp,User,} from "lucide-react";
-import { getAverageSkillLevel } from '@/utils/helper';
 
 interface User {
   iat: number;
@@ -98,60 +95,3 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     </AuthContext.Provider>
   );
 };
-
-
-{/* Statistics Cards */}
-      // <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      //   <Card>
-      //     <CardContent className="p-4 flex items-center gap-2">
-      //       <Users className="h-5 w-5 text-blue-600" />
-      //       <div>
-      //         <p className="text-sm text-gray-600">Total Members</p>
-      //         <p className="text-2xl font-bold">{teamMembers.length}</p>
-      //       </div>
-      //     </CardContent>
-      //   </Card>
-
-      //   <Card>
-      //     <CardContent className="p-4 flex items-center gap-2">
-      //       <BarChart3 className="h-5 w-5 text-green-600" />
-      //       <div>
-      //         <p className="text-sm text-gray-600">With Assessments</p>
-      //         <p className="text-2xl font-bold text-green-600">
-      //           {teamMembers.filter((m) => m.hasRecentAssessment).length}
-      //         </p>
-      //       </div>
-      //     </CardContent>
-      //   </Card>
-
-      //   <Card>
-      //     <CardContent className="p-4 flex items-center gap-2">
-      //       <TrendingUp className="h-5 w-5 text-blue-600" />
-      //       <div>
-      //         <p className="text-sm text-gray-600">Avg Skill Level</p>
-      //         <p className="text-2xl font-bold text-blue-600">
-      //           {teamMembers.length
-      //             ? (
-      //                 teamMembers.reduce(
-      //                   (acc, m) => acc + getAverageSkillLevel(m),
-      //                   0
-      //                 ) / teamMembers.length
-      //               ).toFixed(1)
-      //             : "0.0"}
-      //         </p>
-      //       </div>
-      //     </CardContent>
-      //   </Card>
-
-      //   <Card>
-      //     <CardContent className="p-4 flex items-center gap-2">
-      //       <Users className="h-5 w-5 text-orange-600" />
-      //       <div>
-      //         <p className="text-sm text-gray-600">No Assessment</p>
-      //         <p className="text-2xl font-bold text-orange-600">
-      //           {teamMembers.filter((m) => !m.hasRecentAssessment).length}
-      //         </p>
-      //       </div>
-      //     </CardContent>
-      //   </Card>
-      // </div>

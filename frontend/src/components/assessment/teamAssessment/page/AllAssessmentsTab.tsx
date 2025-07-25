@@ -9,7 +9,7 @@ import {
   Edit
 } from "lucide-react";
 
-import { AssessmentWithHistory, AssessmentStatus } from "../../../types/assessmentTypes";
+import { AssessmentWithHistory, AssessmentStatus } from "../../../../types/assessmentTypes";
 
 interface Props {
   assessments: AssessmentWithHistory[];

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import Papa from 'papaparse';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Label } from '../ui/label';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Input } from '../../ui/input';
+import { Textarea } from '../../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../ui/dialog';
+import { Label } from '../../ui/label';
 import { 
   Plus, 
   Edit, 
@@ -27,11 +27,11 @@ import {
   Shield,
   Filter
 } from 'lucide-react';
-import { adminService } from '../../services/adminService';
-import { userService, roleService, skillService, assessmentService } from '../../services/api';
+import { adminService } from '../../../services/adminService';
+import { userService, roleService, skillService, assessmentService } from '../../../services/api';
 import { toast } from 'sonner';
-import { UserDetailModal } from './UserDetailModal';
-import { ConfirmationModal } from './ConfirmationModal';
+import { UserDetailModal } from '../modals/UserDetailModal';
+import { ConfirmationModal } from '../modals/ConfirmationModal';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 
 interface UserData {
