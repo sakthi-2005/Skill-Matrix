@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { Badge } from '../../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Position } from '../../../types/admin';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
+import { Checkbox } from '../../ui/checkbox';
+import { Position, Skill } from '../../../types/admin';
+import { skillService } from '../../../services/api';
+import { toast } from 'sonner';
 import { 
   Briefcase, 
   Calendar, 
@@ -10,20 +15,136 @@ import {
   Mail,
   Clock,
   Building,
-  Users
+  Users,
+  Target,
+  Search,
+  Save,
+  CheckCircle,
+  Circle
 } from 'lucide-react';
 
 interface PositionDetailModalProps {
   position: Position | null;
   isOpen: boolean;
   onClose: () => void;
+  onSave?: () => void;
 }
 
 export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({ 
   position, 
   isOpen, 
-  onClose 
+  onClose,
+  onSave
 }) => {
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState<Set<number>>(new Set());
+  const [saving, setSaving] = useState(false);
+  const [showSkillsSection, setShowSkillsSection] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && position) {
+      loadSkills();
+    }
+  }, [isOpen, position]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "unset";
+      };
+    }
+  }, [isOpen]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isOpen || !showSkillsSection) return;
+      
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key) {
+          case 'a':
+            event.preventDefault();
+            handleSelectAll();
+            break;
+          case 'd':
+            event.preventDefault();
+            handleDeselectAll();
+            break;
+          case 's':
+            event.preventDefault();
+            handleSaveSkills();
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, showSkillsSection, searchTerm, selectedSkills]);
+
+  const loadSkills = async () => {
+    try {
+      setLoading(true);
+      const skillsResponse = await skillService.getAllSkills();
+      
+      if (skillsResponse) {
+        setSkills(skillsResponse);
+        // Set currently mapped skills for this position
+        const mappedSkills = skillsResponse
+          .filter((skill: Skill) => skill.positionId == position?.id)
+          .map((skill: Skill) => skill.id);
+        setSelectedSkills(new Set(mappedSkills));
+      }
+    } catch (error) {
+      console.error('Error loading skills:', error);
+      toast.error('Failed to load skills');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkillToggle = (skillId: number) => {
+    const newSelected = new Set(selectedSkills);
+    if (newSelected.has(skillId)) {
+      newSelected.delete(skillId);
+    } else {
+      newSelected.add(skillId);
+    }
+    setSelectedSkills(newSelected);
+  };
+
+  const handleSaveSkills = async () => {
+    try {
+      setSaving(true);
+      toast.success('Position skill requirements updated successfully');
+      onSave?.();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update skill requirements');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSelectAll = () => {
+    const filteredSkills = skills.filter(skill =>
+      skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const allFilteredIds = new Set(filteredSkills.map(skill => skill.id));
+    setSelectedSkills(prev => new Set([...prev, ...allFilteredIds]));
+  };
+
+  const handleDeselectAll = () => {
+    const filteredSkills = skills.filter(skill =>
+      skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const filteredIds = new Set(filteredSkills.map(skill => skill.id));
+    setSelectedSkills(prev => new Set([...prev].filter(id => !filteredIds.has(id))));
+  };
+
   if (!position) return null;
 
   const formatDate = (dateString: string) => {
@@ -38,8 +159,8 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl modal-content flex flex-col position-detail-modal">
+       <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center space-x-2">
             <Briefcase className="h-5 w-5" />
             <span>{position.name}</span>
@@ -55,7 +176,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+          <div className="space-y-6 scrollable-content flex-1 min-h-0 pr-2">
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -179,6 +300,195 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                 <p className="text-gray-500 text-center py-4">No position holders found</p>
               )}
             </CardContent>
+          </Card>
+
+          {/* Skills Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center space-x-2">
+                  <Target className="h-5 w-5" />
+                  <span>Skills Requirements ({selectedSkills.size} selected)</span>
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSkillsSection(!showSkillsSection)}
+                  className="flex items-center space-x-2"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                  ) : (
+                    <Target className="h-4 w-4" />
+                  )}
+                  <span>
+                    {loading ? 'Loading...' : showSkillsSection ? 'Hide Skills' : 'Manage Skills'}
+                  </span>
+                </Button>
+              </div>
+            </CardHeader>
+             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showSkillsSection ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+              <CardContent className="space-y-4 flex flex-col h-96">
+                {/* Search and Actions */}
+                <div className="flex-shrink-0 space-y-3">
+                   <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search skills..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  
+                  {/* Quick Actions */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">
+                      {(() => {
+                        const filteredSkills = skills.filter(skill =>
+                          skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+                        const selectedInFiltered = filteredSkills.filter(skill => 
+                          selectedSkills.has(skill.id)
+                        ).length;
+                        return `${selectedInFiltered} of ${filteredSkills.length} visible skills selected`;
+                      })()}
+                    </span>
+                    <div className="flex space-x-2">
+                      {/* <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleSelectAll}
+                        className="h-6 px-2 text-xs"
+                        title="Select All (Ctrl+A)"
+                      >
+                        Select All
+                      </Button> */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDeselectAll}
+                        className="h-6 px-2 text-xs"
+                        title="Deselect All (Ctrl+D)"
+                      >
+                        Deselect All
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Skills List */}
+                 <div className="border rounded-lg flex-1 min-h-0">
+                  {loading ? (
+                    <div className="flex items-center justify-center h-32">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 p-4 h-full skills-list-container">
+                      {(() => {
+                        const filteredSkills = skills.filter(skill =>
+                          skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+                        
+                        // Sort skills: checked items first, then unchecked
+                        const sortedSkills = filteredSkills.sort((a, b) => {
+                          const aSelected = selectedSkills.has(a.id);
+                          const bSelected = selectedSkills.has(b.id);
+                          if (aSelected && !bSelected) return -1;
+                          if (!aSelected && bSelected) return 1;
+                          return a.name.localeCompare(b.name);
+                        });
+
+                        return sortedSkills.length === 0 ? (
+                          <div className="text-center text-gray-500 py-8">
+                            <Target className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                            <p className="text-sm">No skills found matching your search.</p>
+                            {searchTerm && (
+                              <p className="text-xs text-gray-400 mt-2">
+                                Try adjusting your search terms
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          sortedSkills.map((skill) => (
+                            <div
+                              key={skill.id}
+                              className={`flex items-start space-x-3 p-3 border rounded-lg transition-all duration-200 hover:shadow-sm ${
+                                selectedSkills.has(skill.id) 
+                                  ? 'bg-green-50 border-green-200 hover:bg-green-100' 
+                                  : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2 mt-1">
+                                <Checkbox
+                                  id={`skill-${skill.id}`}
+                                  checked={selectedSkills.has(skill.id)}
+                                  onCheckedChange={() => handleSkillToggle(skill.id)}
+                                  className="transition-all duration-200"
+                                />
+                                {selectedSkills.has(skill.id) ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600 transition-all duration-200" />
+                                ) : (
+                                  <Circle className="h-4 w-4 text-gray-400 transition-all duration-200" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <label
+                                  htmlFor={`skill-${skill.id}`}
+                                  className="block font-medium text-sm cursor-pointer"
+                                >
+                                  {skill.name}
+                                </label>
+                                <div className="mt-2 space-y-1 text-xs text-gray-600">
+                                  {skill.basic && (
+                                    <div><span className="font-medium">Basic:</span> {skill.basic}</div>
+                                  )}
+                                  {skill.low && (
+                                    <div><span className="font-medium">Low:</span> {skill.low}</div>
+                                  )}
+                                  {skill.medium && (
+                                    <div><span className="font-medium">Medium:</span> {skill.medium}</div>
+                                  )}
+                                  {skill.high && (
+                                    <div><span className="font-medium">High:</span> {skill.high}</div>
+                                  )}
+                                  {skill.expert && (
+                                    <div><span className="font-medium">Expert:</span> {skill.expert}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Save Button */}
+                <div className="flex justify-end pt-4 border-t flex-shrink-0">
+                  <Button 
+                    onClick={handleSaveSkills} 
+                    disabled={saving}
+                    className="flex items-center space-x-2"
+                    title="Save Requirements (Ctrl+S)"
+                  >
+                    {saving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" />
+                        <span>Save Requirements</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </div>
           </Card>
         </div>
       </DialogContent>
