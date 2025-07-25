@@ -110,7 +110,9 @@ export const UserHistoryModal: React.FC<{
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                         {assessment.detailedScores.map((score: DetailedScore) => (
+                          
                           <div key={score.skillId} className="flex items-center justify-between text-sm bg-gray-50 rounded p-2">
+                            
                             <span className="text-gray-700">{score.Skill?.name}</span>
                             {score.score !== null ? (
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
@@ -125,104 +127,97 @@ export const UserHistoryModal: React.FC<{
                     </div>
                   )}
 
-                  {/* Show assessment history/audit trail with enhanced score tracking */}
-                  {assessment.history && assessment.history.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                        <h5 className="text-sm font-medium text-gray-700 mb-3">
-                          Assessment Timeline & Score Changes:
-                        </h5>
+                  {assessment.history.map((audit, auditIndex) => {
+                    const isScoreChange = audit.auditType?.includes("SCORE");
+                    const isApproval = audit.auditType?.includes("APPROVED");
+                    const isRejection = audit.auditType?.includes("REJECTED");
 
-                        <div className="relative pl-8">
-                          {/* vertical line */}
-                          <div className="absolute left-9 top-0 bottom-0 w-px bg-gray-300"></div>
+                    const color = isApproval
+                      ? "bg-green-500"
+                      : isRejection
+                      ? "bg-red-500"
+                      : "bg-blue-500";
 
-                          {assessment.history.map((audit, auditIndex) => {
-                            const isScoreChange = audit.auditType?.includes("SCORE");
-                            const isApproval = audit.auditType?.includes("APPROVED");
-                            const isRejection = audit.auditType?.includes("REJECTED");
+                    const textColor = isApproval
+                      ? "text-green-700"
+                      : isRejection
+                      ? "text-red-700"
+                      : isScoreChange
+                      ? "text-blue-700"
+                      : "text-gray-700";
 
-                            const color =
-                              isApproval
-                                ? "bg-green-500"
-                                : isRejection
-                                ? "bg-red-500"
-                                : "bg-blue-500";
+                    const rejectedCount = assessment.history
+                      .slice(0, auditIndex)
+                      .filter(h => h.auditType?.includes("REJECTED")).length;
+                    const isLast=index===assessment.history.length-1;
 
-                            const textColor =
-                              isApproval
-                                ? "text-green-700"
-                                : isRejection
-                                ? "text-red-700"
-                                : isScoreChange
-                                ? "text-blue-700"
-                                : "text-gray-700";
+                    const indentStyle = { marginLeft: rejectedCount * 24 + "px" };
+                    return (
+                      
+                      <div key={auditIndex} className="relative pl-10" style={indentStyle}>
+                        
+                        {/* Vertical line */}
+                        {auditIndex !== assessment.history.length - 1 && !isLast && !isRejection &&(
+                          <div className="absolute left-3.5 top-[28px] bottom-[-32px]  w-px bg-gray-300 z-0"></div>
+                        )}
 
-                            const bgColor =
-                              isApproval
-                                ? "bg-green-50"
-                                : isRejection
-                                ? "bg-red-50"
-                                : isScoreChange
-                                ? "bg-blue-50"
-                                : "bg-gray-50";
+                        {/* Circle with icon */}
+                        <span
+                          className={`absolute left-0 top-4 w-7 h-7 rounded-full flex items-center justify-center ${color} z-10`}
+                        >
+                          {isRejection ? (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 text-white"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 8.586l3.536-3.535a1 1 0 111.415 1.414L11.414 10l3.536 3.535a1 1 0 01-1.415 1.415L10 11.414l-3.535 3.536a1 1 0 01-1.415-1.415L8.586 10 5.05 6.464a1 1 0 111.415-1.414L10 8.586z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3.5 w-3.5 text-white"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                        </span>
 
-                            // compute indent for rejections
-                            const rejectedCount = assessment.history
-                              .slice(0, auditIndex)
-                              .filter(h => h.auditType?.includes("REJECTED")).length;
-
-                            const indentStyle = { marginLeft: rejectedCount * 24 + "px" };
-
-                            return (
-                              <div
-                                key={auditIndex}
-                                className={`relative py-4 pl-8 ${bgColor} rounded`}
-                                style={indentStyle}
-                              >
-                                {/* circle */}
-                                <span
-                                  className={`absolute left-0 top-4 w-6 h-6 rounded-full flex items-center justify-center ${color} z-10`}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-3 w-3 text-white"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </span>
-
-                                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className={`font-medium ${textColor}`}>
-                                      {audit.auditType?.replace(/_/g, " ") || "Unknown Action"}
-                                    </span>
-                                    <span className="text-gray-500">
-                                      by {(audit as any).editorName || "System"}
-                                    </span>
-                                  </div>
-                                  <span className="text-gray-400 text-xs whitespace-nowrap">
-                                    {formatDate(audit.auditedAt)}
-                                  </span>
-                                </div>
-
-                                {audit.comments && (
-                                  <div className="text-gray-600 mt-1 italic">
-                                    “{audit.comments}”
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                        {/* Content block */}
+                        <div className="bg-white rounded px-4 py-4 shadow-sm mb-4 ml-4">
+                          <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`font-semibold ${textColor}`}>
+                                {audit.auditType?.replace(/_/g, " ") || "Unknown Action"}
+                              </span>
+                              <span className="text-gray-500">
+                                by {(audit as any).editorName || "System"}
+                              </span>
+                            </div>
+                            <span className="text-gray-400 text-xs whitespace-nowrap">
+                              {formatDate(audit.auditedAt || audit.createdAt)}
+                            </span>
+                          </div>
+                          {audit.comments && (
+                            <p className="text-sm text-gray-600 mt-1 italic border-l border-gray-300 pl-2">
+                              “{audit.comments}”
+                            </p>
+                          )}
                         </div>
                       </div>
-
-                  )}
+                    );
+                  })}
                 </div>
               ))}
             </div>

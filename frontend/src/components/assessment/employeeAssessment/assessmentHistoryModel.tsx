@@ -79,67 +79,83 @@ export const AssessmentHistoryModal: React.FC<{
           )}
 
           {/* History */}
-            <h3 className="font-medium mb-3">Assessment History1</h3>
-            <div className="relative pl-8">
-  {/* Full vertical line */}
-  <div className="absolute left-11 top-0 bottom-0 w-px bg-gray-300"></div>
+          <h3 className="font-medium mb-3">Assessment History</h3>
+          <div>
+            {assessment.history?.map((audit: AuditEntry, index: number) => {
+              const isRejected = audit.auditType.toLowerCase().includes("rejected");
+              const isApproved =
+                audit.auditType.toLowerCase().includes("approved") ||
+                audit.auditType.toLowerCase().includes("completed");
 
-  {assessment.history?.map((audit: AuditEntry, index: number) => {
-    const isRejected = audit.auditType.toLowerCase().includes("rejected");
-    const isApproved =
-      audit.auditType.toLowerCase().includes("approved") ||
-      audit.auditType.toLowerCase().includes("completed");
+              const circleColor = isApproved
+                ? "bg-green-500"
+                : isRejected
+                ? "bg-red-500"
+                : "bg-blue-500";
 
-    const circleColor = isApproved
-      ? "bg-green-500"
-      : isRejected
-      ? "bg-red-500"
-      : "bg-blue-500";
+              // Count rejections before this step for indentation
+              const rejectedCount = assessment.history
+                .slice(0, index)
+                .filter((h) => h.auditType.toLowerCase().includes("rejected")).length;
 
-    // Count previous rejections to determine indentation
-    const rejectedCount = assessment.history
-      .slice(0, index)
-      .filter(h => h.auditType.toLowerCase().includes("rejected")).length;
+              const indent = `ml-${rejectedCount * 8}`; // Tailwind spacing (ml-4, ml-8...)
+              const isLast=index===assessment.history.length-1;
+              return (
+                <div key={index} className={`relative py-4 ${indent}`}>
+                  {/* Line connector */}
+                  {!isRejected && !isLast &&(
+                    <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300 z-0"></div>
+                  )}
 
-    const indent = `ml-${rejectedCount * 6}`; // e.g., ml-6, ml-12, etc.
+                  {/* Circle */}
+                  <span
+                    className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor} z-10`}
+                  >
+                    {isRejected ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3 text-white"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 8.586L13.536 5.05a1 1 0 111.414 1.414L11.414 10l3.536 3.536a1 1 0 11-1.414 1.414L10 11.414l-3.536 3.536a1 1 0 01-1.414-1.414L8.586 10 5.05 6.464a1 1 0 111.414-1.414L10 8.586z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3 text-white"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </span>
 
-    return (
-      <div key={index} className={`relative py-4 pl-8 ${indent}`}>
-        {/* Circle */}
-        <span
-          className={`absolute left-0 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor} z-10`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-3 w-3 text-white"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </span>
-
-        {/* Content */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-          <span className="font-semibold text-gray-800">
-            {audit.auditType.replace(/_/g, " ")}
-          </span>
-          <span className="text-sm text-gray-500 mt-1 md:mt-0">
-            {formatDate(audit.auditedAt || audit.createdAt)}
-          </span>
-        </div>
-
-        {audit.comments && (
-          <p className="text-sm text-gray-600 mt-1 italic">“{audit.comments}”</p>
-        )}
-      </div>
-    );
-  })}
-</div>
+                  {/* Text content */}
+                  <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
+                    <span className="font-semibold text-gray-800">
+                      {audit.auditType.replace(/_/g, " ")}
+                    </span>
+                    <span className="text-sm text-gray-500 mt-1 md:mt-0">
+                      {formatDate(audit.auditedAt || audit.createdAt)}
+                    </span>
+                  </div>
+                  {audit.comments && (
+                    <p className="ml-16 text-sm text-gray-600 mt-1 italic">“{audit.comments}”</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="p-6 border-t border-gray-200 flex justify-end">
