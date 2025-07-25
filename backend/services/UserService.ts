@@ -53,12 +53,12 @@ const UserService = {
   },
 
   // Hr CRUD Operations
-  createUser: async (data: UserData): Promise<void> => {
-    await AppDataSource.query(`
-    SELECT setval(
-      pg_get_serial_sequence('users', 'id'),
-      (SELECT COALESCE(MAX(id), 0) FROM users)
-      )`);
+  createUser: async (data: UserType): Promise<void> => {
+    console.log(data);
+
+    const id = await AppDataSource.query(`
+      SELECT COALESCE(MAX(id::bigInt), 0) FROM users
+      `);
     await AppDataSource.query(`
     SELECT setval(
       pg_get_serial_sequence('auths', 'id'),
@@ -66,26 +66,40 @@ const UserService = {
       )`);
 
     // Convert role, position, and team names to IDs if provided as names
-    const userData: UserData = { ...data };
+    // const userData: UserData = { ...data };
+    // let user : UserType = {
 
-    if (data.role && typeof data.role === "string") {
-      const role = await roleRepo.findOneBy({ name: data.role });
-      if (role) userData.roleId = role.id;
+    // }
+
+    // if (data.role && typeof data.role === "string") {
+    //   const role = await roleRepo.findOneBy({ name: data.role });
+    //   if (role) userData.roleId = role.id;
+    // }
+    // delete userData.role;
+
+    // if (data.position && typeof data.position === "string") {
+    //   const position = await positionRepo.findOneBy({ name: data.position });
+    //   if (position) userData.positionId = position.id;
+    // }
+    // delete userData.position;
+
+    // if (data.teamName && typeof data.teamName === "string") {
+    //   const team = await teamRepo.findOneBy({ name: data.teamName });
+    //   if (team) userData.teamId = team.id;
+    // }    // If this user is assigned as a lead to someone, update their role to 'lead'
+    // if (data.subTeamName && typeof data.subTeamName === "string") {
+    //   const team = await subTeamRepo.findOneBy({ name: data.subTeamName });
+    //   if (team) userData.subTeamId = team.id;
+    // } 
+    // if (data.leadId) {
+    //   await UserService.ensureLeadRole(data.leadId);
+    // }
+    try{
+      data.id = (id + 1).toString();
+      await userRepo.save(data);
     }
-    delete userData.role;
-
-    if (data.position && typeof data.position === "string") {
-      const position = await positionRepo.findOneBy({ name: data.position });
-      if (position) userData.positionId = position.id;
-    }
-    delete userData.position;
-
-    if (data.teamName && typeof data.teamName === "string") {
-      const team = await teamRepo.findOneBy({ name: data.teamName });
-      if (team) userData.teamId = team.id;
-    }    // If this user is assigned as a lead to someone, update their role to 'lead'
-    if (data.leadId) {
-      await UserService.ensureLeadRole(data.leadId);
+    catch(err){
+      console.log(err);
     }
   },
 
@@ -137,22 +151,12 @@ const UserService = {
     });
     if (!lead) throw new Error("Lead user not found");
 
-    // Get the 'lead' role from the roles table
-    const leadRole = await roleRepo.findOneBy({ name: "lead" });
-    if (!leadRole) throw new Error("Lead role not found in database");
-
-    // If the user is not already a lead, update their role
-    if (!lead.role || lead.role.name !== "lead") {
-      lead.roleId = leadRole.id;
-      await userRepo.save(lead);
-      console.log(`User ${userId} role updated to 'lead'`);
-    }
   },
 
-  deleteUser: async (id: string): Promise<UserType> => {
+  deleteUser: async (id: string) => {
     const user = await userRepo.findOneBy({ id });
     if (!user) throw new Error("User not found");
-    return await userRepo.remove(user);
+    await userRepo.delete({id:user.id});
   },
 
   getTeamMembers: async (teamId: number): Promise<UserType[]> => {

@@ -115,7 +115,7 @@ export const userService = {
     leadId?: number;
     hrId?: number;
     isActive?: boolean;
-  }) => apiRequest("/users/create", { method: "POST", body: userData }),
+  }[]) => apiRequest("/users/create", { method: "POST", body: userData }),
 
   updateUser: (userData: {
     id: number;
@@ -129,7 +129,7 @@ export const userService = {
     leadId?: number;
     hrId?: number;
     isActive?: boolean;
-  }) => apiRequest("/users/update", { method: "POST", body: userData }),
+  }) =>apiRequest("/users/update", { method: "POST", body: userData }),
 
   deleteUser: (id: number) =>
     apiRequest(`/users/delete/${id}`, { method: "DELETE" }),

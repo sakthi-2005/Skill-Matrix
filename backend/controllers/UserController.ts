@@ -1,6 +1,9 @@
 import UserService from "../services/UserService";
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import { Controller, AuthRequest } from '../types/hapi';
+import { UserType } from "../types/entities";
+import { Queue } from "bullmq";
+import { config } from "../config/redisConfig";
 
 const UserController: Controller = {
   getUserById: async (req: AuthRequest, h: ResponseToolkit) => {
@@ -25,12 +28,19 @@ const UserController: Controller = {
   createUser: async (req: Request, h: ResponseToolkit) => {
     try {
       const data = req.payload as any;
-      if(!data.userId || !data.name){
-        return h.response({error:"Missing required fields ID and Name"}).code(400);
-      }
-      const created = await UserService.createUser(data);
       
-      return h.response({message: "User Added successfully!"}).code(201);
+      if(!data || !data.length)throw new Error("Verify User Data!");
+
+      const split = parseInt(process.env.UPLOAD_LIMIT);
+      const queue = new Queue("addUsers",config);
+
+      for(let i=0;i<data.length;i+=split){
+        const queue_data = data.slice(i,i+split);
+        await queue.add("users",{ users : queue_data });
+      }
+      // const created = await UserService.createUser(data);
+      
+      return h.response({message: "User Added successfully!<br/>Refresh after some time to see the changes"}).code(201);
     } catch (err: any) {
       return h.response({ error: err.message }).code(400);
     }
@@ -47,7 +57,7 @@ const UserController: Controller = {
 
   deleteUser: async (req: Request, h: ResponseToolkit) => {
     try {
-      const deleted = await UserService.deleteUser(req.params.id);
+      await UserService.deleteUser(req.params.id);
       return h.response({message:"Successfully Deleted user with ID " + req.params.id + "!"}).code(200);
     } catch (err: any) {
       return h.response({ error: err.message }).code(404);
