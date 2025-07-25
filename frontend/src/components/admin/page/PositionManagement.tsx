@@ -1,33 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Label } from '../ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
+import { Textarea } from '../../ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../ui/dialog';
+import { Label } from '../../ui/label';
 import { 
   Plus, 
   Edit, 
   Trash2, 
-  RotateCcw, 
   Search,
   Eye,
   EyeOff,
-  Users,
   Briefcase,
   Power,
   PowerOff,
   Target,
-  Settings
 } from 'lucide-react';
-import { adminService } from '../../services/adminService';
-import { skillService } from '../../services/api';
-import { Position, CreatePositionRequest, UpdatePositionRequest } from '../../types/admin';
+import { adminService } from '../../../services/adminService';
+import { skillService } from '../../../services/api';
+import { Position, CreatePositionRequest } from '../../../types/admin';
 import { toast } from 'sonner';
-import { PositionDetailModal } from './PositionDetailModal';
-import { ConfirmationModal } from './ConfirmationModal';
-import { PositionSkillMapping } from './PositionSkillMapping';
+import { PositionDetailModal } from '../modals/PositionDetailModal';
+import { ConfirmationModal } from '../modals/ConfirmationModal';
+import { PositionSkillMapping } from '../PositionSkillMapping';
 
 interface PositionManagementProps {
   onStatsUpdate: () => void;

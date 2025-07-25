@@ -1,30 +1,30 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Badge } from '../ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { SubTeam } from '../../types/admin';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Team } from '../../../types/admin';
 import { 
+  Building2, 
   Users, 
   Calendar, 
   User, 
   Mail,
   MapPin,
-  Clock,
-  Building
+  Clock
 } from 'lucide-react';
 
-interface SubTeamDetailModalProps {
-  subTeam: SubTeam | null;
+interface TeamDetailModalProps {
+  team: Team | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({ 
-  subTeam, 
+export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ 
+  team, 
   isOpen, 
   onClose 
 }) => {
-  if (!subTeam) return null;
+  if (!team) return null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -41,17 +41,17 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            <Users className="h-5 w-5" />
-            <span>{subTeam.name}</span>
-            <Badge variant={subTeam.isActive ? 'default' : 'secondary'}>
-              {subTeam.isActive ? 'Active' : 'Inactive'}
+            <Building2 className="h-5 w-5" />
+            <span>{team.name}</span>
+            <Badge variant={team.isActive ? 'default' : 'secondary'}>
+              {team.isActive ? 'Active' : 'Inactive'}
             </Badge>
-            {subTeam.deletedAt && (
+            {team.deletedAt && (
               <Badge variant="destructive">Deleted</Badge>
             )}
           </DialogTitle>
           <DialogDescription>
-            Detailed information about the sub-team and its members
+            Detailed information about the team and its members
           </DialogDescription>
         </DialogHeader>
 
@@ -63,22 +63,14 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Sub-Team Name</label>
-                <p className="text-sm">{subTeam.name}</p>
+                <label className="text-sm font-medium text-gray-500">Team Name</label>
+                <p className="text-sm">{team.name}</p>
               </div>
               
-              <div>
-                <label className="text-sm font-medium text-gray-500">Parent Team</label>
-                <div className="flex items-center space-x-1 mt-1">
-                  <Building className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{subTeam.Team?.name || 'N/A'}</span>
-                </div>
-              </div>
-              
-              {subTeam.description && (
+              {team.description && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Description</label>
-                  <p className="text-sm">{subTeam.description}</p>
+                  <p className="text-sm">{team.description}</p>
                 </div>
               )}
 
@@ -86,15 +78,15 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
                   <div className="flex items-center space-x-2 mt-1">
-                    <Badge variant={subTeam.isActive ? 'default' : 'secondary'}>
-                      {subTeam.isActive ? 'Active' : 'Inactive'}
+                    <Badge variant={team.isActive ? 'default' : 'secondary'}>
+                      {team.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Sub-Team ID</label>
-                  <p className="text-sm">#{subTeam.id}</p>
+                  <label className="text-sm font-medium text-gray-500">Team ID</label>
+                  <p className="text-sm">#{team.id}</p>
                 </div>
               </div>
 
@@ -103,7 +95,7 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
                   <label className="text-sm font-medium text-gray-500">Created</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{formatDate(subTeam.createdAt)}</span>
+                    <span className="text-sm">{formatDate(team.createdAt)}</span>
                   </div>
                 </div>
                 
@@ -111,35 +103,70 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
                   <label className="text-sm font-medium text-gray-500">Last Updated</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{formatDate(subTeam.updatedAt)}</span>
+                    <span className="text-sm">{formatDate(team.updatedAt)}</span>
                   </div>
                 </div>
               </div>
 
-              {subTeam.deletedAt && (
+              {team.deletedAt && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Deleted At</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <Clock className="h-4 w-4 text-red-400" />
-                    <span className="text-sm text-red-600">{formatDate(subTeam.deletedAt)}</span>
+                    <span className="text-sm text-red-600">{formatDate(team.deletedAt)}</span>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Sub-Team Members */}
+          {/* Sub-Teams */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <Users className="h-5 w-5" />
+                <span>Sub-Teams ({team.subteam?.length || 0})</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {team.subteam && team.subteam.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {team.subteam.map((subTeam) => (
+                    <div key={subTeam.id} className="border rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{subTeam.name}</h4>
+                        <Badge variant={subTeam.isActive ? 'default' : 'secondary'}>
+                          {subTeam.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      {subTeam.description && (
+                        <p className="text-sm text-gray-600 mb-2">{subTeam.description}</p>
+                      )}
+                      <div className="flex items-center space-x-1 text-sm text-gray-500">
+                        <Users className="h-3 w-3" />
+                        <span>{subTeam.users?.length || 0} members</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No sub-teams found</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Team Members */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center space-x-2">
                 <User className="h-5 w-5" />
-                <span>Sub-Team Members ({subTeam.users?.length || 0})</span>
+                <span>Team Members ({team.user?.length || 0})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {subTeam.users && subTeam.users.length > 0 ? (
+              {team.user && team.user.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {subTeam.users.map((user) => (
+                  {team.user.map((user) => (
                     <div key={user.id} className="border rounded-lg p-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -178,7 +205,7 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">No sub-team members found</p>
+                <p className="text-gray-500 text-center py-4">No team members found</p>
               )}
             </CardContent>
           </Card>

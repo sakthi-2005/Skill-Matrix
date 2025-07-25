@@ -1,30 +1,30 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Badge } from '../ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Team } from '../../types/admin';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Position } from '../../../types/admin';
 import { 
-  Building2, 
-  Users, 
+  Briefcase, 
   Calendar, 
   User, 
   Mail,
-  MapPin,
-  Clock
+  Clock,
+  Building,
+  Users
 } from 'lucide-react';
 
-interface TeamDetailModalProps {
-  team: Team | null;
+interface PositionDetailModalProps {
+  position: Position | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ 
-  team, 
+export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({ 
+  position, 
   isOpen, 
   onClose 
 }) => {
-  if (!team) return null;
+  if (!position) return null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -41,17 +41,17 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            <Building2 className="h-5 w-5" />
-            <span>{team.name}</span>
-            <Badge variant={team.isActive ? 'default' : 'secondary'}>
-              {team.isActive ? 'Active' : 'Inactive'}
+            <Briefcase className="h-5 w-5" />
+            <span>{position.name}</span>
+            <Badge variant={position.isActive ? 'default' : 'secondary'}>
+              {position.isActive ? 'Active' : 'Inactive'}
             </Badge>
-            {team.deletedAt && (
+            {position.deletedAt && (
               <Badge variant="destructive">Deleted</Badge>
             )}
           </DialogTitle>
           <DialogDescription>
-            Detailed information about the team and its members
+            Detailed information about the position and its holders
           </DialogDescription>
         </DialogHeader>
 
@@ -63,14 +63,14 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Team Name</label>
-                <p className="text-sm">{team.name}</p>
+                <label className="text-sm font-medium text-gray-500">Position Name</label>
+                <p className="text-sm">{position.name}</p>
               </div>
               
-              {team.description && (
+              {position.description && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Description</label>
-                  <p className="text-sm">{team.description}</p>
+                  <p className="text-sm">{position.description}</p>
                 </div>
               )}
 
@@ -78,15 +78,15 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
                   <div className="flex items-center space-x-2 mt-1">
-                    <Badge variant={team.isActive ? 'default' : 'secondary'}>
-                      {team.isActive ? 'Active' : 'Inactive'}
+                    <Badge variant={position.isActive ? 'default' : 'secondary'}>
+                      {position.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Team ID</label>
-                  <p className="text-sm">#{team.id}</p>
+                  <label className="text-sm font-medium text-gray-500">Position ID</label>
+                  <p className="text-sm">#{position.id}</p>
                 </div>
               </div>
 
@@ -95,7 +95,7 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
                   <label className="text-sm font-medium text-gray-500">Created</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{formatDate(team.createdAt)}</span>
+                    <span className="text-sm">{formatDate(position.createdAt)}</span>
                   </div>
                 </div>
                 
@@ -103,70 +103,35 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
                   <label className="text-sm font-medium text-gray-500">Last Updated</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{formatDate(team.updatedAt)}</span>
+                    <span className="text-sm">{formatDate(position.updatedAt)}</span>
                   </div>
                 </div>
               </div>
 
-              {team.deletedAt && (
+              {position.deletedAt && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Deleted At</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <Clock className="h-4 w-4 text-red-400" />
-                    <span className="text-sm text-red-600">{formatDate(team.deletedAt)}</span>
+                    <span className="text-sm text-red-600">{formatDate(position.deletedAt)}</span>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Sub-Teams */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center space-x-2">
-                <Users className="h-5 w-5" />
-                <span>Sub-Teams ({team.subteam?.length || 0})</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {team.subteam && team.subteam.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {team.subteam.map((subTeam) => (
-                    <div key={subTeam.id} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">{subTeam.name}</h4>
-                        <Badge variant={subTeam.isActive ? 'default' : 'secondary'}>
-                          {subTeam.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </div>
-                      {subTeam.description && (
-                        <p className="text-sm text-gray-600 mb-2">{subTeam.description}</p>
-                      )}
-                      <div className="flex items-center space-x-1 text-sm text-gray-500">
-                        <Users className="h-3 w-3" />
-                        <span>{subTeam.users?.length || 0} members</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-4">No sub-teams found</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Team Members */}
+          {/* Position Holders */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center space-x-2">
                 <User className="h-5 w-5" />
-                <span>Team Members ({team.user?.length || 0})</span>
+                <span>Position Holders ({position.user?.length || 0})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {team.user && team.user.length > 0 ? (
+              {position.user && position.user.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {team.user.map((user) => (
+                  {position.user.map((user) => (
                     <div key={user.id} className="border rounded-lg p-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -188,10 +153,16 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
                             <Mail className="h-3 w-3" />
                             <span>{user.email}</span>
                           </div>
-                          {user.position && (
+                          {user.Team && (
                             <div className="flex items-center space-x-1 text-sm text-gray-500">
-                              <MapPin className="h-3 w-3" />
-                              <span>{user.position.name}</span>
+                              <Building className="h-3 w-3" />
+                              <span>{user.Team.name}</span>
+                            </div>
+                          )}
+                          {user.SubTeam && (
+                            <div className="flex items-center space-x-1 text-sm text-gray-500">
+                              <Users className="h-3 w-3" />
+                              <span>{user.SubTeam.name}</span>
                             </div>
                           )}
                           {user.role && (
@@ -205,7 +176,7 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">No team members found</p>
+                <p className="text-gray-500 text-center py-4">No position holders found</p>
               )}
             </CardContent>
           </Card>

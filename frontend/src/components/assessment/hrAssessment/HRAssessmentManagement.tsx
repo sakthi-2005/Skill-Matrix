@@ -18,15 +18,15 @@ import {
   AssessmentCycle,
 } from "@/types/assessmentTypes";
 
-import { UserHistoryModal } from "./userHostoryModel";
-import { ScoreHistoryModal } from "./scoreHistoryModel";
-import { HRReviewModal } from "./hrReviewModel";
-import { BulkAssessmentModal } from "./bulkAssessmentModel";
+import { UserHistoryModal } from "./modals/userHistoryModel";
+import { ScoreHistoryModal } from "./modals/scoreHistoryModel";
+import { HRReviewModal } from "./modals/hrReviewModel";
+import { BulkAssessmentModal } from "./modals/bulkAssessmentModel";
 //import { InitiateAssessmentModal } from "./initiateAssessmentModel";
-import { PendingReviewsTab } from "./pendingReviewsTab";
-import { AssessmentsTab } from "./assessmentsTab";
-import { CyclesTab } from "./cyclesTabl";
-import { OverviewTab } from "./overviewTab";
+import { PendingReviewsTab } from "./page/pendingReviewsTab";
+import { AssessmentsTab } from "./page/assessmentsTab";
+import { CyclesTab } from "./page/cyclesTab";
+import { OverviewTab } from "./page/overviewTab";
 
 
 const HRAssessmentManagement: React.FC = () => {

@@ -39,7 +39,6 @@ const OAuthCallback = () => {
         }
 
         const payload = JSON.parse(atob(tokenParts[1]));
-        console.log(payload);
         // Create user object matching the User interface from authSlice
         const user = payload;
 

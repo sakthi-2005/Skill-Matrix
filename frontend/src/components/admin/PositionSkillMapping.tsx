@@ -1,41 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Label } from '../ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Checkbox } from '../ui/checkbox';
 import { 
-  Plus, 
-  Edit, 
-  Trash2, 
   Search,
   Target,
-  Settings,
   Save,
-  X
 } from 'lucide-react';
 import { skillService } from '../../services/api';
 import { adminService } from '../../services/adminService';
 import { toast } from 'sonner';
-
-interface Skill {
-  id: number;
-  name: string;
-  basic:string
-  low: string;
-  medium: string;
-  high: string;
-  expert: string;
-  positionId: number;
-}
-
-interface Position {
-  id: number;
-  name: string;
-}
+import { Skill, Position } from '../../types/admin';
 
 interface PositionSkillMappingProps {
   positionId: number;
@@ -74,10 +50,7 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
       ]);
 
       if (skillsResponse) {
-        setSkills(skillsResponse
-          // .filter((skill: Skill) => skill.positionId == positionId)
-          // .map((skill: Skill) => skill.id)
-        );
+        setSkills(skillsResponse);
         // Set currently mapped skills for this position
         const mappedSkills = skillsResponse
           .filter((skill: Skill) => skill.positionId == positionId)
@@ -109,34 +82,8 @@ export const PositionSkillMapping: React.FC<PositionSkillMappingProps> = ({
   const handleSave = async () => {
     try {
       setSaving(true);
-      
-      // Update each skill's position array
-      // const updatePromises = skills.map(async (skill) => {
-      //   const currentPositions = skill.positionId;
-      //   const shouldIncludePosition = selectedSkills.has(skill.id);
-      //   const currentlyIncluded = currentPositions == positionId;
-
-      //   if (shouldIncludePosition && !currentlyIncluded) {
-      //     // Add position to skill
-      //     const updatedPositions = [currentPositions, positionId];
-      //     return skillService.updateSkill({
-      //       ...skill,
-      //       position: updatedPositions
-      //     });
-      //   } else if (!shouldIncludePosition && currentlyIncluded) {
-      //     // Remove position from skill
-      //     // const updatedPositions = currentPositions.filter(id => id !== positionId);
-      //     return skillService.updateSkill({
-      //       ...skill,
-      //       position: []
-      //     });
-      //   }
-      //   return Promise.resolve();
-      // });
-
-      // await Promise.all(updatePromises);
       toast.success('Position skill requirements updated successfully');
-      onSave?.(); // Call the onSave callback to refresh parent data
+      onSave?.(); 
       onClose();
     } catch (error: any) {
       toast.error(error.message || 'Failed to update skill requirements');
