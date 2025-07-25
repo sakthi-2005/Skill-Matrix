@@ -29,9 +29,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case 'delete':
         return <Trash2 className="h-6 w-6 text-red-600" />;
       case 'deactivate':
-        return <PowerOff className="h-6 w-6 text-orange-600" />;
+        return <PowerOff className="h-6 w-6 text-red-600" />;
       case 'activate':
-        return <AlertTriangle className="h-6 w-6 text-green-600" />;
+        return <PowerOff className="h-6 w-6 text-green-600" />;
       default:
         return <AlertTriangle className="h-6 w-6 text-gray-600" />;
     }
@@ -40,9 +40,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const getButtonVariant = () => {
     switch (type) {
       case 'delete':
-        return 'destructive';
       case 'deactivate':
-        return 'outline';
+        return 'destructive';
       case 'activate':
         return 'default';
       default:
