@@ -26,7 +26,7 @@ export interface SubTeam {
 export interface Position {
   id: number;
   name: string;
-  description?: string;
+  roleId: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

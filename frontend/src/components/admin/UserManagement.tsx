@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import Papa from 'papaparse';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
@@ -31,6 +32,7 @@ import { userService, roleService, skillService, assessmentService } from '../..
 import { toast } from 'sonner';
 import { UserDetailModal } from './UserDetailModal';
 import { ConfirmationModal } from './ConfirmationModal';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 
 interface UserData {
   id: number;
@@ -97,6 +99,7 @@ interface SubTeam {
 interface Position {
   id: number;
   name: string;
+  roleId: number;
 }
 
 interface Role {
@@ -138,6 +141,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all');
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSDialogOpen, setIsSDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -163,6 +167,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
     hrId: undefined,
     isActive: true,
   });
+  const [BulkUser,setBulkUser] = useState<[]|null>([])
 
   useEffect(() => {
     loadData();
@@ -222,7 +227,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         await userService.updateUser({ id: editingUser.id, ...formData });
         toast.success('User updated successfully');
       } else {
-        await userService.createUser(formData);
+        await userService.createUser([formData]);
         toast.success('User created successfully');
       }
       setIsDialogOpen(false);
@@ -275,7 +280,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
           // For now, we'll use update to change isActive status
           await userService.updateUser({ 
             id: confirmationModal.user.id, 
-            isActive: true 
+            isActive: true                                                          // temprovary fix
           });
           toast.success('User activated successfully');
           break;
@@ -391,6 +396,37 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
            matchesPositionFilter && matchesRoleFilter && !user.deletedAt;
   });
 
+  function handleFileChange(e){
+    const file = e.target.files[0];
+
+     if (!file) return;
+
+    Papa.parse(file, {
+      header: true, // if CSV has headers
+      skipEmptyLines: true,
+      complete: function (results) {
+        console.log('Parsed data:', results.data);
+        setBulkUser(results.data);
+      },
+      error: function (err) {
+        console.error('Error parsing:', err);
+      }
+    });
+
+
+  }
+
+  async function handleSaveMultipleUser(){
+    try{
+      await userService.createUser(BulkUser);
+      loadData();
+      onStatsUpdate();
+    }
+    catch(err){
+      toast.error(err.message || `Failed to add users`);
+    }
+  }
+
 
 
   return (
@@ -482,12 +518,15 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                     <Select
                       value={formData.positionId.toString()}
                       onValueChange={(value) => setFormData({ ...formData, positionId: parseInt(value) })}
+                      disabled={positions.filter(val=>val.roleId === formData.roleId).length ? false : true }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a position" />
                       </SelectTrigger>
                       <SelectContent>
-                        {positions.map((position) => (
+                        {positions
+                        .filter(val=>val.roleId === formData.roleId)
+                        .map((position) => (
                           <SelectItem key={position.id} value={position.id.toString()}>
                             {position.name}
                           </SelectItem>
@@ -528,6 +567,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         ...formData, 
                         subTeamId: value === "unassigned" ? undefined : parseInt(value) 
                       })}
+                      disabled={subTeams.filter(subTeam =>subTeam.teamId === formData.teamId).length ? false : true}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a sub team" />

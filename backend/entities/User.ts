@@ -56,6 +56,24 @@ export const User = new EntitySchema<UserType>({
       type: "text",
       nullable: true,
     },
+        // DottedLineManager: {
+    //   type: "varchar",
+    //   nullable: true,
+    //   name: "dotted_line_manager"
+    // },
+    // Band : {
+    //   type: "varchar",
+    //   nullable: true
+    // },
+    // internAssociateId:{
+    //   type: "varchar",
+    //   nullable: true,
+    //   name: "intern_associate_id"
+    // },
+    // pip :{
+    //   type: "varchar",
+    //   nullable: true,
+    // },
     isActive: {
       type: "boolean",
       default: true,
