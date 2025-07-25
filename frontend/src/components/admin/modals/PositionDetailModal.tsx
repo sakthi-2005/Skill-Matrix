@@ -28,13 +28,15 @@ interface PositionDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave?: () => void;
+  openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', position: Position) => void;
 }
 
 export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({ 
   position, 
   isOpen, 
   onClose,
-  onSave
+  onSave,
+  openConfirmationModal
 }) => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(false);
@@ -120,12 +122,50 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
   const handleSaveSkills = async () => {
     try {
       setSaving(true);
+      
+      // Update all skills that should be assigned to this position
+      const selectedSkillsArray = Array.from(selectedSkills);
+      const skillUpdates = selectedSkillsArray.map(skillId => {
+        const existingSkill = skills.find(s => s.id === skillId);
+        if (!existingSkill) return Promise.resolve();
+        
+        return skillService.updateSkill({
+          id: skillId,
+          name: existingSkill.name,
+          low: existingSkill.low,
+          medium: existingSkill.medium,
+          average: existingSkill.medium,
+          high: existingSkill.high,
+          position: [position.id]  // Pass as array of position IDs
+        });
+      });
+      
+      // Also update any previously assigned skills that are no longer selected
+      const unselectedSkills = skills
+        .filter(skill => skill.positionId === position.id && !selectedSkills.has(skill.id))
+        .map(skill => {
+          return skillService.updateSkill({
+            id: skill.id,
+            name: skill.name,
+            low: skill.low,
+            medium: skill.medium,
+            average: skill.medium,
+            high: skill.high,
+            position: []  // Empty array means not assigned to any position
+          });
+        });
+
+      // Wait for all updates to complete
+      await Promise.all([...skillUpdates, ...unselectedSkills]);
+      
       toast.success('Position skill requirements updated successfully');
       onSave?.();
     } catch (error: any) {
       toast.error(error.message || 'Failed to update skill requirements');
+      console.error('Error updating skills:', error);
     } finally {
       setSaving(false);
+      setShowSkillsSection(false);
     }
   };
 
@@ -161,15 +201,15 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl modal-content flex flex-col position-detail-modal">
        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center space-x-2">
-            <Briefcase className="h-5 w-5" />
-            <span>{position.name}</span>
-            <Badge variant={position.isActive ? 'default' : 'secondary'}>
-              {position.isActive ? 'Active' : 'Inactive'}
-            </Badge>
-            {position.deletedAt && (
-              <Badge variant="destructive">Deleted</Badge>
-            )}
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Briefcase className="h-5 w-5" />
+              <span>{position.name}</span>
+              {position.deletedAt && (
+                <Badge variant="destructive">Deleted</Badge>
+              )}
+            </div>
+            {!position.deletedAt}
           </DialogTitle>
           <DialogDescription>
             Detailed information about the position and its holders
@@ -180,7 +220,19 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Basic Information</CardTitle>
+                <Button
+                  variant={position.isActive ? "destructive" : "default"}
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openConfirmationModal(position.isActive ? 'deactivate' : 'activate', position);
+                  }}
+                >
+                  {position.isActive ? 'Deactivate' : 'Activate'} Position
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -198,8 +250,8 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <Badge variant={position.isActive ? 'default' : 'secondary'}>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <Badge variant={position.isActive ? 'default' : 'secondary'} className="mr-2">
                       {position.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>

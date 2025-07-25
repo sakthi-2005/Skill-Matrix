@@ -309,60 +309,30 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                     </div>
                   </CardTitle>
                   
-                  {/* Action buttons beside the name */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  {/* Position Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditDialog(position);
                       }}
-                      className="h-7 w-7 p-0 m-0"
-                      title="Edit"
+                      className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
                     >
-                      <Edit className="h-3 w-3" />
+                      <Edit className="h-4 w-4" />
                     </Button>
-                    
-                    {position.isActive ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openConfirmationModal('deactivate', position);
-                        }}
-                        className="h-7 w-7 p-0 m-0 text-red-600 hover:text-red-700"
-                        title="Deactivate"
-                      >
-                        <PowerOff className="h-3 w-3" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openConfirmationModal('activate', position);
-                        }}
-                        className="h-7 w-7 p-0 m-0 text-green-600 hover:text-green-700"
-                        title="Activate"
-                      >
-                        <Power className="h-3 w-3" />
-                      </Button>
-                    )}
-                    
+
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openConfirmationModal('delete', position);
                       }}
-                      className="h-7 w-7 p-0 m-0 text-red-600 hover:text-red-700"
-                      title="Delete"
+                      className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -391,6 +361,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         onSave={loadPositions}
+        openConfirmationModal={openConfirmationModal}
       />
 
       <ConfirmationModal
