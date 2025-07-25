@@ -374,11 +374,10 @@ const HRAssessmentManagement: React.FC = () => {
     <div className="">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="mb-8">
           <h1 className="text-3xl font-bold">Assessment Management</h1>
-          <p className="text-gray-600">Manage skill assessments across the organization</p>
         </div>
-        <div className="flex gap-3">
+        <div className="mb-5 flex gap-3">
           {/* <button
             onClick={() => {
               if (users.length === 0 || skills.length === 0) {
@@ -450,7 +449,7 @@ const HRAssessmentManagement: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="mt-5 bg-white rounded-lg border border-gray-200 shadow-sm">
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             {tabs.map((tab) => {

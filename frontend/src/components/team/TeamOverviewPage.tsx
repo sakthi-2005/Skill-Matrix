@@ -648,7 +648,7 @@ const TeamOverviewPage = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Lead Score:</span>
                           <span className="font-medium">
-                            {skill.score}/5
+                            {skill.lead_score}/5
                           </span>
                         </div>
                         <div className="flex justify-between">
