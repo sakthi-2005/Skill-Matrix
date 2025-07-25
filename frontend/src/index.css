@@ -145,4 +145,35 @@
   .compact-card button:focus-visible {
     @apply outline-none ring-0;
   }
+
+  /* Fix for ghost scrolling in modals */
+  .position-detail-modal {
+    contain: layout style paint;
+    overflow: hidden;
+  }
+
+  .position-detail-modal .scrollable-content {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .position-detail-modal .scrollable-content::-webkit-scrollbar {
+    display: none;
+  }
+
+  .skills-list-container {
+    overflow-y: auto;
+    overscroll-behavior: contain;    
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+
+  .skills-list-container::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+  
 }
