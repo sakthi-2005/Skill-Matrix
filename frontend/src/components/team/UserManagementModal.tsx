@@ -163,7 +163,7 @@ const UserManagementModal = ({
       setIsSubmitting(true);
 
       if (mode === "add") {
-        await userService.createUser(formData);
+        await userService.createUser([formData]);
         toast({
           title: "Success",
           description: "User created successfully",
