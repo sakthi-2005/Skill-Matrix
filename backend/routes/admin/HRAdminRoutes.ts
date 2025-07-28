@@ -177,6 +177,13 @@ export const HRAdminRoutes = (server: Server) => {
   // ============ STATISTICS ============
   server.route({
     method: "GET",
+    path: "/teams/{teamId}/members",
+    options: authorizeRoles(["admin", "hr"]),
+    handler: HRAdminController.getTeamMembers,
+  });
+
+  server.route({
+    method: "GET",
     path: "/stats",
     options: authorizeRoles(["admin", "hr"]),
     handler: HRAdminController.getOrganizationStats,
