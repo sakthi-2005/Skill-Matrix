@@ -23,6 +23,7 @@ export const AssessmentCycleSkill = new EntitySchema<AssessmentCycleSkillType>({
       joinColumn: {
         name: "cycle_id",
       },
+      onDelete:"CASCADE"
     },
     skill: {
       type: "many-to-one",
@@ -30,6 +31,7 @@ export const AssessmentCycleSkill = new EntitySchema<AssessmentCycleSkillType>({
       joinColumn: {
         name: "skill_id",
       },
+      onDelete:"CASCADE"
     },
   },
 });

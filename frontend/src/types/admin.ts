@@ -100,7 +100,7 @@ export interface UpdateSubTeamRequest {
 
 export interface CreatePositionRequest {
   name: string;
-  description?: string;
+  roleId?: number;
 }
 
 export interface UpdatePositionRequest {

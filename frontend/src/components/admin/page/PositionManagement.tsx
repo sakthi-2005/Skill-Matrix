@@ -5,10 +5,10 @@ import { Input } from '../../ui/input';
 import { Textarea } from '../../ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../ui/dialog';
 import { Label } from '../../ui/label';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Edit,
+  Trash2,
   Search,
   Eye,
   EyeOff,
@@ -18,20 +18,25 @@ import {
   Target,
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
-import { skillService } from '../../../services/api';
+import { roleService, skillService } from '../../../services/api';
 import { Position, CreatePositionRequest } from '../../../types/admin';
 import { toast } from 'sonner';
 import { PositionDetailModal } from '../modals/PositionDetailModal';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
-
+ 
 interface PositionManagementProps {
   onStatsUpdate: () => void;
 }
-
+ 
+interface Role {
+  id: number;
+  name: string;
+}
+ 
 interface PositionWithSkillCount extends Position {
   skillCount?: number;
 }
-
+ 
 export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsUpdate }) => {
   const [positions, setPositions] = useState<PositionWithSkillCount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +46,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean;
     type: 'delete' | 'deactivate' | 'activate';
@@ -54,14 +60,26 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
   });
   const [formData, setFormData] = useState<CreatePositionRequest>({
     name: '',
-    description: '',
+    roleId: 0,
   });
-
-
+ 
   useEffect(() => {
     loadPositions();
+    loadRoles();
   }, [showInactive]);
-
+ 
+  const loadRoles = async () => {
+  try {
+    const response = await roleService.getAllRoles(); // Replace with actual service
+    console.log(response);
+    if (response) {
+      setRoles(response);
+    }
+  } catch (error) {
+    toast.error('Failed to load roles');
+  }
+};
+ 
   const loadPositions = async () => {
     try {
       setLoading(true);
@@ -69,25 +87,25 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         adminService.getAllPositions(false), // Always load non-deleted, we'll filter by active/inactive
         skillService.getAllSkills()
       ]);
-      
+     
       if (positionsResponse.success) {
         let positionsData = positionsResponse.data || [];
         const skillsData = skillsResponse || [];
-
+ 
         positionsData = positionsData.filter(val=>val.isActive === !showInactive)
-        
+       
         // Calculate skill count for each position
         const positionsWithSkillCount = positionsData.map((position: Position) => {
-          const skillCount = skillsData.filter((skill: any) => 
+          const skillCount = skillsData.filter((skill: any) =>
             skill.positionId === position.id
           ).length;
-          
+         
           return {
             ...position,
             skillCount
           };
         });
-        
+       
         setPositions(positionsWithSkillCount);
       }
     } catch (error) {
@@ -97,7 +115,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       setLoading(false);
     }
   };
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -114,14 +132,14 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       }
       setIsDialogOpen(false);
       setEditingPosition(null);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '', roleId: 0 });
       loadPositions();
       onStatsUpdate();
     } catch (error: any) {
       toast.error(error.message || 'Operation failed');
     }
   };
-
+ 
   const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', position: Position) => {
     setConfirmationModal({
       isOpen: true,
@@ -130,7 +148,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       loading: false
     });
   };
-
+ 
   const closeConfirmationModal = () => {
     setConfirmationModal({
       isOpen: false,
@@ -139,12 +157,12 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       loading: false
     });
   };
-
+ 
   const handleConfirmAction = async () => {
     if (!confirmationModal.position) return;
-
+ 
     setConfirmationModal(prev => ({ ...prev, loading: true }));
-
+ 
     try {
       switch (confirmationModal.type) {
         case 'activate':
@@ -160,7 +178,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           toast.success('Position deleted successfully');
           break;
       }
-      
+     
       loadPositions();
       onStatsUpdate();
       closeConfirmationModal();
@@ -171,7 +189,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       setConfirmationModal(prev => ({ ...prev, loading: false }));
     }
   };
-
+ 
   const handleRestore = async (position: Position) => {
     try {
       await adminService.restorePosition(position.id);
@@ -182,7 +200,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       toast.error(error.message || 'Failed to restore position');
     }
   };
-
+ 
   const openEditDialog = (position: Position) => {
     setEditingPosition(position);
     setFormData({
@@ -190,28 +208,28 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
     });
     setIsDialogOpen(true);
   };
-
+ 
   const openCreateDialog = () => {
     setEditingPosition(null);
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '', roleId: 0 });
     setIsDialogOpen(true);
   };
-
+ 
   const openDetailModal = (position: Position) => {
     setSelectedPosition(position);
     setIsDetailModalOpen(true);
   };
-
-
-
+ 
+ 
+ 
   const filteredPositions = positions.filter(position => {
     const matchesSearch = position.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
+   
     const matchesActiveFilter = showInactive ? true : position.isActive;
-    
+   
     return matchesSearch && matchesActiveFilter && !position.deletedAt;
   });
-
+ console.log("Role:",roles);
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -239,44 +257,68 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                   {editingPosition ? 'Edit Position' : 'Create New Position'}
                 </DialogTitle>
                 <DialogDescription>
-                  {editingPosition 
-                    ? 'Update the position information below.' 
+                  {editingPosition
+                    ? 'Update the position information below.'
                     : 'Fill in the details to create a new position.'}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Position Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
+                {editingPosition ? (
+                  <>
+                    <div>
+                      <Label htmlFor="name">Position Name</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <Label htmlFor="role">Select Role</Label>
+                      <select
+                        id="role"
+                        value={formData.roleId}
+                        onChange={(e) => setFormData({ ...formData, roleId:parseInt(e.target.value) })}
+                        className="w-full border rounded px-3 py-2 text-sm"
+                        required
+                      >
+                        <option value="">-- Select Role --</option>
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="name">Position Name</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+ 
                 <div className="flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit">
-                    {editingPosition ? 'Update' : 'Create'}
-                  </Button>
+                  <Button type="submit">{editingPosition ? 'Update' : 'Create'}</Button>
                 </div>
               </form>
+ 
             </DialogContent>
           </Dialog>
         </div>
       </div>
-
+ 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
@@ -286,7 +328,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           className="pl-10"
         />
       </div>
-
+ 
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -294,8 +336,8 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPositions.map((position) => (
-            <Card 
-              key={position.id} 
+            <Card
+              key={position.id}
               className={`cursor-pointer hover:shadow-md transition-shadow ${position.deletedAt ? 'opacity-60' : ''} compact-card`}
               onClick={() => openDetailModal(position)}
             >
@@ -310,7 +352,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                       </span>
                     </div>
                   </CardTitle>
-                  
+                 
                   {/* Position Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
@@ -324,7 +366,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-
+ 
                     <Button
                       variant="ghost"
                       size="sm"
@@ -343,14 +385,14 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           ))}
         </div>
       )}
-
+ 
       {filteredPositions.length === 0 && !loading && (
         <div className="text-center py-12">
           <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">No positions found</p>
         </div>
       )}
-
+ 
       <PositionDetailModal
         position={selectedPosition}
         isOpen={isDetailModalOpen}
@@ -358,14 +400,14 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         onSave={loadPositions}
         openConfirmationModal={openConfirmationModal}
       />
-
+ 
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
         onClose={closeConfirmationModal}
         onConfirm={handleConfirmAction}
         title={
-          confirmationModal.type === 'delete' 
-            ? 'Delete Position' 
+          confirmationModal.type === 'delete'
+            ? 'Delete Position'
             : confirmationModal.type === 'deactivate'
             ? 'Deactivate Position'
             : 'Activate Position'
@@ -378,8 +420,8 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
             : `Are you sure you want to activate "${confirmationModal.position?.name}"? This will make the position active.`
         }
         confirmText={
-          confirmationModal.type === 'delete' 
-            ? 'Delete' 
+          confirmationModal.type === 'delete'
+            ? 'Delete'
             : confirmationModal.type === 'deactivate'
             ? 'Deactivate'
             : 'Activate'
@@ -387,10 +429,10 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         type={confirmationModal.type}
         loading={confirmationModal.loading}
       />
-
-
+ 
+ 
     </div>
   );
 };
-
+ 
 export default PositionManagement;
