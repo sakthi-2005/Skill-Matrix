@@ -25,7 +25,8 @@ import {
   Building,
   MapPin,
   Shield,
-  Filter
+  Filter,
+  ChevronDown
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import { userService, roleService, skillService, assessmentService } from '../../../services/api';
@@ -650,19 +651,32 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
       {/* Dropdown trigger button */}
       <div className="relative">
-        <Select onValueChange={(value) => {
-          if (value === "single") setIsSingleOpen(true);
-          if (value === "bulk") setIsBulkOpen(true);
-        }}>
-          <SelectTrigger className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded">
-            <SelectValue placeholder="Add User" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="single">Add Single User</SelectItem>
-            <SelectItem value="bulk">Upload Bulk Users</SelectItem>
-          </SelectContent>
-        </Select>
+  <Select
+    onValueChange={(value) => {
+      if (value === "single") setIsSingleOpen(true);
+      if (value === "bulk") setIsBulkOpen(true);
+    }}
+  >
+    <SelectTrigger className="bg-blue-600 text-white hover:bg-blue-700 px-2 py-2 rounded flex items-center justify-between w-[160px]">
+      <span className="font-medium">Add User</span>
+    </SelectTrigger>
+
+    <SelectContent className="w-48">
+      <div
+        onClick={() => setIsSingleOpen(true)}
+        className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
+      >
+        Add Single User
       </div>
+      <div
+        onClick={() => setIsBulkOpen(true)}
+        className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
+      >
+        Upload Bulk Users
+      </div>
+    </SelectContent>
+  </Select>
+</div>
     </div>
         </div>
       </div>
