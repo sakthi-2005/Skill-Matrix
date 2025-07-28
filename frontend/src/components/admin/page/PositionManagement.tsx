@@ -44,7 +44,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
   const [showInactive, setShowInactive] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<PositionWithSkillCount | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -107,6 +107,21 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         });
        
         setPositions(positionsWithSkillCount);
+        
+        // Update selectedPosition if modal is open and position exists in updated data
+        if (selectedPosition && isDetailModalOpen) {
+          const updatedPosition = positionsResponse.data.find((p: Position) => p.id === selectedPosition.id);
+          if (updatedPosition) {
+            // Calculate skill count for the updated position
+            const skillCount = skillsData.filter((skill: any) =>
+              skill.positionId === updatedPosition.id
+            ).length;
+            setSelectedPosition({
+              ...updatedPosition,
+              skillCount
+            });
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading positions:', error);
@@ -179,7 +194,8 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           break;
       }
      
-      loadPositions();
+      // Reload positions (this will also update selectedPosition if modal is open)
+      await loadPositions();
       onStatsUpdate();
       closeConfirmationModal();
     } catch (error: any) {
@@ -213,7 +229,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
     setIsDialogOpen(true);
   };
  
-  const openDetailModal = (position: Position) => {
+  const openDetailModal = (position: PositionWithSkillCount) => {
     setSelectedPosition(position);
     setIsDetailModalOpen(true);
   };

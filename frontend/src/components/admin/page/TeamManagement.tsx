@@ -59,7 +59,16 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       setLoading(true);
       const response = await adminService.getAllTeams();
       if (response.success) {
-        setTeams(response.data.filter(val=>val.isActive === !showInactive) || []);
+        const filteredTeams = response.data.filter(val=>val.isActive === !showInactive) || [];
+        setTeams(filteredTeams);
+        
+        // Update selectedTeam if modal is open and team exists in updated data
+        if (selectedTeam && isDetailModalOpen) {
+          const updatedTeam = response.data.find((t: Team) => t.id === selectedTeam.id);
+          if (updatedTeam) {
+            setSelectedTeam(updatedTeam);
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading teams:', error);
@@ -271,59 +280,31 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                   </CardTitle>
                   
                   {/* Action buttons beside the name */}
-                  <div className="flex items-center space-x-1 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditDialog(team);
                       }}
-                      className="h-7 w-7 p-0"
+                      className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
                       title="Edit"
                     >
-                      <Edit className="h-3 w-3" />
+                      <Edit className="h-4 w-4" />
                     </Button>
                     
-                    {team.isActive ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openConfirmationModal('deactivate', team);
-                        }}
-                        className="h-7 w-7 p-0 text-orange-600 hover:text-orange-700"
-                        title="Deactivate"
-                      >
-                        <PowerOff className="h-3 w-3" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openConfirmationModal('activate', team);
-                        }}
-                        className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
-                        title="Activate"
-                      >
-                        <Power className="h-3 w-3" />
-                      </Button>
-                    )}
-                    
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openConfirmationModal('delete', team);
                       }}
-                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                      className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
                       title="Delete"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -351,6 +332,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
         team={selectedTeam}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+        openConfirmationModal={openConfirmationModal}
       />
 
       <ConfirmationModal
