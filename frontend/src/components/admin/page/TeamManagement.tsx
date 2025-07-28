@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
+import { Textarea } from '../../ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../ui/dialog';
 import { Label } from '../../ui/label';
 import { 
@@ -20,7 +21,6 @@ import { Team, CreateTeamRequest, UpdateTeamRequest } from '../../../types/admin
 import { toast } from 'sonner';
 import { TeamDetailModal } from '../modals/TeamDetailModal';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
-import { TeamReassignmentModal } from '../modals/TeamReassignmentModal';
 
 interface TeamManagementProps {
   onStatsUpdate: () => void;
@@ -38,17 +38,6 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean;
     type: 'delete' | 'deactivate' | 'activate';
-    team: Team | null;
-    loading: boolean;
-  }>({
-    isOpen: false,
-    type: 'delete',
-    team: null,
-    loading: false
-  });
-  const [reassignmentModal, setReassignmentModal] = useState<{
-    isOpen: boolean;
-    type: 'delete' | 'deactivate';
     team: Team | null;
     loading: boolean;
   }>({
@@ -105,60 +94,12 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   };
 
   const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', team: Team) => {
-    // For delete and deactivate, first show reassignment modal
-    if (type === 'delete' || type === 'deactivate') {
-      setReassignmentModal({
-        isOpen: true,
-        type,
-        team,
-        loading: false
-      });
-    } else {
-      // For activate, show confirmation modal directly
-      setConfirmationModal({
-        isOpen: true,
-        type,
-        team,
-        loading: false
-      });
-    }
-  };
-
-  const closeReassignmentModal = () => {
-    setReassignmentModal({
-      isOpen: false,
-      type: 'delete',
-      team: null,
+    setConfirmationModal({
+      isOpen: true,
+      type,
+      team,
       loading: false
     });
-  };
-
-  const handleReassignmentComplete = async () => {
-    if (!reassignmentModal.team) return;
-
-    setReassignmentModal(prev => ({ ...prev, loading: true }));
-
-    try {
-      switch (reassignmentModal.type) {
-        case 'deactivate':
-          await adminService.deactivateTeam(reassignmentModal.team.id);
-          toast.success('Team deactivated successfully');
-          break;
-        case 'delete':
-          await adminService.deleteTeam(reassignmentModal.team.id);
-          toast.success('Team deleted successfully');
-          break;
-      }
-      
-      loadTeams();
-      onStatsUpdate();
-      closeReassignmentModal();
-      // Close detail modal to refresh the data
-      setIsDetailModalOpen(false);
-    } catch (error: any) {
-      toast.error(error.message || `Failed to ${reassignmentModal.type} team`);
-      setReassignmentModal(prev => ({ ...prev, loading: false }));
-    }
   };
 
   const closeConfirmationModal = () => {
@@ -194,11 +135,20 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       loadTeams();
       onStatsUpdate();
       closeConfirmationModal();
-      // Close detail modal to refresh the data
-      setIsDetailModalOpen(false);
     } catch (error: any) {
       toast.error(error.message || `Failed to ${confirmationModal.type} team`);
       setConfirmationModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleRestore = async (team: Team) => {
+    try {
+      await adminService.restoreTeam(team.id);
+      toast.success('Team restored successfully');
+      loadTeams();
+      onStatsUpdate();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to restore team');
     }
   };
 
@@ -222,7 +172,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   };
 
   const filteredTeams = teams.filter(team => {
-    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (team.description && team.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    // const matchesActiveFilter = showInactive ? true : team.isActive;
     
     return matchesSearch;
   });
@@ -318,37 +271,68 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                   </CardTitle>
                   
                   {/* Action buttons beside the name */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center space-x-1 flex-shrink-0">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditDialog(team);
                       }}
-                      className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
+                      className="h-7 w-7 p-0"
                       title="Edit"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3 w-3" />
                     </Button>
                     
+                    {team.isActive ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openConfirmationModal('deactivate', team);
+                        }}
+                        className="h-7 w-7 p-0 text-orange-600 hover:text-orange-700"
+                        title="Deactivate"
+                      >
+                        <PowerOff className="h-3 w-3" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openConfirmationModal('activate', team);
+                        }}
+                        className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                        title="Activate"
+                      >
+                        <Power className="h-3 w-3" />
+                      </Button>
+                    )}
+                    
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openConfirmationModal('delete', team);
                       }}
-                      className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
+                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                       title="Delete"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="px-4 pb-4">
                 <div className="space-y-3">
+                  {team.description && (
+                    <p className="text-sm text-gray-600">{team.description}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -367,7 +351,6 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
         team={selectedTeam}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        openConfirmationModal={openConfirmationModal}
       />
 
       <ConfirmationModal
@@ -397,15 +380,6 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
         }
         type={confirmationModal.type}
         loading={confirmationModal.loading}
-      />
-
-      <TeamReassignmentModal
-        isOpen={reassignmentModal.isOpen}
-        onClose={closeReassignmentModal}
-        onConfirm={handleReassignmentComplete}
-        team={reassignmentModal.team}
-        actionType={reassignmentModal.type}
-        loading={reassignmentModal.loading}
       />
     </div>
   );

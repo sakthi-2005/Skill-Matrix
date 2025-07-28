@@ -100,11 +100,19 @@ class AdminService {
   }
 
   async deleteTeam(id: number): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}/permanent`, {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
     return this.handleResponse<ApiResponse<void>>(response);
+  }
+
+  async restoreTeam(id: number): Promise<ApiResponse<Team>> {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${id}/restore`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<Team>>(response);
   }
 
   async activateTeam(id: number): Promise<ApiResponse<Team>> {
@@ -173,7 +181,7 @@ class AdminService {
   }
 
   async deleteSubTeam(id: number): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/admin/sub-teams/${id}/permanent`, {
+    const response = await fetch(`${API_BASE_URL}/admin/sub-teams/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -247,7 +255,7 @@ class AdminService {
   }
 
   async deletePosition(id: number): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/admin/positions/${id}/permanent`, {
+    const response = await fetch(`${API_BASE_URL}/admin/positions/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });

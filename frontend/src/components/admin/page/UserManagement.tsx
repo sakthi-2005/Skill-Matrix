@@ -58,7 +58,7 @@ interface UserData {
     id: number;
     name: string;
   };
-    SubTeam?: {
+  SubTeam?: {
     id: number;
     name: string;
   };
@@ -139,11 +139,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
   const [isSingleOpen, setIsSingleOpen] = useState(false);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPositionFilter, setSelectedPositionFilter] = useState<string>('all');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all');
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -232,7 +233,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         await userService.createUser([formData]);
         toast.success('User created successfully');
       }
-      setIsSingleOpen(false);
+      setIsDialogOpen(false);
       setEditingUser(null);
       setFormData({
         userId: '',
@@ -303,14 +304,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       loadData();
       onStatsUpdate();
       closeConfirmationModal();
-      
-      // Update the selected user's status immediately for the modal to reflect changes
-      if ((confirmationModal.type === 'activate' || confirmationModal.type === 'deactivate') && selectedUser && selectedUser.id === confirmationModal.user.id) {
-        setSelectedUser({
-          ...selectedUser,
-          isActive: confirmationModal.type === 'activate'
-        });
-      }
     } catch (error: any) {
       toast.error(error.message || `Failed to ${confirmationModal.type} user`);
       setConfirmationModal(prev => ({ ...prev, loading: false }));
@@ -355,7 +348,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
     
     console.log('Form data to set:', formDataToSet);
     setFormData(formDataToSet);
-    setIsSingleOpen(true);
+    setIsDialogOpen(true);
   };
 
   const openCreateDialog = () => {
@@ -372,7 +365,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       hrId: null,
       isActive: true,
     });
-    setIsSingleOpen(true);
+    setIsDialogOpen(true);
   };
 
   const openDetailModal = async (user: UserData) => {
@@ -432,10 +425,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       loadData();
       onStatsUpdate();
       toast.success("Users added successfully");
-      setIsBulkOpen(false);
-      setBulkUser([]);
+      setIsOpen(false);
     }
-    catch(err : any){
+    catch(err){
       toast.error(err.message || `Failed to add users`);
     }
   }
@@ -813,29 +805,57 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                   {/* Action buttons beside the name */}
                   <div className="flex items-center space-x-1 flex-shrink-0">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             openEditDialog(user);
                           }}
-                          className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
+                          className="h-7 w-7 p-0"
                           title="Edit"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-3 w-3" />
                         </Button>
                         
+                        {(user.isActive !== false) ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirmationModal('deactivate', user);
+                            }}
+                            className="h-7 w-7 p-0 text-orange-600 hover:text-orange-700"
+                            title="Deactivate"
+                          >
+                            <PowerOff className="h-3 w-3" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirmationModal('activate', user);
+                            }}
+                            className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                            title="Activate"
+                          >
+                            <Power className="h-3 w-3" />
+                          </Button>
+                        )}
+                        
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             openConfirmationModal('delete', user);
                           }}
-                          className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
+                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                           title="Delete"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                   </div>
                 </div>
@@ -879,7 +899,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         user={selectedUser}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        openConfirmationModal={openConfirmationModal}
       />
 
       <ConfirmationModal

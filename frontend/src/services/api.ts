@@ -132,7 +132,7 @@ export const userService = {
   }) =>apiRequest("/users/update", { method: "POST", body: userData }),
 
   deleteUser: (id: number) =>
-    apiRequest(`/users/delete/${id}/permanent`, { method: "DELETE" }),
+    apiRequest(`/users/delete/${id}`, { method: "DELETE" }),
 
   getOrganizationSkillStats: () => apiRequest("/users/organization/skill-stats"),
 };

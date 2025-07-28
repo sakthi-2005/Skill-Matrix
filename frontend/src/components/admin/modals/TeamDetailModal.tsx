@@ -2,7 +2,6 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { Badge } from '../../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
 import { Team } from '../../../types/admin';
 import { 
   Building2, 
@@ -18,14 +17,12 @@ interface TeamDetailModalProps {
   team: Team | null;
   isOpen: boolean;
   onClose: () => void;
-  openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', team: Team) => void;
 }
 
 export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ 
   team, 
   isOpen, 
-  onClose,
-  openConfirmationModal
+  onClose 
 }) => {
   if (!team) return null;
 
@@ -62,22 +59,7 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Basic Information</CardTitle>
-                {!team.deletedAt && openConfirmationModal && (
-                  <Button
-                    variant={team.isActive ? "destructive" : "default"}
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openConfirmationModal(team.isActive ? 'deactivate' : 'activate', team);
-                    }}
-                    className={team.isActive ? "" : "bg-green-600 hover:bg-green-700 text-white"}
-                  >
-                    {team.isActive ? 'Deactivate' : 'Activate'} Team
-                  </Button>
-                )}
-              </div>
+              <CardTitle className="text-lg">Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

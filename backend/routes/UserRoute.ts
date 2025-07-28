@@ -37,12 +37,6 @@ const userRoutes = {
         handler: UserController.deleteUser,
       },
       {
-        method: "DELETE",
-        path: "/delete/{id}/permanent",
-        options: authorizeRoles([role.HR, role.ADMIN]),
-        handler: UserController.hardDeleteUser,
-      },
-      {
         method: "GET",
         path: "/matrix/team/{teamName}",
         options: authorizeRoles([role.LEAD]),
