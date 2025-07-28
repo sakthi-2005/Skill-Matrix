@@ -1,5 +1,5 @@
 import { In } from "typeorm";
-import { assessmentRequestRepo, scoreRepo, userRepo, AuditRepo, skillRepo } from "../../config/dataSource";
+import { assessmentRequestRepo, scoreRepo, userRepo, AuditRepo, skillRepo, assessmentCycleRepo } from "../../config/dataSource";
 import {  AssessmentWithHistory, LeadSkillAssessmentData, LatestScore } from "../../types/services";
 import { AssessmentStatus, role, AssessmentScheduleType } from "../../enum/enum";
 import { AssessmentRequestType } from "../../types/entities";
@@ -347,6 +347,16 @@ const AssessmentService = {
             cycleNumber: assessment.currentCycle
           })
         ];
+
+        const cycle = await assessmentCycleRepo.findOne({
+          where:{
+            id: assessment.cycleId
+          }
+        });
+ 
+        cycle.completedAssessments += 1;
+        cycle.updatedAt = new Date();
+        await assessmentCycleRepo.save(cycle);
 
         // // Schedule next assessment if needed
         // if (assessment.nextScheduledDate) {

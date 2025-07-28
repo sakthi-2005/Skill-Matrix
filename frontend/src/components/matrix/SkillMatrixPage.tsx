@@ -26,7 +26,6 @@ const SkillMatrixPage = () => {
   const isHR = user?.role.name === "hr";
   const isLead = verifyLead(user.id);
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
-  const [showSkillDropdown, setShowSkillDropdown] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;

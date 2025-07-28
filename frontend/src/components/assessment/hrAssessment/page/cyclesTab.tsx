@@ -2,6 +2,7 @@ import { AssessmentCycle } from "@/types/assessmentTypes";
 import React from "react";
 
 export const CyclesTab: React.FC<{ cycles: AssessmentCycle[]; formatDate: (date: string | Date) => string; }> = ({ cycles, formatDate }) => {
+  console.log(cycles);
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Assessment Cycles</h3>
