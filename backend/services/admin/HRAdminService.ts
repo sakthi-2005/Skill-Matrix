@@ -108,20 +108,25 @@ export const HRAdminService = {
     }
   },
 
-  async hardDeleteTeam(id: number): Promise<void> {
+  async restoreTeam(id: number): Promise<TeamType> {
     try {
-      const team = await this.getTeamById(id, true); // Include deleted to find any team
+      const team = await this.getTeamById(id, true);
       
-      // Hard delete all sub-teams first
-      await subTeamRepo.delete({ teamId: id });
+      if (!team.isActive) {
+        throw Boom.badRequest("Team is not deleted");
+      }
 
-      // Hard delete the team
-      await teamRepo.delete(id);
+      await teamRepo.update(id, {
+        isActive: true,
+        updatedAt: new Date(),
+      });
+
+      return await this.getTeamById(id);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to permanently delete team");
+      throw Boom.internal("Failed to restore team");
     }
   },
 
@@ -275,20 +280,6 @@ export const HRAdminService = {
         throw error;
       }
       throw Boom.internal("Failed to delete sub-team");
-    }
-  },
-
-  async hardDeletesubTeam(id: number): Promise<void> {
-    try {
-      await this.getsubTeamById(id, true); // Include deleted to find any sub-team
-      
-      // Hard delete the sub-team
-      await subTeamRepo.delete(id);
-    } catch (error) {
-      if (error.isBoom) {
-        throw error;
-      }
-      throw Boom.internal("Failed to permanently delete sub-team");
     }
   },
 
@@ -462,20 +453,6 @@ export const HRAdminService = {
         throw error;
       }
       throw Boom.internal("Failed to delete position");
-    }
-  },
-
-  async hardDeletePosition(id: number): Promise<void> {
-    try {
-      await this.getPositionById(id, true); // Include deleted to find any position
-      
-      // Hard delete the position
-      await positionRepo.delete(id);
-    } catch (error) {
-      if (error.isBoom) {
-        throw error;
-      }
-      throw Boom.internal("Failed to permanently delete position");
     }
   },
 

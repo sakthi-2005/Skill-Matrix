@@ -2,7 +2,6 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { Badge } from '../../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
 import { SubTeam } from '../../../types/admin';
 import { 
   Users, 
@@ -18,14 +17,12 @@ interface SubTeamDetailModalProps {
   subTeam: SubTeam | null;
   isOpen: boolean;
   onClose: () => void;
-  openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', subTeam: SubTeam) => void;
 }
 
 export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({ 
   subTeam, 
   isOpen, 
-  onClose,
-  openConfirmationModal
+  onClose 
 }) => {
   if (!subTeam) return null;
 
@@ -62,22 +59,7 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Basic Information</CardTitle>
-                {!subTeam.deletedAt && openConfirmationModal && (
-                  <Button
-                    variant={subTeam.isActive ? "destructive" : "default"}
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openConfirmationModal(subTeam.isActive ? 'deactivate' : 'activate', subTeam);
-                    }}
-                    className={subTeam.isActive ? "" : "bg-green-600 hover:bg-green-700 text-white"}
-                  >
-                    {subTeam.isActive ? 'Deactivate' : 'Activate'} Sub-Team
-                  </Button>
-                )}
-              </div>
+              <CardTitle className="text-lg">Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

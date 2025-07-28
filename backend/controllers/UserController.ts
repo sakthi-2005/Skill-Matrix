@@ -64,18 +64,6 @@ const UserController: Controller = {
     }
   },
 
-  hardDeleteUser: async (req: Request, h: ResponseToolkit) => {
-    try {
-      await UserService.hardDeleteUser(Number(req.params.id));
-      return h.response({
-        success: true,
-        message: "User permanently deleted successfully"
-      }).code(200);
-    } catch (err: any) {
-      return h.response({ error: err.message }).code(404);
-    }
-  },
-
   getTeamMemebers: async (req: Request, h: ResponseToolkit) => {
     try {
       const teamId = req.params.teamId;
