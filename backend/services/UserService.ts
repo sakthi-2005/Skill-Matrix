@@ -65,35 +65,6 @@ const UserService = {
       (SELECT COALESCE(MAX(id), 0) FROM auths)
       )`);
 
-    // Convert role, position, and team names to IDs if provided as names
-    // const userData: UserData = { ...data };
-    // let user : UserType = {
-
-    // }
-
-    // if (data.role && typeof data.role === "string") {
-    //   const role = await roleRepo.findOneBy({ name: data.role });
-    //   if (role) userData.roleId = role.id;
-    // }
-    // delete userData.role;
-
-    // if (data.position && typeof data.position === "string") {
-    //   const position = await positionRepo.findOneBy({ name: data.position });
-    //   if (position) userData.positionId = position.id;
-    // }
-    // delete userData.position;
-
-    // if (data.teamName && typeof data.teamName === "string") {
-    //   const team = await teamRepo.findOneBy({ name: data.teamName });
-    //   if (team) userData.teamId = team.id;
-    // }    // If this user is assigned as a lead to someone, update their role to 'lead'
-    // if (data.subTeamName && typeof data.subTeamName === "string") {
-    //   const team = await subTeamRepo.findOneBy({ name: data.subTeamName });
-    //   if (team) userData.subTeamId = team.id;
-    // } 
-    // if (data.leadId) {
-    //   await UserService.ensureLeadRole(data.leadId);
-    // }
     try{
       data.id = (id + 1).toString();
       await userRepo.save(data);
@@ -104,43 +75,11 @@ const UserService = {
   },
 
   updateUser: async (data: UserData): Promise<UserType> => {
-    const id: string = data.id;
-    const user = await userRepo.findOneBy({ id: id  });
-    if (!user) throw new Error("User not found");
 
-    // Check if leadId is being updated
-    const leadIdChanged = data.leadId && data.leadId !== user.leadId;
-
-    // Convert role, position, and team names to IDs if provided as names
-    const userData: UserData = { ...data };
-
-    if (data.role && typeof data.role === "string") {
-      const role = await roleRepo.findOneBy({ name: data.role });
-      if (role) userData.roleId = role.id;
-    }
-    
-    if (data.position && typeof data.position === "string") {
-      const position = await positionRepo.findOneBy({ name: data.position });
-      if (position) userData.positionId = position.id;
-    }
-    
-    if (data.teamName && typeof data.teamName === "string") {
-      const team = await teamRepo.findOneBy({ name: data.teamName });
-      if (team) userData.teamId = team.id;
-    }
-    delete userData.role;
-    delete userData.position;
-    delete userData.teamName;
-
-    userRepo.merge(user, userData as any); // accepts only the valid fields for update
-    const updatedUser = await userRepo.save(user);
-
-    // If leadId was updated, ensure the lead has the 'lead' role
-    if (leadIdChanged) {
-      await UserService.ensureLeadRole(data.leadId);
-    }
-
+    userRepo.create(data);
+    const updatedUser = await userRepo.save(data);
     return updatedUser;
+
   },
 
   // Helper method to ensure a user has the 'lead' role

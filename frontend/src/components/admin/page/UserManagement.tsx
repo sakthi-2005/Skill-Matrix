@@ -162,12 +162,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
     userId: '',
     name: '',
     email: '',
-    roleId: 0,
-    positionId: 0,
-    teamId: 0,
-    subTeamId: undefined,
-    leadId: undefined,
-    hrId: undefined,
+    roleId: null,
+    positionId: null,
+    teamId: null,
+    subTeamId: null,
+    leadId: null,
+    hrId: null,
     isActive: true,
   });
   const [BulkUser,setBulkUser] = useState<any[]|null>([])
@@ -239,12 +239,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         userId: '',
         name: '',
         email: '',
-        roleId: 0,
-        positionId: 0,
-        teamId: 0,
-        subTeamId: undefined,
-        leadId: undefined,
-        hrId: undefined,
+        roleId: null,
+        positionId: null,
+        teamId: null,
+        subTeamId: null,
+        leadId: null,
+        hrId: null,
         isActive: true,
       });
       loadData();
@@ -283,7 +283,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
           // For now, we'll use update to change isActive status
           await userService.updateUser({ 
             id: confirmationModal.user.id, 
-            isActive: true                                                          // temprovary fix
+            isActive: true
           });
           toast.success('User activated successfully');
           break;
@@ -337,9 +337,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       userId: user.userId,
       name: user.name,
       email: user.email || '',
-      roleId: user.role?.id || user.roleId || 0,
-      positionId: user.position?.id || user.positionId || 0,
-      teamId: user.Team?.id || user.teamId || 0,
+      roleId: user.role?.id || user.roleId || null,
+      positionId: user.position?.id || user.positionId || null,
+      teamId: user.Team?.id || user.teamId || null,
       subTeamId: user.SubTeam?.id || user.subTeamId,
       leadId: user.lead?.id || user.leadId,
       hrId: user.hr?.id || user.hrId,
@@ -357,12 +357,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       userId: '',
       name: '',
       email: '',
-      roleId: 0,
-      positionId: 0,
-      teamId: 0,
-      subTeamId: undefined,
-      leadId: undefined,
-      hrId: undefined,
+      roleId: null,
+      positionId: null,
+      teamId: null,
+      subTeamId: null,
+      leadId: null,
+      hrId: null,
       isActive: true,
     });
     setIsDialogOpen(true);
@@ -448,236 +448,264 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
             {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             <span>{showInactive ? 'Active' : 'Show Inactive'}</span>
           </Button>
-<div className="flex items-center justify-end gap-2">
-      <Dialog open={isSingleOpen} onOpenChange={setIsSingleOpen}>
-        <DialogContent className="max-w-2xl h-[500px] overflow-y-auto">
-          <h2 className="text-lg font-semibold mb-2">Add Single User</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>User ID</Label>
-                <Input
-                  value={formData.userId}
-                  onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-                  placeholder="e.g., LMT20001"
-                  required
-                />
-              </div>
-              <div>
-                <Label>Full Name</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
+          <div className="flex items-center justify-end gap-2">
+                <Dialog open={isSingleOpen || isDialogOpen} onOpenChange={isDialogOpen ? setIsDialogOpen : setIsSingleOpen}>
+                  <DialogContent className="max-w-2xl h-[500px] overflow-y-auto">
+                    <h2 className="text-lg font-semibold mb-2">Add Single User</h2>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>User ID</Label>
+                          <Input
+                            value={formData.userId}
+                            onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+                            placeholder="e.g., LMT20001"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label>Full Name</Label>
+                          <Input
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
 
-            <div>
-              <Label>Email</Label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
+                      <div>
+                        <Label>Email</Label>
+                        <Input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
+                      </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Role</Label>
-                <Select
-                  value={formData.roleId?.toString()}
-                  onValueChange={(value) => setFormData({ ...formData, roleId: parseInt(value) })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
-                  <SelectContent>
-                    {roles.map(role => (
-                      <SelectItem key={role.id} value={role.id.toString()}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Position</Label>
-                <Select
-                  value={formData.positionId?.toString()}
-                  onValueChange={(value) => setFormData({ ...formData, positionId: parseInt(value) })}
-                  disabled={!positions.some(val => val.roleId === formData.roleId)}
-                >
-                  <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
-                  <SelectContent>
-                    {positions
-                      .filter(val => val.roleId === formData.roleId)
-                      .map(pos => (
-                        <SelectItem key={pos.id} value={pos.id.toString()}>
-                          {pos.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Role</Label>
+                          <Select
+                            value={formData.roleId?.toString()}
+                            onValueChange={(value) => setFormData({ ...formData, roleId: parseInt(value) })}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                            <SelectContent>
+                              {roles.map(role => (
+                                <SelectItem key={role.id} value={role.id.toString()}>
+                                  {role.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Position</Label>
+                          <Select
+                            value={formData.positionId?.toString()}
+                            onValueChange={(value) => setFormData({ ...formData, positionId: parseInt(value) })}
+                            disabled={!positions.some(val => val.roleId === formData.roleId)}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+                            <SelectContent>
+                              {positions
+                                .filter(val => val.roleId === formData.roleId)
+                                .map(pos => (
+                                  <SelectItem key={pos.id} value={pos.id.toString()}>
+                                    {pos.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Team</Label>
-                <Select
-                  value={formData.teamId?.toString()}
-                  onValueChange={(value) => setFormData({ ...formData, teamId: parseInt(value), subTeamId: undefined })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
-                  <SelectContent>
-                    {teams.map(team => (
-                      <SelectItem key={team.id} value={team.id.toString()}>
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Sub Team</Label>
-                <Select
-                  value={formData.subTeamId?.toString() || ""}
-                  onValueChange={(value) =>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Team</Label>
+                          <Select
+                            value={formData.teamId?.toString()}
+                            onValueChange={(value) => setFormData({ ...formData, teamId: parseInt(value), subTeamId: null })}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
+                            <SelectContent>
+                              {teams.map(team => (
+                                <SelectItem key={team.id} value={team.id.toString()}>
+                                  {team.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Sub Team</Label>
+                          <Select
+                            value={formData.subTeamId?.toString() || ""}
+                            onValueChange={(value) =>
+                              setFormData({
+                                ...formData,
+                                subTeamId: parseInt(value)
+                              })
+                            }
+                            disabled={!subTeams.some(st => st.teamId === formData.teamId)}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select sub team" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              {subTeams
+                                .filter(st => st.teamId === formData.teamId)
+                                .map(st => (
+                                  <SelectItem key={st.id} value={st.id.toString()}>
+                                    {st.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Team Lead</Label>
+                          <Select
+                            value={formData.leadId?.toString() || "unassigned"}
+                            onValueChange={(value) =>
+                              setFormData({
+                                ...formData,
+                                leadId: value === "unassigned" ? null : parseInt(value)
+                              })
+                            }
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select lead" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              {potentialLeads.map(lead => (
+                                <SelectItem key={lead.id} value={lead.id.toString()}>
+                                  {lead.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>HR Manager</Label>
+                          <Select
+                            value={formData.hrId?.toString() || "unassigned"}
+                            onValueChange={(value) =>
+                              setFormData({
+                                ...formData,
+                                hrId: value === "unassigned" ? null : parseInt(value)
+                              })
+                            }
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select HR" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              {potentialHRs.map(hr => (
+                                <SelectItem key={hr.id} value={hr.id.toString()}>
+                                  {hr.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Status</Label>
+                        <Select
+                          value={formData.isActive ? "true" : "false"}
+                          onValueChange={(value) => setFormData({ ...formData, isActive: value === "true" })}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Active</SelectItem>
+                            <SelectItem value="false">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" type="button" onClick={() => setIsSingleOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">{editingUser ? "Update" : "Create"}</Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Bulk Upload Dialog */}
+                <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
+                  <DialogContent>
+                      <div >
+                        <h2 className="text-lg font-semibold mb-4">Upload Bulk Users</h2>
+                        <input
+                          type="file"
+                          accept=".csv"
+                          onChange={handleFileChange}
+                        />
+                      </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Dropdown trigger button */}
+                <div className="relative">
+            <Select
+              onValueChange={(value) => {
+                if (value === "single") {
+                  setFormData({
+                    userId: '',
+                    name: '',
+                    email: '',
+                    roleId: 0,
+                    positionId: 0,
+                    teamId: 0,
+                    subTeamId: undefined,
+                    leadId: undefined,
+                    hrId: undefined,
+                    isActive: true,
+                  });
+                  setIsSingleOpen(true);
+                }
+                if (value === "bulk") setIsBulkOpen(true);
+              }}
+            >
+              <SelectTrigger className="bg-blue-600 text-white hover:bg-blue-700 px-2 py-2 rounded flex items-center justify-between w-[160px]">
+                <span className="font-medium">Add User</span>
+              </SelectTrigger>
+
+              <SelectContent className="w-48">
+                <div
+                  onClick={() => {
+                    setIsSingleOpen(true);
                     setFormData({
-                      ...formData,
-                      subTeamId: value === "unassigned" ? undefined : parseInt(value)
-                    })
-                  }
-                  disabled={!subTeams.some(st => st.teamId === formData.teamId)}
+                    userId: '',
+                    name: '',
+                    email: '',
+                    roleId: 0,
+                    positionId: 0,
+                    teamId: 0,
+                    subTeamId: undefined,
+                    leadId: undefined,
+                    hrId: undefined,
+                    isActive: true,
+                  });
+                  }}
+                  className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
                 >
-                  <SelectTrigger><SelectValue placeholder="Select sub team" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {subTeams
-                      .filter(st => st.teamId === formData.teamId)
-                      .map(st => (
-                        <SelectItem key={st.id} value={st.id.toString()}>
-                          {st.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Team Lead</Label>
-                <Select
-                  value={formData.leadId?.toString() || "unassigned"}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      leadId: value === "unassigned" ? undefined : parseInt(value)
-                    })
-                  }
+                  Add Single User
+                </div>
+                <div
+                  onClick={() => setIsBulkOpen(true)}
+                  className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
                 >
-                  <SelectTrigger><SelectValue placeholder="Select lead" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {potentialLeads.map(lead => (
-                      <SelectItem key={lead.id} value={lead.id.toString()}>
-                        {lead.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>HR Manager</Label>
-                <Select
-                  value={formData.hrId?.toString() || "unassigned"}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      hrId: value === "unassigned" ? undefined : parseInt(value)
-                    })
-                  }
-                >
-                  <SelectTrigger><SelectValue placeholder="Select HR" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {potentialHRs.map(hr => (
-                      <SelectItem key={hr.id} value={hr.id.toString()}>
-                        {hr.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label>Status</Label>
-              <Select
-                value={formData.isActive ? "true" : "false"}
-                onValueChange={(value) => setFormData({ ...formData, isActive: value === "true" })}
-              >
-                <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">Active</SelectItem>
-                  <SelectItem value="false">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" type="button" onClick={() => setIsSingleOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">{editingUser ? "Update" : "Create"}</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Upload Dialog */}
-      <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
-        <DialogContent>
-            <div >
-              <h2 className="text-lg font-semibold mb-4">Upload Bulk Users</h2>
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-              />
-            </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dropdown trigger button */}
-      <div className="relative">
-  <Select
-    onValueChange={(value) => {
-      if (value === "single") setIsSingleOpen(true);
-      if (value === "bulk") setIsBulkOpen(true);
-    }}
-  >
-    <SelectTrigger className="bg-blue-600 text-white hover:bg-blue-700 px-2 py-2 rounded flex items-center justify-between w-[160px]">
-      <span className="font-medium">Add User</span>
-    </SelectTrigger>
-
-    <SelectContent className="w-48">
-      <div
-        onClick={() => setIsSingleOpen(true)}
-        className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
-      >
-        Add Single User
-      </div>
-      <div
-        onClick={() => setIsBulkOpen(true)}
-        className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
-      >
-        Upload Bulk Users
-      </div>
-    </SelectContent>
-  </Select>
-</div>
-    </div>
+                  Upload Bulk Users
+                </div>
+              </SelectContent>
+            </Select>
+          </div>
+          </div>
         </div>
       </div>
 
@@ -776,21 +804,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                   
                   {/* Action buttons beside the name */}
                   <div className="flex items-center space-x-1 flex-shrink-0">
-                    {user.deletedAt ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRestore(user);
-                        }}
-                        className="h-7 w-7 p-0"
-                        title="Restore"
-                      >
-                        <RotateCcw className="h-3 w-3" />
-                      </Button>
-                    ) : (
-                      <>
                         <Button
                           variant="outline"
                           size="sm"
@@ -844,8 +857,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
-                      </>
-                    )}
                   </div>
                 </div>
               </CardHeader>

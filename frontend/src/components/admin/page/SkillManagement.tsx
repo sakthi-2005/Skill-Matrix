@@ -186,9 +186,6 @@ const SkillManagement: React.FC<SkillManagementProps> = ({ onStatsUpdate }) => {
     <div className="">
       <div className="flex justify-between mb-4 items-center">
         <h1 className="text-3xl font-bold">Skill Management</h1>
-        <p className="text-gray-600">
-          Create, edit, and manage skill criteria for all positions
-        </p>
       </div>
 
       <SkillCreationModal

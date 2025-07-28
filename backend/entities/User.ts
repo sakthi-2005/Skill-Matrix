@@ -97,6 +97,7 @@ export const User = new EntitySchema<UserType>({
         name: "lead_id",
         referencedColumnName: "id",
       },
+      onDelete: "SET NULL"
     },
     hr: {
       target: "User",
@@ -105,6 +106,7 @@ export const User = new EntitySchema<UserType>({
         name: "hr_id",
         referencedColumnName: "id",
       },
+      onDelete: "SET NULL"
     },
     Requests: {
       target: "AssessmentRequest",
@@ -118,6 +120,7 @@ export const User = new EntitySchema<UserType>({
         name: "role_id",
         referencedColumnName: "id",
       },
+      onDelete: "SET NULL"
     },
     position: {
       target: "Position",
@@ -126,6 +129,7 @@ export const User = new EntitySchema<UserType>({
         name: "position_id",
         referencedColumnName: "id",
       },
+      onDelete: "SET NULL"
     },
     Team: {
       target: "Team",
@@ -134,6 +138,7 @@ export const User = new EntitySchema<UserType>({
         name: "team_id",
         referencedColumnName: "id",
       },
+      onDelete: "SET NULL"
     },
     subTeam: {
       target: "subTeam",
@@ -142,6 +147,7 @@ export const User = new EntitySchema<UserType>({
         name: "subTeam_id",
         referencedColumnName: "id",
       },
+      onDelete: "SET NULL"
     },
     Audit: {
       target: "Audit",

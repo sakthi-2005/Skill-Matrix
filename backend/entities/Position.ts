@@ -16,7 +16,8 @@ export const Position = new EntitySchema<PositionType>({
     },
     roleId: {
       type: "integer",
-      name: "role_id"
+      name: "role_id",
+      nullable: true
     },
     isActive: {
       type: "boolean",
@@ -47,6 +48,7 @@ export const Position = new EntitySchema<PositionType>({
         name: "role_id",
         referencedColumnName: "id",
       },
+      onDelete:"SET NULL"
     },
     skill: {
       target: "Skill",

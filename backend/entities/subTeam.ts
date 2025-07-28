@@ -17,6 +17,7 @@ export const subTeam = new EntitySchema<subTeamType>({
     teamId: {
       type: "int",
       name: "team_id",
+      nullable: true
     },
     isActive: {
       type: "boolean",
@@ -47,6 +48,7 @@ export const subTeam = new EntitySchema<subTeamType>({
         name: "team_id",
         referencedColumnName: "id",
       },
+      onDelete:"SET NULL"
     },
   },
 });
