@@ -343,7 +343,7 @@ const SkillMatrixPage = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse" id="skill-matrix-table">
+              <table className="w-full table-fixed" id="skill-matrix-table">
                 <thead>
                   <tr className="border-b-2 border-gray-200">
                     <th className="text-left py-3 px-4 font-semibold text-gray-700 min-w-40 sticky left-0 bg-white">
@@ -355,7 +355,7 @@ const SkillMatrixPage = () => {
                     {matrixSkills.map((skill) => (
                       <th
                         key={skill.id}
-                        className="text-center py-3 px-2 font-semibold text-gray-700 min-w-20"
+                        className="text-center align-middle py-3 px-2 font-semibold text-gray-700 min-w-20 break-words"
                       >
                         {skill.name}
                       </th>
