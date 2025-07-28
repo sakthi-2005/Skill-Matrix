@@ -51,7 +51,7 @@ const UserController: Controller = {
       const updated = await UserService.updateUser(req.payload as any);
       return h.response({message: "Updated successfully!"}).code(200);
     } catch (err: any) {
-      return h.response({ error: err.message }).code(404);
+      return h.response({ error: err.message }).code(500);
     }
   },
 

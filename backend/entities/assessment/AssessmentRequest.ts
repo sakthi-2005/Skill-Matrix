@@ -91,6 +91,7 @@ export const AssessmentRequest = new EntitySchema<AssessmentRequestType>({
         name: "user_id",
       },
       eager: true,
+      onDelete:'CASCADE'
     },
     cycle: {
       type: "many-to-one",

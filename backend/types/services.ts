@@ -49,11 +49,8 @@ export interface UserData {
   name?: string;
   email?: string;
   roleId?: number;
-  role?: string | { id: number; name: string };
   teamId?: number;
-  teamName?: string;
   positionId?: number;
-  position?: string | { id: number; name: string };
   leadId?: string;
   hrId?: string;
   profilePhoto?: string;

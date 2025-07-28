@@ -25,8 +25,7 @@ export const HRAdminController = {
 
   async getAllTeams(request: Request, h: ResponseToolkit){
     try {
-      const includeDeleted = request.query.includeDeleted === 'true';
-      const teams = await HRAdminService.getAllTeams(includeDeleted);
+      const teams = await HRAdminService.getAllTeams();
       return h.response({
         success: true,
         message: "Teams retrieved successfully",
@@ -43,8 +42,7 @@ export const HRAdminController = {
   async getTeamById(request: Request, h: ResponseToolkit){
     try {
       const { id } = request.params;
-      const includeDeleted = request.query.includeDeleted === 'true';
-      const team = await HRAdminService.getTeamById(Number(id), includeDeleted);
+      const team = await HRAdminService.getTeamById(Number(id));
       return h.response({
         success: true,
         message: "Team retrieved successfully",
@@ -91,22 +89,22 @@ export const HRAdminController = {
     }
   },
 
-  async restoreTeam(request: Request, h: ResponseToolkit){
-    try {
-      const { id } = request.params;
-      const team = await HRAdminService.restoreTeam(Number(id));
-      return h.response({
-        success: true,
-        message: "Team restored successfully",
-        data: team,
-      }).code(HTTP_STATUS.OK);
-    } catch (error) {
-      if (error.isBoom) {
-        throw error;
-      }
-      throw Boom.internal("Failed to restore team");
-    }
-  },
+  // async restoreTeam(request: Request, h: ResponseToolkit){
+  //   try {
+  //     const { id } = request.params;
+  //     const team = await HRAdminService.restoreTeam(Number(id));
+  //     return h.response({
+  //       success: true,
+  //       message: "Team restored successfully",
+  //       data: team,
+  //     }).code(HTTP_STATUS.OK);
+  //   } catch (error) {
+  //     if (error.isBoom) {
+  //       throw error;
+  //     }
+  //     throw Boom.internal("Failed to restore team");
+  //   }
+  // },
 
   async activateTeam(request: Request, h: ResponseToolkit){
     try {
@@ -163,8 +161,7 @@ export const HRAdminController = {
   async getAllSubTeams(request: Request, h: ResponseToolkit){
     try {
       const teamId = request.query.teamId ? Number(request.query.teamId) : undefined;
-      const includeDeleted = request.query.includeDeleted === 'true';
-      const subTeams = await HRAdminService.getAllsubTeams(teamId, includeDeleted);
+      const subTeams = await HRAdminService.getAllsubTeams(teamId);
       return h.response({
         success: true,
         message: "Sub-teams retrieved successfully",
@@ -181,8 +178,7 @@ export const HRAdminController = {
   async getSubTeamById(request: Request, h: ResponseToolkit){
     try {
       const { id } = request.params;
-      const includeDeleted = request.query.includeDeleted === 'true';
-      const subTeam = await HRAdminService.getsubTeamById(Number(id), includeDeleted);
+      const subTeam = await HRAdminService.getsubTeamById(Number(id));
       return h.response({
         success: true,
         message: "Sub-team retrieved successfully",
@@ -229,22 +225,57 @@ export const HRAdminController = {
     }
   },
 
-  async restoreSubTeam(request: Request, h: ResponseToolkit){
+  async activateSubTeam(request: Request, h: ResponseToolkit){
     try {
       const { id } = request.params;
-      const subTeam = await HRAdminService.restoresubTeam(Number(id));
+      const team = await HRAdminService.activateSubTeam(Number(id));
       return h.response({
         success: true,
-        message: "Sub-team restored successfully",
-        data: subTeam,
+        message: "Sub-Team activated successfully",
+        data: team,
       }).code(HTTP_STATUS.OK);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to restore sub-team");
+      throw Boom.internal("Failed to activate sub-team");
     }
   },
+
+  async deactivateSubTeam(request: Request, h: ResponseToolkit){
+    try {
+      const { id } = request.params;
+      const team = await HRAdminService.deactivateSubTeam(Number(id));
+      return h.response({
+        success: true,
+        message: "Sub-Team deactivated successfully",
+        data: team,
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to deactivate sub-team");
+    }
+  },
+
+  // async restoreSubTeam(request: Request, h: ResponseToolkit){
+  //   try {
+  //     const { id } = request.params;
+  //     const subTeam = await HRAdminService.restoresubTeam(Number(id));
+  //     return h.response({
+  //       success: true,
+  //       message: "Sub-team restored successfully",
+  //       data: subTeam,
+  //     }).code(HTTP_STATUS.OK);
+  //   } catch (error) {
+  //     if (error.isBoom) {
+  //       throw error;
+  //     }
+  //     throw Boom.internal("Failed to restore sub-team");
+  //   }
+  // },
+
 
   // ============ POSITIONS ============
 
@@ -266,8 +297,7 @@ export const HRAdminController = {
 
   async getAllPositions(request: Request, h: ResponseToolkit){
     try {
-      const includeDeleted = request.query.includeDeleted === 'true';
-      const positions = await HRAdminService.getAllPositions(includeDeleted);
+      const positions = await HRAdminService.getAllPositions();
       return h.response({
         success: true,
         message: "Positions retrieved successfully",
@@ -284,8 +314,7 @@ export const HRAdminController = {
   async getPositionById(request: Request, h: ResponseToolkit){
     try {
       const { id } = request.params;
-      const includeDeleted = request.query.includeDeleted === 'true';
-      const position = await HRAdminService.getPositionById(Number(id), includeDeleted);
+      const position = await HRAdminService.getPositionById(Number(id));
       return h.response({
         success: true,
         message: "Position retrieved successfully",
@@ -332,22 +361,56 @@ export const HRAdminController = {
     }
   },
 
-  async restorePosition(request: Request, h: ResponseToolkit){
+  async activatePosition(request: Request, h: ResponseToolkit){
     try {
       const { id } = request.params;
-      const position = await HRAdminService.restorePosition(Number(id));
+      const team = await HRAdminService.activatePosition(Number(id));
       return h.response({
         success: true,
-        message: "Position restored successfully",
-        data: position,
+        message: "Position activated successfully",
+        data: team,
       }).code(HTTP_STATUS.OK);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to restore position");
+      throw Boom.internal("Failed to activate Position");
     }
   },
+
+  async deactivatePosition(request: Request, h: ResponseToolkit){
+    try {
+      const { id } = request.params;
+      const team = await HRAdminService.deactivatePosition(Number(id));
+      return h.response({
+        success: true,
+        message: "Position deactivated successfully",
+        data: team,
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to deactivate Position");
+    }
+  },
+
+  // async restorePosition(request: Request, h: ResponseToolkit){
+  //   try {
+  //     const { id } = request.params;
+  //     const position = await HRAdminService.restorePosition(Number(id));
+  //     return h.response({
+  //       success: true,
+  //       message: "Position restored successfully",
+  //       data: position,
+  //     }).code(HTTP_STATUS.OK);
+  //   } catch (error) {
+  //     if (error.isBoom) {
+  //       throw error;
+  //     }
+  //     throw Boom.internal("Failed to restore position");
+  //   }
+  // },
 
   // ============ STATISTICS ============
 

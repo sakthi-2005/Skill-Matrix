@@ -29,7 +29,7 @@ export const Auth = new EntitySchema<AuthType>({
         name: "email",
         referencedColumnName: "email",
       },
-      cascade: false,
+      onDelete:"CASCADE"
     },
   },
 });

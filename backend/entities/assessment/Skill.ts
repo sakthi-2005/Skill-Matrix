@@ -39,6 +39,7 @@ export const Skill = new EntitySchema<SkillType>({
     positionId: {
       name: "position_id",
       type: "integer",
+      nullable:true
     },
   },
   relations: {
@@ -65,6 +66,7 @@ export const Skill = new EntitySchema<SkillType>({
         name: "position_id",
         referencedColumnName: "id",
       },
+      onDelete:"CASCADE"
     }
   },
 });
