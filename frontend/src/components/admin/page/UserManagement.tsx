@@ -189,10 +189,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
       if (usersResponse) {
         console.log('Users response:', usersResponse);
-        setUsers(usersResponse || []);
+        setUsers(usersResponse.filter(val=>val.isActive === !showInactive) || []);
         // For admin users, all users can potentially be leads (except deleted ones)
         const leads = usersResponse.filter((user: UserData) => 
-          !user.deletedAt && user.isActive !== false
+          !(user.role?.name === 'hr' || user.role?.name === 'admin')
         );
         // Filter potential HRs - only users with HR roles (for admin users to assign)
         const hrs = usersResponse.filter((user: UserData) => 
@@ -396,7 +396,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
     const matchesRoleFilter = selectedRoleFilter === 'all' || user.role?.id === parseInt(selectedRoleFilter);
     
     return matchesSearch && matchesActiveFilter && matchesTeamFilter && 
-           matchesPositionFilter && matchesRoleFilter && !user.deletedAt;
+           matchesPositionFilter && matchesRoleFilter;
   });
 
   function handleFileChange(e){

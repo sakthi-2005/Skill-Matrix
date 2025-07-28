@@ -26,6 +26,7 @@ export interface SubTeam {
 export interface Position {
   id: number;
   name: string;
+  description?: string;
   roleId: number;
   isActive: boolean;
   createdAt: string;
@@ -176,11 +177,6 @@ export interface SubTeam {
   teamId: number;
 }
 
-export interface Position {
-  id: number;
-  name: string;
-}
-
 export interface Role {
   id: number;
   name: string;
@@ -247,15 +243,10 @@ export interface UserData {
 export interface Skill {
   id: number;
   name: string;
-  basic:string
+  basic: string;
   low: string;
   medium: string;
   high: string;
   expert: string;
   positionId: number;
-}
-
-export interface Position {
-  id: number;
-  name: string;
 }

@@ -53,14 +53,14 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
 
   useEffect(() => {
     loadTeams();
-  }, []);
+  }, [showInactive]);
 
   const loadTeams = async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllTeams(false); // Always load non-deleted teams
+      const response = await adminService.getAllTeams(); // Always load non-deleted teams
       if (response.success) {
-        setTeams(response.data || []);
+        setTeams(response.data.filter(val=>val.isActive === !showInactive) || []);
       }
     } catch (error) {
       console.error('Error loading teams:', error);
@@ -177,9 +177,9 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (team.description && team.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesActiveFilter = showInactive ? true : team.isActive;
+    // const matchesActiveFilter = showInactive ? true : team.isActive;
     
-    return matchesSearch && matchesActiveFilter && !team.deletedAt;
+    return matchesSearch;
   });
 
   return (
