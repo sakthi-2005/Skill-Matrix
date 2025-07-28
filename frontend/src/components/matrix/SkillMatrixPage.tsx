@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { userService, skillService } from "@/services/api";
 import {
@@ -19,6 +19,8 @@ const SkillMatrixPage = () => {
   const [skillCategories, setSkillCategories] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showSkillDropdown,setShowSkillDropdown] = useState<boolean>(false);
+  const [matrixSkills,setMatrixSkills] = useState<Skill[]>([]);
 
   const canViewAll = user?.role.name === "hr" || verifyLead(user.id);
   const isHR = user?.role.name === "hr";
@@ -58,6 +60,10 @@ const SkillMatrixPage = () => {
     fetchData();
   }, [user]);
 
+  useEffect(()=>{
+    setMatrixSkills(getRelevantSkills(getFilteredData()[0]?.position?.id));
+  },[selectedPosition])
+
   // Filter data
   const getFilteredData = () => {
     // First filter by search term
@@ -95,15 +101,11 @@ const SkillMatrixPage = () => {
   };
 
   // Get relevant skills for the filtered employees to show in the columns
-  const getRelevantSkills = (employees: SkillMatrixData[]) => {
-    const skillIds = new Set<number>();
-    employees.forEach((employee) => {
-      employee.mostRecentAssessmentScores.forEach((score) => {
-        skillIds.add(score.skillId);
-      });
-    });
-
-    return skillCategories.filter((skill) => skillIds.has(skill.id));
+  const getRelevantSkills = (id: number) => {
+    if(!id){
+      return [];
+    }
+    return skillCategories.filter((skill) => skill.positionId === id);
   };
 
   // Get filter options based on user role and data
@@ -120,9 +122,7 @@ const SkillMatrixPage = () => {
 
   const { teams, positions } = getFilterOptions();
   const filteredData = getFilteredData();
-  const relevantSkills = getRelevantSkills(filteredData);
-  console.log("relevant Skills", relevantSkills);
-  console.log("filtered Data", filteredData);
+  const relevantSkills = getRelevantSkills(filteredData[0]?.position?.id);
 
   // Export to PDF function using jsPDF
   const exportToPDF = () => {
@@ -261,7 +261,7 @@ const SkillMatrixPage = () => {
                     <select
                       className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={selectedPosition}
-                      onChange={(e) => setSelectedPosition(e.target.value)}
+                      onChange={(e) => {setSelectedPosition(e.target.value);}}
                     >
                       <option value="all">Select Positions *</option>
                       {positions.map((position) => (
@@ -270,6 +270,54 @@ const SkillMatrixPage = () => {
                         </option>
                       ))}
                     </select>
+                <div className="relative inline-block text-left min-w-[200px]">
+                  <div
+                    onClick={() => setShowSkillDropdown(!showSkillDropdown)}
+                    className="flex items-center justify-between px-3 py-3 border border-gray-300 rounded bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <span className="text-black-800 font-">
+                      {matrixSkills.length > 0
+                        ? `${matrixSkills.length} skill${matrixSkills.length > 1 ? 's' : ''} selected`
+                        : 'Select Skills *'}
+                    </span>
+                    {/* Down Arrow Icon (matches select) */}
+                    <svg
+                      className="w-4 h-4 text-black-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+ 
+                  {showSkillDropdown && relevantSkills.length !== 0 && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded shadow-lg max-h-60 overflow-y-auto">
+                      {relevantSkills.map((skill) => (
+                        <label
+                          key={skill.id}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            className="mr-2"
+                            checked={matrixSkills.filter(val=>val.id == skill.id).length !== 0}
+                            onChange={(event) => {
+                              if(!event.target.checked){
+                                setMatrixSkills(e=>e.filter(val=>val.id !== skill.id))
+                              }
+                              else{
+                                setMatrixSkills(e=>[...e,skill])
+                              }
+                            }}
+                          />
+                          {skill.name}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 </>
               )}
             </div>
@@ -304,7 +352,7 @@ const SkillMatrixPage = () => {
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">
                       Role
                     </th>
-                    {relevantSkills.map((skill) => (
+                    {matrixSkills.map((skill) => (
                       <th
                         key={skill.id}
                         className="text-center py-3 px-2 font-semibold text-gray-700 min-w-20"
@@ -332,7 +380,7 @@ const SkillMatrixPage = () => {
                         <td className="py-3 px-4 text-gray-600">
                           {employee.role?.name || "N/A"}
                         </td>
-                        {relevantSkills.map((skill) => {
+                        {matrixSkills.map((skill) => {
                           const skillScore = getSkillScore(employee, skill.id);
                           return (
                             <td
