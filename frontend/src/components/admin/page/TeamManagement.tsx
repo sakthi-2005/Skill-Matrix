@@ -47,8 +47,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     loading: false
   });
   const [formData, setFormData] = useState<CreateTeamRequest>({
-    name: '',
-    description: '',
+    name: ''
   });
 
   useEffect(() => {
@@ -58,7 +57,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   const loadTeams = async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllTeams(); // Always load non-deleted teams
+      const response = await adminService.getAllTeams();
       if (response.success) {
         setTeams(response.data.filter(val=>val.isActive === !showInactive) || []);
       }
@@ -86,7 +85,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       }
       setIsDialogOpen(false);
       setEditingTeam(null);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: ''});
       loadTeams();
       onStatsUpdate();
     } catch (error: any) {
@@ -156,15 +155,14 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   const openEditDialog = (team: Team) => {
     setEditingTeam(team);
     setFormData({
-      name: team.name,
-      description: team.description || '',
+      name: team.name
     });
     setIsDialogOpen(true);
   };
 
   const openCreateDialog = () => {
     setEditingTeam(null);
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '' });
     setIsDialogOpen(true);
   };
 
@@ -222,15 +220,6 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
                   />
                 </div>
                 <div className="flex justify-end space-x-2">

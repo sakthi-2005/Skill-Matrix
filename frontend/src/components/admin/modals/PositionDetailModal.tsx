@@ -6,12 +6,12 @@ import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Checkbox } from '../../ui/checkbox';
 import { Position, Skill } from '../../../types/admin';
-import { skillService } from '../../../services/api';
+import { roleService, skillService } from '../../../services/api';
 import { toast } from 'sonner';
-import { 
-  Briefcase, 
-  Calendar, 
-  User, 
+import {
+  Briefcase,
+  Calendar,
+  User,
   Mail,
   Clock,
   Building,
@@ -22,7 +22,7 @@ import {
   CheckCircle,
   Circle
 } from 'lucide-react';
-
+ 
 interface PositionDetailModalProps {
   position: Position | null;
   isOpen: boolean;
@@ -30,10 +30,10 @@ interface PositionDetailModalProps {
   onSave?: () => void;
   openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', position: Position) => void;
 }
-
-export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({ 
-  position, 
-  isOpen, 
+ 
+export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
+  position,
+  isOpen,
   onClose,
   onSave,
   openConfirmationModal
@@ -44,13 +44,14 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
   const [selectedSkills, setSelectedSkills] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
   const [showSkillsSection, setShowSkillsSection] = useState(false);
-
+  const [roles,setRoles]=useState<Role[]>([]);
+  const [selectedRoles, setSelectedRoles]=useState<Set<number>>(new Set());
   useEffect(() => {
     if (isOpen && position) {
       loadSkills();
     }
   }, [isOpen, position]);
-
+ 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -60,12 +61,12 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
       };
     }
   }, [isOpen]);
-
+ 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen || !showSkillsSection) return;
-      
+     
       if (event.ctrlKey || event.metaKey) {
         switch (event.key) {
           case 'a':
@@ -83,16 +84,16 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
         }
       }
     };
-
+ 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, showSkillsSection, searchTerm, selectedSkills]);
-
+ 
   const loadSkills = async () => {
     try {
       setLoading(true);
       const skillsResponse = await skillService.getAllSkills();
-      
+      const roleResponse = await roleService.getAllRoles();
       if (skillsResponse) {
         setSkills(skillsResponse);
         // Set currently mapped skills for this position
@@ -101,6 +102,12 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
           .map((skill: Skill) => skill.id);
         setSelectedSkills(new Set(mappedSkills));
       }
+      if(roleResponse){
+        setRoles(roleResponse)
+        const mappedroles=roleResponse.filter((role:Role)=>role.id==position?.roleId)
+        .map((role:Role)=>role.id);
+        setSelectedRoles(new Set(mappedroles));
+      }
     } catch (error) {
       console.error('Error loading skills:', error);
       toast.error('Failed to load skills');
@@ -108,7 +115,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
       setLoading(false);
     }
   };
-
+ 
   const handleSkillToggle = (skillId: number) => {
     const newSelected = new Set(selectedSkills);
     if (newSelected.has(skillId)) {
@@ -118,17 +125,17 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
     }
     setSelectedSkills(newSelected);
   };
-
+ 
   const handleSaveSkills = async () => {
     try {
       setSaving(true);
-      
+     
       // Update all skills that should be assigned to this position
       const selectedSkillsArray = Array.from(selectedSkills);
       const skillUpdates = selectedSkillsArray.map(skillId => {
         const existingSkill = skills.find(s => s.id === skillId);
         if (!existingSkill) return Promise.resolve();
-        
+       
         return skillService.updateSkill({
           id: skillId,
           name: existingSkill.name,
@@ -139,7 +146,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
           position: [position.id]  // Pass as array of position IDs
         });
       });
-      
+     
       // Also update any previously assigned skills that are no longer selected
       const unselectedSkills = skills
         .filter(skill => skill.positionId === position.id && !selectedSkills.has(skill.id))
@@ -154,10 +161,10 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
             position: []  // Empty array means not assigned to any position
           });
         });
-
+ 
       // Wait for all updates to complete
       await Promise.all([...skillUpdates, ...unselectedSkills]);
-      
+     
       toast.success('Position skill requirements updated successfully');
       onSave?.();
     } catch (error: any) {
@@ -168,7 +175,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
       setShowSkillsSection(false);
     }
   };
-
+ 
   const handleSelectAll = () => {
     const filteredSkills = skills.filter(skill =>
       skill.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -176,7 +183,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
     const allFilteredIds = new Set(filteredSkills.map(skill => skill.id));
     setSelectedSkills(prev => new Set([...prev, ...allFilteredIds]));
   };
-
+ 
   const handleDeselectAll = () => {
     const filteredSkills = skills.filter(skill =>
       skill.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -184,9 +191,9 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
     const filteredIds = new Set(filteredSkills.map(skill => skill.id));
     setSelectedSkills(prev => new Set([...prev].filter(id => !filteredIds.has(id))));
   };
-
+ 
   if (!position) return null;
-
+ 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -196,7 +203,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
       minute: '2-digit'
     });
   };
-
+ 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl modal-content flex flex-col position-detail-modal">
@@ -215,7 +222,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
             Detailed information about the position and its holders
           </DialogDescription>
         </DialogHeader>
-
+ 
           <div className="space-y-6 scrollable-content flex-1 min-h-0 pr-2">
           {/* Basic Information */}
           <Card>
@@ -239,14 +246,14 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                 <label className="text-sm font-medium text-gray-500">Position Name</label>
                 <p className="text-sm">{position.name}</p>
               </div>
-              
+             
               {position.description && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Description</label>
                   <p className="text-sm">{position.description}</p>
                 </div>
               )}
-
+ 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
@@ -256,13 +263,13 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                     </Badge>
                   </div>
                 </div>
-                
+               
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Position ID</label>
-                  <p className="text-sm">#{position.id}</p>
+                  <label className="text-sm font-medium text-gray-500">Role</label>
+                  <p className="text-sm">{roles.find(role => role.id === position.roleId)?.name || "N/A"}</p>
                 </div>
               </div>
-
+ 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Created</label>
@@ -271,7 +278,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                     <span className="text-sm">{formatDate(position.createdAt)}</span>
                   </div>
                 </div>
-                
+               
                 <div>
                   <label className="text-sm font-medium text-gray-500">Last Updated</label>
                   <div className="flex items-center space-x-1 mt-1">
@@ -280,7 +287,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                   </div>
                 </div>
               </div>
-
+ 
               {position.deletedAt && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Deleted At</label>
@@ -292,7 +299,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
               )}
             </CardContent>
           </Card>
-
+ 
           {/* Position Holders */}
           <Card>
             <CardHeader>
@@ -309,8 +316,8 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                           {user.profilePhoto ? (
-                            <img 
-                              src={user.profilePhoto} 
+                            <img
+                              src={user.profilePhoto}
                               alt={user.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -353,7 +360,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
               )}
             </CardContent>
           </Card>
-
+ 
           {/* Skills Section */}
           <Card>
             <CardHeader>
@@ -393,7 +400,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                       className="pl-10"
                     />
                   </div>
-                  
+                 
                   {/* Quick Actions */}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">
@@ -401,7 +408,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                         const filteredSkills = skills.filter(skill =>
                           skill.name.toLowerCase().includes(searchTerm.toLowerCase())
                         );
-                        const selectedInFiltered = filteredSkills.filter(skill => 
+                        const selectedInFiltered = filteredSkills.filter(skill =>
                           selectedSkills.has(skill.id)
                         ).length;
                         return `${selectedInFiltered} of ${filteredSkills.length} visible skills selected`;
@@ -429,7 +436,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                     </div>
                   </div>
                 </div>
-
+ 
                 {/* Skills List */}
                  <div className="border rounded-lg flex-1 min-h-0">
                   {loading ? (
@@ -442,7 +449,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                         const filteredSkills = skills.filter(skill =>
                           skill.name.toLowerCase().includes(searchTerm.toLowerCase())
                         );
-                        
+                       
                         // Sort skills: checked items first, then unchecked
                         const sortedSkills = filteredSkills.sort((a, b) => {
                           const aSelected = selectedSkills.has(a.id);
@@ -451,7 +458,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                           if (!aSelected && bSelected) return 1;
                           return a.name.localeCompare(b.name);
                         });
-
+ 
                         return sortedSkills.length === 0 ? (
                           <div className="text-center text-gray-500 py-8">
                             <Target className="h-12 w-12 text-gray-300 mx-auto mb-4" />
@@ -467,8 +474,8 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                             <div
                               key={skill.id}
                               className={`flex items-start space-x-3 p-3 border rounded-lg transition-all duration-200 hover:shadow-sm ${
-                                selectedSkills.has(skill.id) 
-                                  ? 'bg-green-50 border-green-200 hover:bg-green-100' 
+                                selectedSkills.has(skill.id)
+                                  ? 'bg-green-50 border-green-200 hover:bg-green-100'
                                   : 'hover:bg-gray-50'
                               }`}
                             >
@@ -517,11 +524,11 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                     </div>
                   )}
                 </div>
-
+ 
                 {/* Save Button */}
                 <div className="flex justify-end pt-4 border-t flex-shrink-0">
-                  <Button 
-                    onClick={handleSaveSkills} 
+                  <Button
+                    onClick={handleSaveSkills}
                     disabled={saving}
                     className="flex items-center space-x-2"
                     title="Save Requirements (Ctrl+S)"

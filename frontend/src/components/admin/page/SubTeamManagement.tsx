@@ -52,8 +52,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
   });
   const [formData, setFormData] = useState<CreateSubTeamRequest>({
     name: '',
-    description: '',
-    teamId: 0,
+    teamId: null,
   });
 
   useEffect(() => {
@@ -101,7 +100,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
       }
       setIsDialogOpen(false);
       setEditingSubTeam(null);
-      setFormData({ name: '', description: '', teamId: 0 });
+      setFormData({ name: '', teamId: 0 });
       loadData();
       onStatsUpdate();
     } catch (error: any) {
@@ -172,7 +171,6 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
     setEditingSubTeam(subTeam);
     setFormData({
       name: subTeam.name,
-      description: subTeam.description || '',
       teamId: subTeam.teamId,
     });
     setIsDialogOpen(true);
@@ -180,7 +178,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
 
   const openCreateDialog = () => {
     setEditingSubTeam(null);
-    setFormData({ name: '', description: '', teamId: 0 });
+    setFormData({ name: '', teamId: 0 });
     setIsDialogOpen(true);
   };
 
@@ -235,13 +233,16 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                 <div>
                   <Label htmlFor="teamId">Parent Team</Label>
                   <Select
-                    value={formData.teamId.toString()}
-                    onValueChange={(value) => setFormData({ ...formData, teamId: parseInt(value) })}
+                    value = {formData.teamId ? (formData.teamId.toString()): ''}
+                    onValueChange={(value) => setFormData({ ...formData, teamId: value === '0' ? null : parseInt(value) })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a team" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem key={0} value={"0"}>
+                          unassigned
+                        </SelectItem>
                       {teams.map((team) => (
                         <SelectItem key={team.id} value={team.id.toString()}>
                           {team.name}
@@ -257,15 +258,6 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
                   />
                 </div>
                 <div className="flex justify-end space-x-2">
@@ -333,21 +325,6 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                   
                   {/* Action buttons beside the name */}
                   <div className="flex items-center space-x-1 flex-shrink-0">
-                    {subTeam.deletedAt ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRestore(subTeam);
-                        }}
-                        className="h-6 w-6 p-0"
-                        title="Restore"
-                      >
-                        <RotateCcw className="h-3 w-3" />
-                      </Button>
-                    ) : (
-                      <>
                         <Button
                           variant="outline"
                           size="sm"
@@ -401,8 +378,6 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
-                      </>
-                    )}
                   </div>
                 </div>
               </CardHeader>
