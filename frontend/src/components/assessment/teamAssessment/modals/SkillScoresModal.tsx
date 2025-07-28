@@ -38,7 +38,7 @@ const SkillScoresModal: React.FC<{
                 >
                   <span className="font-medium">{skill.skill_name}</span>
                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                    {skill.score}/5
+                    {skill.lead_score}/5
                   </span>
                 </div>
               ))}

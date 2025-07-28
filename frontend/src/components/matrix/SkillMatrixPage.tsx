@@ -25,7 +25,8 @@ const SkillMatrixPage = () => {
   const canViewAll = user?.role.name === "hr" || verifyLead(user.id);
   const isHR = user?.role.name === "hr";
   const isLead = verifyLead(user.id);
-
+  const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
+  const [showSkillDropdown, setShowSkillDropdown] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
@@ -77,16 +78,20 @@ const SkillMatrixPage = () => {
         selectedTeam === "all" || employee.Team?.name === selectedTeam;
       const positionMatch =
         selectedPosition === employee.position?.name;
-
+      const skillMatch =
+        selectedSkills.length === 0 ||
+        selectedSkills.every((skillId) =>
+          employee.mostRecentAssessmentScores.some((score) => score.skillId === skillId)
+      );
       if (isHR) {
         // HR must select both team and position (not "all") to see data
-        return teamMatch && positionMatch;
+        return teamMatch && positionMatch && skillMatch; 
       } else if (isLead) {
         // Lead can filter by position only
         return positionMatch;
       }
 
-      return teamMatch && positionMatch;
+      return teamMatch && positionMatch && skillMatch;
     });
 
     return filtered;
@@ -232,7 +237,7 @@ const SkillMatrixPage = () => {
                 <input
                   type="text"
                   placeholder="Search employees..."
-                  className="pl-8 pr-3 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-8 pr-3 py-3 border border-gray-300 rounded w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -263,7 +268,7 @@ const SkillMatrixPage = () => {
                       value={selectedPosition}
                       onChange={(e) => {setSelectedPosition(e.target.value);}}
                     >
-                      <option value="all">Select Positions *</option>
+                      <option value="all" className="text-black-800">Select Positions *</option>
                       {positions.map((position) => (
                         <option key={position} value={position}>
                           {position}
@@ -276,8 +281,8 @@ const SkillMatrixPage = () => {
                     className="flex items-center justify-between px-3 py-3 border border-gray-300 rounded bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <span className="text-black-800 font-">
-                      {matrixSkills.length > 0
-                        ? `${matrixSkills.length} skill${matrixSkills.length > 1 ? 's' : ''} selected`
+                      {selectedSkills.length > 0
+                        ? `${selectedSkills.length} skill${selectedSkills.length > 1 ? 's' : ''} selected`
                         : 'Select Skills *'}
                     </span>
                     {/* Down Arrow Icon (matches select) */}
@@ -291,10 +296,10 @@ const SkillMatrixPage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
- 
-                  {showSkillDropdown && relevantSkills.length !== 0 && (
+
+                  {showSkillDropdown && (
                     <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded shadow-lg max-h-60 overflow-y-auto">
-                      {relevantSkills.map((skill) => (
+                      {skillCategories.map((skill) => (
                         <label
                           key={skill.id}
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
@@ -302,14 +307,12 @@ const SkillMatrixPage = () => {
                           <input
                             type="checkbox"
                             className="mr-2"
-                            checked={matrixSkills.filter(val=>val.id == skill.id).length !== 0}
-                            onChange={(event) => {
-                              if(!event.target.checked){
-                                setMatrixSkills(e=>e.filter(val=>val.id !== skill.id))
-                              }
-                              else{
-                                setMatrixSkills(e=>[...e,skill])
-                              }
+                            checked={selectedSkills.includes(skill.id)}
+                            onChange={(e) => {
+                              const updatedSkills = e.target.checked
+                                ? [...selectedSkills, skill.id]
+                                : selectedSkills.filter((id) => id !== skill.id);
+                              setSelectedSkills(updatedSkills);
                             }}
                           />
                           {skill.name}

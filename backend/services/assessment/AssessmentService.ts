@@ -621,7 +621,7 @@ const AssessmentService = {
                 assessment.requestedAt > latestScoresBySkill.get(skillId).requestedAt) {
               latestScoresBySkill.set(skillId, {
                 id: score.id,
-                lead_score: score.score,
+                score: score.score,
                 updated_at: score.updatedAt,
                 skill_name: score.Skill.name,
                 skill_id: skillId,
