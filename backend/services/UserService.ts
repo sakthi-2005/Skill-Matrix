@@ -159,6 +159,12 @@ const UserService = {
     await userRepo.delete({id:user.id});
   },
 
+  hardDeleteUser: async (id: number) => {
+    const user = await userRepo.findOneBy({ id: id.toString() });
+    if (!user) throw new Error("User not found");
+    await userRepo.delete(id);
+  },
+
   getTeamMembers: async (teamId: number): Promise<UserType[]> => {
     try {
       const members = await userRepo.find({

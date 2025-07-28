@@ -132,25 +132,20 @@ export const HRAdminService = {
     }
   },
 
-  async restoreTeam(id: number): Promise<TeamType> {
+  async hardDeleteTeam(id: number): Promise<void> {
     try {
-      const team = await this.getTeamById(id, true);
+      const team = await this.getTeamById(id, true); // Include deleted to find any team
       
-      if (!team.isActive) {
-        throw Boom.badRequest("Team is not deleted");
-      }
+      // Hard delete all sub-teams first
+      await subTeamRepo.delete({ teamId: id });
 
-      await teamRepo.update(id, {
-        isActive: true,
-        updatedAt: new Date(),
-      });
-
-      return await this.getTeamById(id);
+      // Hard delete the team
+      await teamRepo.delete(id);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to restore team");
+      throw Boom.internal("Failed to permanently delete team");
     }
   },
 
@@ -235,7 +230,7 @@ export const HRAdminService = {
 
   async getAllsubTeams(teamId?: number, includeDeleted: boolean = false): Promise<subTeamType[]> {
     try {
-      const whereCondition: any = includeDeleted ? {} : { isActive: null };
+      const whereCondition: any = includeDeleted ? {} : { isActive: true };
       if (teamId) {
         whereCondition.teamId = teamId;
       }
@@ -254,11 +249,11 @@ export const HRAdminService = {
     try {
       const whereCondition = includeDeleted 
         ? { id } 
-        : { id, isActive: null };
+        : { id, isActive: true };
 
       const subTeam = await subTeamRepo.findOne({
         where: whereCondition,
-        relations: ["Team", "users"],
+        relations: ["teams", "user"],
       });
 
       if (!subTeam) {
@@ -323,6 +318,20 @@ export const HRAdminService = {
     }
   },
 
+  async hardDeletesubTeam(id: number): Promise<void> {
+    try {
+      await this.getsubTeamById(id, true); // Include deleted to find any sub-team
+      
+      // Hard delete the sub-team
+      await subTeamRepo.delete(id);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to permanently delete sub-team");
+    }
+  },
+
   async restoresubTeam(id: number): Promise<subTeamType> {
     try {
       const subTeam = await this.getsubTeamById(id, true);
@@ -342,6 +351,50 @@ export const HRAdminService = {
         throw error;
       }
       throw Boom.internal("Failed to restore sub-team");
+    }
+  },
+
+  async activatesubTeam(id: number): Promise<subTeamType> {
+    try {
+      const subTeam = await this.getsubTeamById(id);
+      
+      if (subTeam.isActive) {
+        throw Boom.badRequest("Sub-team is already active");
+      }
+
+      await subTeamRepo.update(id, {
+        isActive: true,
+        updatedAt: new Date(),
+      });
+
+      return await this.getsubTeamById(id);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to activate sub-team");
+    }
+  },
+
+  async deactivatesubTeam(id: number): Promise<subTeamType> {
+    try {
+      const subTeam = await this.getsubTeamById(id);
+      
+      if (!subTeam.isActive) {
+        throw Boom.badRequest("Sub-team is already inactive");
+      }
+
+      await subTeamRepo.update(id, {
+        isActive: false,
+        updatedAt: new Date(),
+      });
+
+      return await this.getsubTeamById(id);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to deactivate sub-team");
     }
   },
 
@@ -458,6 +511,20 @@ export const HRAdminService = {
         throw error;
       }
       throw Boom.internal("Failed to delete position");
+    }
+  },
+
+  async hardDeletePosition(id: number): Promise<void> {
+    try {
+      await this.getPositionById(id, true); // Include deleted to find any position
+      
+      // Hard delete the position
+      await positionRepo.delete(id);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to permanently delete position");
     }
   },
 

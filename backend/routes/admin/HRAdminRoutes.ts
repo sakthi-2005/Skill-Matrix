@@ -6,12 +6,10 @@ import Joi from "joi";
 
 const teamCreateSchema = Joi.object({
   name: Joi.string().required().min(1).max(255),
-  description: Joi.string().allow("", null).optional(),
 });
 
 const teamUpdateSchema = Joi.object({
   name: Joi.string().optional().min(1).max(255),
-  description: Joi.string().allow("", null).optional(),
 });
 
 const subTeamCreateSchema = Joi.object({
@@ -111,8 +109,8 @@ export const HRAdminRoutes = (server: Server) => {
   });
 
   server.route({
-    method: "POST",
-    path: "/teams/{id}/restore",
+    method: "DELETE",
+    path: "/teams/{id}/permanent",
     options: {
       ...authorizeRoles(["admin", "hr"]),
       validate: {
@@ -121,7 +119,7 @@ export const HRAdminRoutes = (server: Server) => {
         }),
       },
     },
-    handler: HRAdminController.restoreTeam,
+    handler: HRAdminController.hardDeleteTeam,
   });
 
   server.route({
@@ -227,6 +225,20 @@ export const HRAdminRoutes = (server: Server) => {
   });
 
   server.route({
+    method: "DELETE",
+    path: "/sub-teams/{id}/permanent",
+    options: {
+      ...authorizeRoles(["admin", "hr"]),
+      validate: {
+        params: Joi.object({
+          id: Joi.number().integer().required(),
+        }),
+      },
+    },
+    handler: HRAdminController.hardDeleteSubTeam,
+  });
+
+  server.route({
     method: "POST",
     path: "/sub-teams/{id}/restore",
     options: {
@@ -238,6 +250,34 @@ export const HRAdminRoutes = (server: Server) => {
       },
     },
     handler: HRAdminController.restoreSubTeam,
+  });
+
+  server.route({
+    method: "POST",
+    path: "/sub-teams/{id}/activate",
+    options: {
+      ...authorizeRoles(["admin", "hr"]),
+      validate: {
+        params: Joi.object({
+          id: Joi.number().integer().required(),
+        }),
+      },
+    },
+    handler: HRAdminController.activateSubTeam,
+  });
+
+  server.route({
+    method: "POST",
+    path: "/sub-teams/{id}/deactivate",
+    options: {
+      ...authorizeRoles(["admin", "hr"]),
+      validate: {
+        params: Joi.object({
+          id: Joi.number().integer().required(),
+        }),
+      },
+    },
+    handler: HRAdminController.deactivateSubTeam,
   });
 
   // ============ POSITIONS ============
@@ -311,6 +351,20 @@ export const HRAdminRoutes = (server: Server) => {
       },
     },
     handler: HRAdminController.deletePosition,
+  });
+
+  server.route({
+    method: "DELETE",
+    path: "/positions/{id}/permanent",
+    options: {
+      ...authorizeRoles(["admin", "hr"]),
+      validate: {
+        params: Joi.object({
+          id: Joi.number().integer().required(),
+        }),
+      },
+    },
+    handler: HRAdminController.hardDeletePosition,
   });
 
   server.route({

@@ -91,20 +91,19 @@ export const HRAdminController = {
     }
   },
 
-  async restoreTeam(request: Request, h: ResponseToolkit){
+  async hardDeleteTeam(request: Request, h: ResponseToolkit){
     try {
       const { id } = request.params;
-      const team = await HRAdminService.restoreTeam(Number(id));
+      await HRAdminService.hardDeleteTeam(Number(id));
       return h.response({
         success: true,
-        message: "Team restored successfully",
-        data: team,
+        message: "Team permanently deleted successfully",
       }).code(HTTP_STATUS.OK);
     } catch (error) {
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to restore team");
+      throw Boom.internal("Failed to permanently delete team");
     }
   },
 
@@ -229,6 +228,22 @@ export const HRAdminController = {
     }
   },
 
+  async hardDeleteSubTeam(request: Request, h: ResponseToolkit){
+    try {
+      const { id } = request.params;
+      await HRAdminService.hardDeletesubTeam(Number(id));
+      return h.response({
+        success: true,
+        message: "Sub-team permanently deleted successfully",
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to permanently delete sub-team");
+    }
+  },
+
   async restoreSubTeam(request: Request, h: ResponseToolkit){
     try {
       const { id } = request.params;
@@ -243,6 +258,40 @@ export const HRAdminController = {
         throw error;
       }
       throw Boom.internal("Failed to restore sub-team");
+    }
+  },
+
+  async activateSubTeam(request: Request, h: ResponseToolkit){
+    try {
+      const { id } = request.params;
+      const subTeam = await HRAdminService.activatesubTeam(Number(id));
+      return h.response({
+        success: true,
+        message: "Sub-team activated successfully",
+        data: subTeam,
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to activate sub-team");
+    }
+  },
+
+  async deactivateSubTeam(request: Request, h: ResponseToolkit){
+    try {
+      const { id } = request.params;
+      const subTeam = await HRAdminService.deactivatesubTeam(Number(id));
+      return h.response({
+        success: true,
+        message: "Sub-team deactivated successfully",
+        data: subTeam,
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to deactivate sub-team");
     }
   },
 
@@ -329,6 +378,22 @@ export const HRAdminController = {
         throw error;
       }
       throw Boom.internal("Failed to delete position");
+    }
+  },
+
+  async hardDeletePosition(request: Request, h: ResponseToolkit){
+    try {
+      const { id } = request.params;
+      await HRAdminService.hardDeletePosition(Number(id));
+      return h.response({
+        success: true,
+        message: "Position permanently deleted successfully",
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to permanently delete position");
     }
   },
 

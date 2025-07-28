@@ -2,6 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { Badge } from '../../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Button } from '../../ui/button';
 import { 
   User, 
   Calendar, 
@@ -20,12 +21,14 @@ interface UserDetailModalProps {
   user: UserData | null;
   isOpen: boolean;
   onClose: () => void;
+  openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', user: UserData) => void;
 }
 
 export const UserDetailModal: React.FC<UserDetailModalProps> = ({ 
   user, 
   isOpen, 
-  onClose 
+  onClose,
+  openConfirmationModal
 }) => {
   if (!user) return null;
 
@@ -76,7 +79,22 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Basic Information</CardTitle>
+                {!user.deletedAt && openConfirmationModal && (
+                  <Button
+                    variant={(user.isActive !== false) ? "destructive" : "default"}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openConfirmationModal((user.isActive !== false) ? 'deactivate' : 'activate', user);
+                    }}
+                    className={(user.isActive !== false) ? "" : "bg-green-600 hover:bg-green-700 text-white"}
+                  >
+                    {(user.isActive !== false) ? 'Deactivate' : 'Activate'} User
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
@@ -200,7 +218,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   <label className="text-sm font-medium text-gray-500">Sub Team</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <Users className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{user.SubTeam?.name || 'N/A'}</span>
+                    <span className="text-sm">{user.subTeam?.name || 'N/A'}</span>
                   </div>
                 </div>
               </div>

@@ -229,6 +229,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                     e.stopPropagation();
                     openConfirmationModal(position.isActive ? 'deactivate' : 'activate', position);
                   }}
+                  className={position.isActive ? "" : "bg-green-600 hover:bg-green-700 text-white"}
                 >
                   {position.isActive ? 'Deactivate' : 'Activate'} Position
                 </Button>
@@ -332,10 +333,10 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                               <span>{user.Team.name}</span>
                             </div>
                           )}
-                          {user.SubTeam && (
+                          {user.subTeam && (
                             <div className="flex items-center space-x-1 text-sm text-gray-500">
                               <Users className="h-3 w-3" />
-                              <span>{user.SubTeam.name}</span>
+                              <span>{user.subTeam.name}</span>
                             </div>
                           )}
                           {user.role && (

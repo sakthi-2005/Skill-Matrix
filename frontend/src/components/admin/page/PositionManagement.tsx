@@ -164,6 +164,8 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       loadPositions();
       onStatsUpdate();
       closeConfirmationModal();
+      // Close detail modal to refresh the data
+      setIsDetailModalOpen(false);
     } catch (error: any) {
       toast.error(error.message || `Failed to ${confirmationModal.type} position`);
       setConfirmationModal(prev => ({ ...prev, loading: false }));
