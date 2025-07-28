@@ -27,4 +27,5 @@ export interface SkillMatrixData {
 export interface Skill {
   id: number;
   name: string;
+  positionId: number;
 }

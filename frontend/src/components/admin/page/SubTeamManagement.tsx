@@ -72,7 +72,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
       ]);
 
       if (subTeamsResponse.success) {
-        setSubTeams(subTeamsResponse.data || []);
+        setSubTeams(subTeamsResponse.data.filter(val=>val.isActive === !showInactive) || []);
       }
       if (teamsResponse.success) {
         setTeams(teamsResponse.data || []);

@@ -71,8 +71,10 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       ]);
       
       if (positionsResponse.success) {
-        const positionsData = positionsResponse.data || [];
+        let positionsData = positionsResponse.data || [];
         const skillsData = skillsResponse || [];
+
+        positionsData = positionsData.filter(val=>val.isActive === !showInactive)
         
         // Calculate skill count for each position
         const positionsWithSkillCount = positionsData.map((position: Position) => {
@@ -183,7 +185,6 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
     setEditingPosition(position);
     setFormData({
       name: position.name,
-      description: position.description || '',
     });
     setIsDialogOpen(true);
   };
@@ -202,8 +203,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
 
 
   const filteredPositions = positions.filter(position => {
-    const matchesSearch = position.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (position.description && position.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = position.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesActiveFilter = showInactive ? true : position.isActive;
     
@@ -218,7 +218,7 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowInactive(!showInactive)}
+            onClick={() => setShowInactive(e=>!e)}
             className="flex items-center space-x-2"
           >
             {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -337,13 +337,6 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-4 pb-4">
-                <div className="space-y-3">
-                  {position.description && (
-                    <p className="text-sm text-gray-600">{position.description}</p>
-                  )}
-                </div>
-              </CardContent>
             </Card>
           ))}
         </div>
