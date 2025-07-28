@@ -51,7 +51,7 @@ export interface User {
   role?: Role;
   position?: Position;
   Team?: Team;
-  SubTeam?: SubTeam;
+  subTeam?: SubTeam;
 }
 
 export interface Role {
@@ -79,7 +79,6 @@ export interface OrganizationStats {
 
 export interface CreateTeamRequest {
   name: string;
-  description?: string;
 }
 
 export interface UpdateTeamRequest {
@@ -138,7 +137,7 @@ export interface UserData {
     id: number;
     name: string;
   };
-  SubTeam?: {
+  subTeam?: {
     id: number;
     name: string;
   };
@@ -218,7 +217,7 @@ export interface UserData {
     id: number;
     name: string;
   };
-  SubTeam?: {
+  subTeam?: {
     id: number;
     name: string;
   };

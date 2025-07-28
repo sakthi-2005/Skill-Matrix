@@ -150,6 +150,8 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
       loadData();
       onStatsUpdate();
       closeConfirmationModal();
+      // Close detail modal to refresh the data
+      setIsDetailModalOpen(false);
     } catch (error: any) {
       toast.error(error.message || `Failed to ${confirmationModal.type} sub-team`);
       setConfirmationModal(prev => ({ ...prev, loading: false }));
@@ -326,57 +328,29 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                   {/* Action buttons beside the name */}
                   <div className="flex items-center space-x-1 flex-shrink-0">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             openEditDialog(subTeam);
                           }}
-                          className="h-6 w-6 p-0"
+                          className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
                           title="Edit"
                         >
-                          <Edit className="h-3 w-3" />
+                          <Edit className="h-4 w-4" />
                         </Button>
                         
-                        {subTeam.isActive ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openConfirmationModal('deactivate', subTeam);
-                            }}
-                            className="h-6 w-6 p-0 text-orange-600 hover:text-orange-700"
-                            title="Deactivate"
-                          >
-                            <PowerOff className="h-3 w-3" />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openConfirmationModal('activate', subTeam);
-                            }}
-                            className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
-                            title="Activate"
-                          >
-                            <Power className="h-3 w-3" />
-                          </Button>
-                        )}
-                        
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             openConfirmationModal('delete', subTeam);
                           }}
-                          className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                          className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
                           title="Delete"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                   </div>
                 </div>
@@ -404,6 +378,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
         subTeam={selectedSubTeam}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+        openConfirmationModal={openConfirmationModal}
       />
 
       <ConfirmationModal
