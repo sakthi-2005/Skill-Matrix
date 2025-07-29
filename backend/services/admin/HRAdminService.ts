@@ -1,5 +1,5 @@
 import { Not, IsNull } from "typeorm";
-import { teamRepo,subTeamRepo,positionRepo } from "../../config/dataSource";
+import { teamRepo,subTeamRepo,positionRepo,skillRepo } from "../../config/dataSource";
 import { TeamType, subTeamType, PositionType } from "../../types/entities";
 import * as Boom from "@hapi/boom";
 
@@ -40,7 +40,7 @@ export const HRAdminService = {
     try {
       
       return await teamRepo.find({
-        relations: ["subteam", "user"],
+        relations: ["subteam.user", "user"],
         order: { createdAt: "DESC" },
       });
     } catch (error) {
@@ -98,13 +98,35 @@ export const HRAdminService = {
 
   async softDeleteTeam(id: number): Promise<void> {
     try {
-      await teamRepo.delete(id);
+      console.log(`Attempting to delete team with ID: ${id}`);
+      
+      // Check if team exists
+      const team = await teamRepo.findOne({ where: { id } });
+      if (!team) {
+        throw Boom.notFound("Team not found");
+      }
+      
+      console.log(`Team found: ${team.name}`);
+      
+      // Perform the deletion
+      const result = await teamRepo.delete(id);
+      console.log(`Delete result:`, result);
+      
+      if (result.affected === 0) {
+        throw Boom.badRequest("Team could not be deleted");
+      }
+      
+      console.log(`Successfully deleted team with ID: ${id}`);
     } catch (error) {
-      console.log(error)
+      console.error(`Error deleting team ${id}:`, error);
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to delete team");
+      // Provide more specific error information
+      if (error.code === '23503') { // Foreign key constraint violation
+        throw Boom.badRequest("Cannot delete team: it is still referenced by other records");
+      }
+      throw Boom.internal(`Failed to delete team: ${error.message}`);
     }
   },
 
@@ -294,13 +316,35 @@ export const HRAdminService = {
 
   async softDeletesubTeam(id: number): Promise<void> {
     try {
+      console.log(`Attempting to delete sub-team with ID: ${id}`);
       
-      await subTeamRepo.delete(id);
+      // Check if sub-team exists
+      const subTeam = await subTeamRepo.findOne({ where: { id } });
+      if (!subTeam) {
+        throw Boom.notFound("Sub-team not found");
+      }
+      
+      console.log(`Sub-team found: ${subTeam.name}`);
+      
+      // Perform the deletion
+      const result = await subTeamRepo.delete(id);
+      console.log(`Delete result:`, result);
+      
+      if (result.affected === 0) {
+        throw Boom.badRequest("Sub-team could not be deleted");
+      }
+      
+      console.log(`Successfully deleted sub-team with ID: ${id}`);
     } catch (error) {
+      console.error(`Error deleting sub-team ${id}:`, error);
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to delete sub-team");
+      // Provide more specific error information
+      if (error.code === '23503') { // Foreign key constraint violation
+        throw Boom.badRequest("Cannot delete sub-team: it is still referenced by other records");
+      }
+      throw Boom.internal(`Failed to delete sub-team: ${error.message}`);
     }
   },
 
@@ -467,13 +511,44 @@ export const HRAdminService = {
 
   async softDeletePosition(id: number): Promise<void> {
     try {
+      console.log(`Attempting to delete position with ID: ${id}`);
       
-      await positionRepo.delete(id);
+      // Check if position exists
+      const position = await positionRepo.findOne({ where: { id } });
+      if (!position) {
+        throw Boom.notFound("Position not found");
+      }
+      
+      console.log(`Position found: ${position.name}`);
+      
+      // First, delete all skills associated with this position
+      const skillsToDelete = await skillRepo.find({ where: { positionId: id } });
+      
+      if (skillsToDelete.length > 0) {
+        console.log(`Found ${skillsToDelete.length} skills to delete for position ${id}`);
+        await skillRepo.delete({ positionId: id });
+        console.log(`Deleted ${skillsToDelete.length} skills associated with position ${id}`);
+      }
+      
+      // Now delete the position
+      const result = await positionRepo.delete(id);
+      console.log(`Delete result:`, result);
+      
+      if (result.affected === 0) {
+        throw Boom.badRequest("Position could not be deleted");
+      }
+      
+      console.log(`Successfully deleted position with ID: ${id}`);
     } catch (error) {
+      console.error(`Error deleting position ${id}:`, error);
       if (error.isBoom) {
         throw error;
       }
-      throw Boom.internal("Failed to delete position");
+      // Provide more specific error information
+      if (error.code === '23503') { // Foreign key constraint violation
+        throw Boom.badRequest("Cannot delete position: it is still referenced by other records");
+      }
+      throw Boom.internal(`Failed to delete position: ${error.message}`);
     }
   },
 

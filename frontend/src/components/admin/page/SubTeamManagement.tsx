@@ -23,6 +23,7 @@ import { Team, SubTeam, CreateSubTeamRequest } from '../../../types/admin';
 import { toast } from 'sonner';
 import { SubTeamDetailModal } from '../modals/SubTeamDetailModal';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
+import { SubTeamReassignmentModal } from '../modals/SubTeamReassignmentModal';
 
 interface SubTeamManagementProps {
   onStatsUpdate: () => void;
@@ -47,6 +48,15 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
   }>({
     isOpen: false,
     type: 'delete',
+    subTeam: null,
+    loading: false
+  });
+  const [reassignmentModal, setReassignmentModal] = useState<{
+    isOpen: boolean;
+    subTeam: SubTeam | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
     subTeam: null,
     loading: false
   });
@@ -118,12 +128,21 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
   };
 
   const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', subTeam: SubTeam) => {
-    setConfirmationModal({
-      isOpen: true,
-      type,
-      subTeam,
-      loading: false
-    });
+    if (type === 'delete') {
+      // Open reassignment modal for deletion
+      setReassignmentModal({
+        isOpen: true,
+        subTeam,
+        loading: false
+      });
+    } else {
+      setConfirmationModal({
+        isOpen: true,
+        type,
+        subTeam,
+        loading: false
+      });
+    }
   };
 
   const closeConfirmationModal = () => {
@@ -133,6 +152,48 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
       subTeam: null,
       loading: false
     });
+  };
+
+  const closeReassignmentModal = () => {
+    setReassignmentModal({
+      isOpen: false,
+      subTeam: null,
+      loading: false
+    });
+  };
+
+  const handleDirectDelete = async () => {
+    if (!reassignmentModal.subTeam) return;
+
+    setReassignmentModal(prev => ({ ...prev, loading: true }));
+
+    try {
+      await adminService.deleteSubTeam(reassignmentModal.subTeam.id);
+      toast.success('Sub-team deleted successfully');
+      loadData();
+      onStatsUpdate();
+      closeReassignmentModal();
+    } catch (error: any) {
+      console.error('Error deleting sub-team:', error);
+      // Even if the API returns an error, the deletion might have succeeded
+      // Let's refresh the data to check
+      try {
+        await loadData();
+        onStatsUpdate();
+        // If the sub-team is no longer in the list, it was deleted successfully
+        const stillExists = subTeams.find(st => st.id === reassignmentModal.subTeam?.id);
+        if (!stillExists) {
+          toast.success('Sub-team deleted successfully');
+          closeReassignmentModal();
+        } else {
+          toast.error(error.message || 'Failed to delete sub-team');
+          setReassignmentModal(prev => ({ ...prev, loading: false }));
+        }
+      } catch (refreshError) {
+        toast.error(error.message || 'Failed to delete sub-team');
+        setReassignmentModal(prev => ({ ...prev, loading: false }));
+      }
+    }
   };
 
   const handleConfirmAction = async () => {
@@ -149,10 +210,6 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
         case 'deactivate':
           await adminService.deactivateSubTeam(confirmationModal.subTeam.id);
           toast.success('Sub-team deactivated successfully');
-          break;
-        case 'delete':
-          await adminService.deleteSubTeam(confirmationModal.subTeam.id);
-          toast.success('Sub-team deleted successfully');
           break;
       }
       
@@ -415,6 +472,19 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
         }
         type={confirmationModal.type}
         loading={confirmationModal.loading}
+      />
+
+      <SubTeamReassignmentModal
+        isOpen={reassignmentModal.isOpen}
+        onClose={closeReassignmentModal}
+        onConfirm={() => {
+          // This will be called after successful operations to refresh data
+          loadData();
+          onStatsUpdate();
+          closeReassignmentModal();
+        }}
+        subTeam={reassignmentModal.subTeam}
+        loading={reassignmentModal.loading}
       />
     </div>
   );
