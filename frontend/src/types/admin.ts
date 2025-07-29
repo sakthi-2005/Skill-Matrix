@@ -20,7 +20,7 @@ export interface SubTeam {
   updatedAt: string;
   deletedAt?: string;
   teams?: Team;
-  users?: User[];
+  user?: User[];
 }
 
 export interface Position {
@@ -116,7 +116,7 @@ export interface ApiResponse<T> {
 }
 
 export interface UserData {
-  id: number;
+  id: string;
   userId: string;
   name: string;
   email?: string;
@@ -138,7 +138,7 @@ export interface UserData {
     id: number;
     name: string;
   };
-  SubTeam?: {
+  subTeam?: {
     id: number;
     name: string;
   };
@@ -196,7 +196,7 @@ export interface CreateUserRequest {
 }
 
 export interface UserData {
-  id: number;
+  id: string;
   userId: string;
   name: string;
   email?: string;

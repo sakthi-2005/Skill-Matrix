@@ -73,9 +73,6 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
       if (subTeamsResponse.success) {
         setSubTeams(subTeamsResponse.data.filter(val=>val.isActive === !showInactive) || []);
       }
-      if (teamsResponse.success) {
-        setTeams(teamsResponse.data || []);
-      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load data');
@@ -318,7 +315,7 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
                     <div className="min-w-0 flex-1">
                       <span className="block truncate font-medium">{subTeam.name}</span>
                       <span className="text-sm text-gray-500 font-normal truncate">
-                        {subTeam.teams?.name} • {subTeam.users?.length || 0} users
+                        {subTeam.teams?.name} • {subTeam.user?.length || 0} users
                       </span>
                     </div>
                   </CardTitle>

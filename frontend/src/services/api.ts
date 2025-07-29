@@ -108,30 +108,30 @@ export const userService = {
     userId: string;
     name: string;
     email?: string;
-    roleId: number;
-    positionId: number;
-    teamId?: number;
-    subTeamId?: number;
-    leadId?: number;
-    hrId?: number;
+    role: string;
+    position: string;
+    team?: string;
+    subTeam?: string;
+    lead?: string;
+    hr?: string;
     isActive?: boolean;
   }[]) => apiRequest("/users/create", { method: "POST", body: userData }),
 
   updateUser: (userData: {
-    id: number;
+    id: string;
     userId?: string;
     name?: string;
     email?: string;
-    roleId?: number;
-    positionId?: number;
-    teamId?: number;
-    subTeamId?: number;
-    leadId?: number;
-    hrId?: number;
+    role?: string;
+    position?: string;
+    team?: string;
+    subTeam?: string;
+    lead?: string;
+    hr?: string;
     isActive?: boolean;
   }) =>apiRequest("/users/update", { method: "POST", body: userData }),
 
-  deleteUser: (id: number) =>
+  deleteUser: (id: string) =>
     apiRequest(`/users/delete/${id}`, { method: "DELETE" }),
 
   getOrganizationSkillStats: () => apiRequest("/users/organization/skill-stats"),
