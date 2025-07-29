@@ -157,12 +157,9 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
                           {subTeam.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                       </div>
-                      {subTeam.description && (
-                        <p className="text-sm text-gray-600 mb-2">{subTeam.description}</p>
-                      )}
                       <div className="flex items-center space-x-1 text-sm text-gray-500">
                         <Users className="h-3 w-3" />
-                        <span>{subTeam.users?.length || subTeam.user?.length || 0} members</span>
+                        <span>{subTeam.user?.length || 0} members</span>
                       </div>
                     </div>
                   ))}

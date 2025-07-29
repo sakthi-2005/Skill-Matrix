@@ -40,7 +40,7 @@ export const HRAdminService = {
     try {
       
       return await teamRepo.find({
-        relations: ["subteam", "user"],
+        relations: ["subteam.user", "user"],
         order: { createdAt: "DESC" },
       });
     } catch (error) {

@@ -56,9 +56,8 @@ const UserService = {
   createUser: async (data: UserType): Promise<void> => {
     console.log(data);
 
-    const id = await AppDataSource.query(`
-      SELECT COALESCE(MAX(id::bigInt), 0) FROM users
-      `);
+    const id = await AppDataSource.query(`SELECT * FROM users ORDER BY  CAST(id AS INTEGER) DESC LIMIT 1;`);
+
     await AppDataSource.query(`
     SELECT setval(
       pg_get_serial_sequence('auths', 'id'),
@@ -66,7 +65,10 @@ const UserService = {
       )`);
 
     try{
-      data.id = (id + 1).toString();
+      console.log(id[0])
+      console.log(id[0].id,parseInt(id[0].id))
+      data.id = (parseInt(id[0].id) + 1).toString();
+      console.log(data);
       await userRepo.save(data);
     }
     catch(err){
@@ -76,9 +78,33 @@ const UserService = {
 
   updateUser: async (data: UserData): Promise<UserType> => {
 
-    userRepo.create(data);
-    const updatedUser = await userRepo.save(data);
-    return updatedUser;
+    try{
+      console.log(data);
+      const roleId = await roleRepo.findOneBy({name: data.role});
+      const leadId = await userRepo.findOneBy({userId: data.lead});
+      const hrId = await userRepo.findOneBy({userId: data.hr});
+      const subTeamId = await subTeamRepo.findOneBy({name: data.subTeam});
+      const positionId = await positionRepo.findOneBy({name: data.position});
+      const teamId = await teamRepo.findOneBy({name: data.team});
+      data.roleId = roleId?.id || null;
+      data.positionId = positionId?.id || null;
+      data.teamId = teamId?.id || null;
+      data.subTeamId = subTeamId?.id || null;
+      data.leadId = leadId?.id || null;
+      data.hrId = hrId?.id || null;
+      delete data.role;
+      delete data.position;
+      delete data.team;
+      delete data.subTeam;
+      delete data.lead;
+      delete data.hr;
+      console.log(data);
+      const updatedUser = await userRepo.save(data);
+      return updatedUser;
+    }
+    catch(err){
+      console.error(err);
+    }
 
   },
 
