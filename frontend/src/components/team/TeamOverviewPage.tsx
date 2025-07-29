@@ -292,7 +292,7 @@ const TeamOverviewPage = () => {
   return (
     <div className=" ">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      {/* <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">
           {user?.role?.name === "hr" ? "All Members Overview" : "Team Overview"}
         </h1>
@@ -305,7 +305,7 @@ const TeamOverviewPage = () => {
             Add Team Member
           </button>
         )}
-      </div>
+      </div> */}
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 py-6">

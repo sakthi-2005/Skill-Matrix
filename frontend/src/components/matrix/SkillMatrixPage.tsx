@@ -258,8 +258,8 @@ const SkillMatrixPage = () => {
                       </select>
                     </>
                   )}
-                    <select
-                      className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <select
+                      className="flex items-center justify-between px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={selectedPosition}
                       onChange={(e) => {setSelectedPosition(e.target.value);}}
                     >
@@ -273,7 +273,7 @@ const SkillMatrixPage = () => {
                 <div className="relative inline-block text-left min-w-[200px]">
                   <div
                     onClick={() => setShowSkillDropdown(!showSkillDropdown)}
-                    className="flex items-center justify-between px-3 py-3 border border-gray-300 rounded bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex items-center justify-between px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <span className="text-black-800 font-">
                       {matrixSkills.length > 0
@@ -282,7 +282,7 @@ const SkillMatrixPage = () => {
                     </span>
                     {/* Down Arrow Icon (matches select) */}
                     <svg
-                      className="w-4 h-4 text-black-500"
+                      className="w-3 h-3 text-black-900"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
