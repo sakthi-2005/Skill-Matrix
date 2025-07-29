@@ -36,7 +36,7 @@ import { ConfirmationModal } from '../modals/ConfirmationModal';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 
 interface UserData {
-  id: number;
+  id: string;
   userId: string;
   name: string;
   email?: string;
@@ -112,12 +112,12 @@ interface CreateUserRequest {
   userId: string;
   name: string;
   email?: string;
-  roleId: number;
-  positionId: number;
-  teamId: number;
-  subTeamId?: number;
-  leadId?: number;
-  hrId?: number;
+  role: string;
+  position: string;
+  team: string;
+  subTeam?: string;
+  lead?: string;
+  hr?: string;
   isActive?: boolean;
 }
 
@@ -147,6 +147,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [formRole,setFormRole] = useState(null);
+  const [formTeam,setFormTeam] = useState(null);
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean;
     type: 'delete' | 'deactivate' | 'activate';
@@ -162,12 +164,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
     userId: '',
     name: '',
     email: '',
-    roleId: null,
-    positionId: null,
-    teamId: null,
-    subTeamId: null,
-    leadId: null,
-    hrId: null,
+    role: '',
+    position: '',
+    team: '',
+    subTeam: '',
+    lead: '',
+    hr: '',
     isActive: true,
   });
   const [BulkUser,setBulkUser] = useState<any[]|null>([])
@@ -249,12 +251,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         userId: '',
         name: '',
         email: '',
-        roleId: null,
-        positionId: null,
-        teamId: null,
-        subTeamId: null,
-        leadId: null,
-        hrId: null,
+        role: '',
+        position: '',
+        team: '',
+        subTeam: '',
+        lead: '',
+        hr: '',
         isActive: true,
       });
       loadData();
@@ -348,14 +350,16 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       userId: user.userId,
       name: user.name,
       email: user.email || '',
-      roleId: user.role?.id || user.roleId || null,
-      positionId: user.position?.id || user.positionId || null,
-      teamId: user.Team?.id || user.teamId || null,
-      subTeamId: user.SubTeam?.id || user.subTeamId,
-      leadId: user.lead?.id || user.leadId,
-      hrId: user.hr?.id || user.hrId,
+      role: user.role?.name || '',
+      position: user.position?.name || '',
+      team: user.Team?.name || '',
+      subTeam: user.SubTeam?.name || '',
+      lead: user.lead?.userId || '',
+      hr: user.hr?.userId || '',
       isActive: user.isActive !== false,
     };
+    setFormRole(user.role?.id);
+    setFormTeam(user.Team?.id);
     
     console.log('Form data to set:', formDataToSet);
     setFormData(formDataToSet);
@@ -368,12 +372,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       userId: '',
       name: '',
       email: '',
-      roleId: null,
-      positionId: null,
-      teamId: null,
-      subTeamId: null,
-      leadId: null,
-      hrId: null,
+      role: '',
+      position: '',
+      team: '',
+      subTeam: '',
+      lead: '',
+      hr: '',
       isActive: true,
     });
     setIsDialogOpen(true);
@@ -497,13 +501,16 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         <div>
                           <Label>Role</Label>
                           <Select
-                            value={formData.roleId?.toString()}
-                            onValueChange={(value) => setFormData({ ...formData, roleId: parseInt(value) })}
+                            value={formData.role}
+                            onValueChange={(value) => {
+                              setFormData({ ...formData, role: value });
+                              setFormRole(roles.find((role)=>role.name === value ).id)
+                          }}
                           >
                             <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
                             <SelectContent>
                               {roles.map(role => (
-                                <SelectItem key={role.id} value={role.id.toString()}>
+                                <SelectItem key={role.id} value={role.name}>
                                   {role.name}
                                 </SelectItem>
                               ))}
@@ -513,16 +520,16 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         <div>
                           <Label>Position</Label>
                           <Select
-                            value={formData.positionId?.toString()}
-                            onValueChange={(value) => setFormData({ ...formData, positionId: parseInt(value) })}
-                            disabled={!positions.some(val => val.roleId === formData.roleId)}
+                            value={formData.position}
+                            onValueChange={(value) => setFormData({ ...formData, position: value })}
+                            disabled={!positions.some(val => val.roleId === formRole)}
                           >
                             <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
                             <SelectContent>
                               {positions
-                                .filter(val => val.roleId === formData.roleId)
+                                .filter(val => val.roleId === formRole)
                                 .map(pos => (
-                                  <SelectItem key={pos.id} value={pos.id.toString()}>
+                                  <SelectItem key={pos.id} value={pos.name}>
                                     {pos.name}
                                   </SelectItem>
                                 ))}
@@ -535,13 +542,16 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         <div>
                           <Label>Team</Label>
                           <Select
-                            value={formData.teamId?.toString()}
-                            onValueChange={(value) => setFormData({ ...formData, teamId: parseInt(value), subTeamId: null })}
+                            value={formData.team}
+                            onValueChange={(value) => {
+                              setFormData({ ...formData, team: value, subTeam: null });
+                              setFormTeam(teams.find((team)=>team.name === value).id);
+                            }}
                           >
                             <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
                             <SelectContent>
                               {teams.map(team => (
-                                <SelectItem key={team.id} value={team.id.toString()}>
+                                <SelectItem key={team.id} value={team.name} onClick={()=>setFormTeam(team.id)}>
                                   {team.name}
                                 </SelectItem>
                               ))}
@@ -551,22 +561,22 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         <div>
                           <Label>Sub Team</Label>
                           <Select
-                            value={formData.subTeamId?.toString() || ""}
+                            value={formData.subTeam}
                             onValueChange={(value) =>
                               setFormData({
                                 ...formData,
-                                subTeamId: parseInt(value)
+                                subTeam: value
                               })
                             }
-                            disabled={!subTeams.some(st => st.teamId === formData.teamId)}
+                            disabled={!subTeams.some(st => st.teamId === formTeam)}
                           >
                             <SelectTrigger><SelectValue placeholder="Select sub team" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="unassigned">Unassigned</SelectItem>
                               {subTeams
-                                .filter(st => st.teamId === formData.teamId)
+                                .filter(st => st.teamId === formTeam)
                                 .map(st => (
-                                  <SelectItem key={st.id} value={st.id.toString()}>
+                                  <SelectItem key={st.id} value={st.name}>
                                     {st.name}
                                   </SelectItem>
                                 ))}
@@ -579,11 +589,11 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         <div>
                           <Label>Team Lead</Label>
                           <Select
-                            value={formData.leadId?.toString() || "unassigned"}
+                            value={formData.lead || "unassigned"}
                             onValueChange={(value) =>
                               setFormData({
                                 ...formData,
-                                leadId: value === "unassigned" ? null : parseInt(value)
+                                lead: value === "unassigned" ? null : value
                               })
                             }
                           >
@@ -601,11 +611,11 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         <div>
                           <Label>HR Manager</Label>
                           <Select
-                            value={formData.hrId?.toString() || "unassigned"}
+                            value={formData.hr || "unassigned"}
                             onValueChange={(value) =>
                               setFormData({
                                 ...formData,
-                                hrId: value === "unassigned" ? null : parseInt(value)
+                                hr: value === "unassigned" ? null : value
                               })
                             }
                           >
@@ -686,60 +696,60 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
               
                 {/* Dropdown trigger button */}
                 <div className="relative">
-                  <Select
-                    onValueChange={(value) => {
-                      if (value === "single") {
-                        setFormData({
-                          userId: '',
-                          name: '',
-                          email: '',
-                          roleId: 0,
-                          positionId: 0,
-                          teamId: 0,
-                          subTeamId: undefined,
-                          leadId: undefined,
-                          hrId: undefined,
-                          isActive: true,
-                        });
-                        setIsSingleOpen(true);
-                      }
-                      if (value === "bulk") setIsBulkOpen(true);
-                    }}
-                  >
-                  <SelectTrigger className="bg-black text-white hover:bg-black px-2 py-2 rounded flex items-center justify-between w-[160px]">
-                    <span className="font-medium">Add User</span>
-                  </SelectTrigger>
+            <Select
+              onValueChange={(value) => {
+                if (value === "single") {
+                  setFormData({
+                    userId: '',
+                    name: '',
+                    email: '',
+                    role: '',
+                    position: '',
+                    team: '',
+                    subTeam: '',
+                    lead: '',
+                    hr: '',
+                    isActive: true,
+                  });
+                  setIsSingleOpen(true);
+                }
+                if (value === "bulk") setIsBulkOpen(true);
+              }}
+            >
+              <SelectTrigger className="bg-blue-600 text-white hover:bg-blue-700 px-2 py-2 rounded flex items-center justify-between w-[160px]">
+                <span className="font-medium">Add User</span>
+              </SelectTrigger>
 
-                <SelectContent className="w-48">
-                  <div
-                    onClick={() => {
-                      setIsSingleOpen(true);
-                      setFormData({
+              <SelectContent className="w-48">
+                <div
+                  onClick={() => {
+                    setIsSingleOpen(true);
+                    setFormData({
                       userId: '',
                       name: '',
                       email: '',
-                      roleId: 0,
-                      positionId: 0,
-                      teamId: 0,
-                      subTeamId: undefined,
-                      leadId: undefined,
-                      hrId: undefined,
+                      role: '',
+                      position: '',
+                      team: '',
+                      subTeam: '',
+                      lead: '',
+                      hr: '',
                       isActive: true,
-                    });
-                    }}
-                    className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
-                  >
-                    Add Single User
-                  </div>
-                  <div
-                    onClick={() => setIsBulkOpen(true)}
-                    className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
-                  >
-                    Upload Bulk Users
-                  </div>
-                </SelectContent>
-              </Select>
-            </div>
+                  });
+                  }}
+                  className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
+                >
+                  Add Single User
+                </div>
+                <div
+                  onClick={() => setIsBulkOpen(true)}
+                  className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
+                >
+                  Upload Bulk Users
+                </div>
+              </SelectContent>
+            </Select>
+          </div>
           </div>
         </div>
       </div>

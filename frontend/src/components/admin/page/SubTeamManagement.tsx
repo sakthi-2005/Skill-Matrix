@@ -82,9 +82,6 @@ export const SubTeamManagement: React.FC<SubTeamManagementProps> = ({ onStatsUpd
           }
         }
       }
-      if (teamsResponse.success) {
-        setTeams(teamsResponse.data || []);
-      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load data');
