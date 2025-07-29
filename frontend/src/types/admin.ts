@@ -21,6 +21,7 @@ export interface SubTeam {
   deletedAt?: string;
   teams?: Team;
   users?: User[];
+  user?: User[];
 }
 
 export interface Position {
@@ -218,7 +219,7 @@ export interface UserData {
     id: number;
     name: string;
   };
-  SubTeam?: {
+  subTeam?: {
     id: number;
     name: string;
   };

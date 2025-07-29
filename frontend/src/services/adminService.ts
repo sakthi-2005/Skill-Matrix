@@ -319,13 +319,21 @@ class AdminService {
     return this.handleResponse<ApiResponse<any>>(response);
   }
 
-  async updateUser(id: number, data: any): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
-      method: 'PUT',
+  async updateUser(id: string | number, data: any): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/users/update`, {
+      method: 'POST',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
+      body: JSON.stringify({ id, ...data }),
     });
     return this.handleResponse<ApiResponse<any>>(response);
+  }
+
+  async getTeamMembers(teamId: number): Promise<ApiResponse<any[]>> {
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${teamId}/members`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<ApiResponse<any[]>>(response);
   }
 
   async deleteUser(id: number): Promise<ApiResponse<void>> {

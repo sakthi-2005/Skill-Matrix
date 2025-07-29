@@ -21,6 +21,7 @@ import { Team, CreateTeamRequest, UpdateTeamRequest } from '../../../types/admin
 import { toast } from 'sonner';
 import { TeamDetailModal } from '../modals/TeamDetailModal';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
+import { PreDeletionReassignmentModal } from '../modals/PreDeletionReassignmentModal';
 
 interface TeamManagementProps {
   onStatsUpdate: () => void;
@@ -43,6 +44,15 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   }>({
     isOpen: false,
     type: 'delete',
+    team: null,
+    loading: false
+  });
+  const [preDeleteModal, setPreDeleteModal] = useState<{
+    isOpen: boolean;
+    team: Team | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
     team: null,
     loading: false
   });
@@ -103,12 +113,22 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   };
 
   const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', team: Team) => {
-    setConfirmationModal({
-      isOpen: true,
-      type,
-      team,
-      loading: false
-    });
+    if (type === 'delete') {
+      // Open pre-deletion reassignment modal for delete operations
+      setPreDeleteModal({
+        isOpen: true,
+        team,
+        loading: false
+      });
+    } else {
+      // Use regular confirmation modal for activate/deactivate
+      setConfirmationModal({
+        isOpen: true,
+        type,
+        team,
+        loading: false
+      });
+    }
   };
 
   const closeConfirmationModal = () => {
@@ -118,6 +138,21 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       team: null,
       loading: false
     });
+  };
+
+  const closePreDeleteModal = () => {
+    setPreDeleteModal({
+      isOpen: false,
+      team: null,
+      loading: false
+    });
+  };
+
+  const handlePreDeleteConfirm = () => {
+    // This is called after successful reassignment and deletion
+    loadTeams();
+    onStatsUpdate();
+    closePreDeleteModal();
   };
 
   const handleConfirmAction = async () => {
@@ -135,10 +170,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
           await adminService.deactivateTeam(confirmationModal.team.id);
           toast.success('Team deactivated successfully');
           break;
-        case 'delete':
-          await adminService.deleteTeam(confirmationModal.team.id);
-          toast.success('Team deleted successfully');
-          break;
+        // Delete case is now handled by PreDeletionReassignmentModal
       }
       
       loadTeams();
@@ -335,28 +367,30 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
         openConfirmationModal={openConfirmationModal}
       />
 
+      <PreDeletionReassignmentModal
+        isOpen={preDeleteModal.isOpen}
+        onClose={closePreDeleteModal}
+        onConfirm={handlePreDeleteConfirm}
+        team={preDeleteModal.team}
+        loading={preDeleteModal.loading}
+      />
+
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
         onClose={closeConfirmationModal}
         onConfirm={handleConfirmAction}
         title={
-          confirmationModal.type === 'delete' 
-            ? 'Delete Team' 
-            : confirmationModal.type === 'deactivate'
+          confirmationModal.type === 'deactivate'
             ? 'Deactivate Team'
             : 'Activate Team'
         }
         description={
-          confirmationModal.type === 'delete'
-            ? `Are you sure you want to delete "${confirmationModal.team?.name}"? This action cannot be undone.`
-            : confirmationModal.type === 'deactivate'
+          confirmationModal.type === 'deactivate'
             ? `Are you sure you want to deactivate "${confirmationModal.team?.name}"? This will make the team inactive.`
             : `Are you sure you want to activate "${confirmationModal.team?.name}"? This will make the team active.`
         }
         confirmText={
-          confirmationModal.type === 'delete' 
-            ? 'Delete' 
-            : confirmationModal.type === 'deactivate'
+          confirmationModal.type === 'deactivate'
             ? 'Deactivate'
             : 'Activate'
         }
