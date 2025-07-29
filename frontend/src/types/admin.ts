@@ -218,7 +218,7 @@ export interface UserData {
     id: number;
     name: string;
   };
-  SubTeam?: {
+  subTeam?: {
     id: number;
     name: string;
   };

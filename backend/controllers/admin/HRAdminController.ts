@@ -1,5 +1,6 @@
 import { Request, ResponseToolkit } from "@hapi/hapi";
 import { HRAdminService } from "../../services/admin/HRAdminService";
+import UserService from "../../services/UserService";
 import { HTTP_STATUS } from "../../enum/enum";
 import * as Boom from "@hapi/boom";
 
@@ -413,6 +414,23 @@ export const HRAdminController = {
   // },
 
   // ============ STATISTICS ============
+
+  async getTeamMembers(request: Request, h: ResponseToolkit){
+    try {
+      const { teamId } = request.params;
+      const members = await UserService.getTeamMembers(Number(teamId));
+      return h.response({
+        success: true,
+        message: "Team members retrieved successfully",
+        data: members,
+      }).code(HTTP_STATUS.OK);
+    } catch (error) {
+      if (error.isBoom) {
+        throw error;
+      }
+      throw Boom.internal("Failed to retrieve team members");
+    }
+  },
 
   async getOrganizationStats(request: Request, h: ResponseToolkit){
     try {

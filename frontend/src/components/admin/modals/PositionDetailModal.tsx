@@ -236,6 +236,7 @@ export const PositionDetailModal: React.FC<PositionDetailModalProps> = ({
                     e.stopPropagation();
                     openConfirmationModal(position.isActive ? 'deactivate' : 'activate', position);
                   }}
+                  className={position.isActive ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"}
                 >
                   {position.isActive ? 'Deactivate' : 'Activate'} Position
                 </Button>

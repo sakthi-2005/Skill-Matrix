@@ -12,17 +12,20 @@ import {
   Clock,
   Building
 } from 'lucide-react';
+import { Button } from '../../ui/button';
 
 interface SubTeamDetailModalProps {
   subTeam: SubTeam | null;
   isOpen: boolean;
   onClose: () => void;
+  openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', subTeam: SubTeam) => void;
 }
 
 export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({ 
   subTeam, 
   isOpen, 
-  onClose 
+  onClose,
+  openConfirmationModal
 }) => {
   if (!subTeam) return null;
 
@@ -59,7 +62,22 @@ export const SubTeamDetailModal: React.FC<SubTeamDetailModalProps> = ({
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Basic Information</CardTitle>
+                {openConfirmationModal && (
+                  <Button
+                    variant={subTeam.isActive ? "destructive" : "default"}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openConfirmationModal(subTeam.isActive ? 'deactivate' : 'activate', subTeam);
+                    }}
+                    className={subTeam.isActive ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"}
+                  >
+                    {subTeam.isActive ? 'Deactivate' : 'Activate'} Sub-Team
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

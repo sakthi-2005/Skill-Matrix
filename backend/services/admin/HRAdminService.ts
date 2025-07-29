@@ -245,7 +245,8 @@ export const HRAdminService = {
 
   async updatesubTeam(id: number, updateData: Partial<subTeamType>) {
     try {
-
+      // Only check for name conflicts if the name is being updated
+      if (updateData.name && updateData.teamId) {
         const existingsubTeam = await subTeamRepo.findOne({
           where: {
             name: updateData.name,
@@ -257,6 +258,26 @@ export const HRAdminService = {
         if (existingsubTeam && existingsubTeam.id !== id) {
           throw Boom.conflict("Sub-team name already exists within this team");
         }
+      } else if (updateData.teamId && !updateData.name) {
+        // If only moving team (no name change), check if original name conflicts in target team
+        const currentSubTeam = await subTeamRepo.findOne({
+          where: { id, isActive: true }
+        });
+        
+        if (currentSubTeam) {
+          const existingsubTeam = await subTeamRepo.findOne({
+            where: {
+              name: currentSubTeam.name,
+              teamId: updateData.teamId,
+              isActive: true
+            },
+          });
+
+          if (existingsubTeam && existingsubTeam.id !== id) {
+            throw Boom.conflict("Sub-team name already exists within this team");
+          }
+        }
+      }
 
       await subTeamRepo.update(id, {
         ...updateData,

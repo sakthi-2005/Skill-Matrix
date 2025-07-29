@@ -12,17 +12,20 @@ import {
   MapPin,
   Clock
 } from 'lucide-react';
+import { Button } from '../../ui/button';
 
 interface TeamDetailModalProps {
   team: Team | null;
   isOpen: boolean;
   onClose: () => void;
+  openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', team: Team) => void;
 }
 
 export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ 
   team, 
   isOpen, 
-  onClose 
+  onClose,
+  openConfirmationModal
 }) => {
   if (!team) return null;
 
@@ -59,7 +62,22 @@ export const TeamDetailModal: React.FC<TeamDetailModalProps> = ({
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Basic Information</CardTitle>
+                {openConfirmationModal && (
+                  <Button
+                    variant={team.isActive ? "destructive" : "default"}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openConfirmationModal(team.isActive ? 'deactivate' : 'activate', team);
+                    }}
+                    className={team.isActive ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"}
+                  >
+                    {team.isActive ? 'Deactivate' : 'Activate'} Team
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

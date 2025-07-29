@@ -191,7 +191,17 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
       if (usersResponse) {
         console.log('Users response:', usersResponse);
-        setUsers(usersResponse.filter(val=>val.isActive === !showInactive) || []);
+        const filteredUsers = usersResponse.filter(val=>val.isActive === !showInactive) || [];
+        setUsers(filteredUsers);
+        
+        // Update selectedUser if modal is open and user exists in updated data
+        if (selectedUser && isDetailModalOpen) {
+          const updatedUser = usersResponse.find((u: UserData) => u.id === selectedUser.id);
+          if (updatedUser) {
+            setSelectedUser(updatedUser);
+          }
+        }
+        
         // For admin users, all users can potentially be leads (except deleted ones)
         const leads = usersResponse.filter((user: UserData) => 
           !(user.role?.name === 'hr' || user.role?.name === 'admin')
@@ -303,7 +313,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
           break;
       }
       
-      loadData();
+      // Reload data (this will also update selectedUser if modal is open)
+      await loadData();
       onStatsUpdate();
       closeConfirmationModal();
     } catch (error: any) {
@@ -648,17 +659,41 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                 {/* Bulk Upload Dialog */}
                 <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
                   <DialogContent>
-                      <div >
-                        <h2 className="text-lg font-semibold mb-4">Upload Bulk Users</h2>
+                    <div>
+                      <h2 className="text-lg font-semibold mb-4">Upload Bulk Users</h2>
+
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleSaveMultipleUser(); // 👈 Call on submit
+                        }}
+                        className="space-y-4"
+                      >
                         <input
                           type="file"
                           accept=".csv"
                           onChange={handleFileChange}
+                          required
                         />
-                      </div>
+
+                        <div className="flex justify-end gap-2 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsBulkOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+
+                          <Button type="submit">
+                            Submit
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
                   </DialogContent>
                 </Dialog>
-
+              
                 {/* Dropdown trigger button */}
                 <div className="relative">
             <Select
@@ -813,59 +848,31 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                   </CardTitle>
                   
                   {/* Action buttons beside the name */}
-                  <div className="flex items-center space-x-1 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             openEditDialog(user);
                           }}
-                          className="h-7 w-7 p-0"
+                          className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
                           title="Edit"
                         >
-                          <Edit className="h-3 w-3" />
+                          <Edit className="h-4 w-4" />
                         </Button>
                         
-                        {(user.isActive !== false) ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openConfirmationModal('deactivate', user);
-                            }}
-                            className="h-7 w-7 p-0 text-orange-600 hover:text-orange-700"
-                            title="Deactivate"
-                          >
-                            <PowerOff className="h-3 w-3" />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openConfirmationModal('activate', user);
-                            }}
-                            className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
-                            title="Activate"
-                          >
-                            <Power className="h-3 w-3" />
-                          </Button>
-                        )}
-                        
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             openConfirmationModal('delete', user);
                           }}
-                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                          className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
                           title="Delete"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                   </div>
                 </div>
@@ -909,6 +916,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         user={selectedUser}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+        openConfirmationModal={openConfirmationModal}
       />
 
       <ConfirmationModal

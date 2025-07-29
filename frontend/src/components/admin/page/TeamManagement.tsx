@@ -21,6 +21,7 @@ import { Team, CreateTeamRequest, UpdateTeamRequest } from '../../../types/admin
 import { toast } from 'sonner';
 import { TeamDetailModal } from '../modals/TeamDetailModal';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
+import { PreDeletionReassignmentModal } from '../modals/PreDeletionReassignmentModal';
 
 interface TeamManagementProps {
   onStatsUpdate: () => void;
@@ -46,6 +47,15 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     team: null,
     loading: false
   });
+  const [preDeleteModal, setPreDeleteModal] = useState<{
+    isOpen: boolean;
+    team: Team | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    team: null,
+    loading: false
+  });
   const [formData, setFormData] = useState<CreateTeamRequest>({
     name: ''
   });
@@ -59,7 +69,16 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       setLoading(true);
       const response = await adminService.getAllTeams();
       if (response.success) {
-        setTeams(response.data.filter(val=>val.isActive === !showInactive) || []);
+        const filteredTeams = response.data.filter(val=>val.isActive === !showInactive) || [];
+        setTeams(filteredTeams);
+        
+        // Update selectedTeam if modal is open and team exists in updated data
+        if (selectedTeam && isDetailModalOpen) {
+          const updatedTeam = response.data.find((t: Team) => t.id === selectedTeam.id);
+          if (updatedTeam) {
+            setSelectedTeam(updatedTeam);
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading teams:', error);
@@ -94,12 +113,22 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   };
 
   const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', team: Team) => {
-    setConfirmationModal({
-      isOpen: true,
-      type,
-      team,
-      loading: false
-    });
+    if (type === 'delete') {
+      // Open pre-deletion reassignment modal for delete operations
+      setPreDeleteModal({
+        isOpen: true,
+        team,
+        loading: false
+      });
+    } else {
+      // Use regular confirmation modal for activate/deactivate
+      setConfirmationModal({
+        isOpen: true,
+        type,
+        team,
+        loading: false
+      });
+    }
   };
 
   const closeConfirmationModal = () => {
@@ -109,6 +138,21 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       team: null,
       loading: false
     });
+  };
+
+  const closePreDeleteModal = () => {
+    setPreDeleteModal({
+      isOpen: false,
+      team: null,
+      loading: false
+    });
+  };
+
+  const handlePreDeleteConfirm = () => {
+    // This is called after successful reassignment and deletion
+    loadTeams();
+    onStatsUpdate();
+    closePreDeleteModal();
   };
 
   const handleConfirmAction = async () => {
@@ -126,10 +170,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
           await adminService.deactivateTeam(confirmationModal.team.id);
           toast.success('Team deactivated successfully');
           break;
-        case 'delete':
-          await adminService.deleteTeam(confirmationModal.team.id);
-          toast.success('Team deleted successfully');
-          break;
+        // Delete case is now handled by PreDeletionReassignmentModal
       }
       
       loadTeams();
@@ -271,59 +312,31 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                   </CardTitle>
                   
                   {/* Action buttons beside the name */}
-                  <div className="flex items-center space-x-1 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditDialog(team);
                       }}
-                      className="h-7 w-7 p-0"
+                      className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
                       title="Edit"
                     >
-                      <Edit className="h-3 w-3" />
+                      <Edit className="h-4 w-4" />
                     </Button>
                     
-                    {team.isActive ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openConfirmationModal('deactivate', team);
-                        }}
-                        className="h-7 w-7 p-0 text-orange-600 hover:text-orange-700"
-                        title="Deactivate"
-                      >
-                        <PowerOff className="h-3 w-3" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openConfirmationModal('activate', team);
-                        }}
-                        className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
-                        title="Activate"
-                      >
-                        <Power className="h-3 w-3" />
-                      </Button>
-                    )}
-                    
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         openConfirmationModal('delete', team);
                       }}
-                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                      className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
                       title="Delete"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -351,6 +364,15 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
         team={selectedTeam}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+        openConfirmationModal={openConfirmationModal}
+      />
+
+      <PreDeletionReassignmentModal
+        isOpen={preDeleteModal.isOpen}
+        onClose={closePreDeleteModal}
+        onConfirm={handlePreDeleteConfirm}
+        team={preDeleteModal.team}
+        loading={preDeleteModal.loading}
       />
 
       <ConfirmationModal
@@ -358,23 +380,17 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
         onClose={closeConfirmationModal}
         onConfirm={handleConfirmAction}
         title={
-          confirmationModal.type === 'delete' 
-            ? 'Delete Team' 
-            : confirmationModal.type === 'deactivate'
+          confirmationModal.type === 'deactivate'
             ? 'Deactivate Team'
             : 'Activate Team'
         }
         description={
-          confirmationModal.type === 'delete'
-            ? `Are you sure you want to delete "${confirmationModal.team?.name}"? This action cannot be undone.`
-            : confirmationModal.type === 'deactivate'
+          confirmationModal.type === 'deactivate'
             ? `Are you sure you want to deactivate "${confirmationModal.team?.name}"? This will make the team inactive.`
             : `Are you sure you want to activate "${confirmationModal.team?.name}"? This will make the team active.`
         }
         confirmText={
-          confirmationModal.type === 'delete' 
-            ? 'Delete' 
-            : confirmationModal.type === 'deactivate'
+          confirmationModal.type === 'deactivate'
             ? 'Deactivate'
             : 'Activate'
         }

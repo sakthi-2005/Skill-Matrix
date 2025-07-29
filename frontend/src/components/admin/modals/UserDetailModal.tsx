@@ -15,17 +15,20 @@ import {
   UserCheck
 } from 'lucide-react';
 import { UserData } from '../../../types/admin';
+import { Button } from '../../ui/button';
 
 interface UserDetailModalProps {
   user: UserData | null;
   isOpen: boolean;
   onClose: () => void;
+  openConfirmationModal?: (type: 'delete' | 'deactivate' | 'activate', user: UserData) => void;
 }
 
 export const UserDetailModal: React.FC<UserDetailModalProps> = ({ 
   user, 
   isOpen, 
-  onClose 
+  onClose,
+  openConfirmationModal
 }) => {
   if (!user) return null;
 
@@ -76,7 +79,22 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Basic Information</CardTitle>
+                {openConfirmationModal && (
+                  <Button
+                    variant={(user.isActive !== false) ? "destructive" : "default"}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openConfirmationModal((user.isActive !== false) ? 'deactivate' : 'activate', user);
+                    }}
+                    className={(user.isActive !== false) ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"}
+                  >
+                    {(user.isActive !== false) ? 'Deactivate' : 'Activate'} User
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
