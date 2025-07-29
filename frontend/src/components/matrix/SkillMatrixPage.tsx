@@ -21,6 +21,8 @@ const SkillMatrixPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showSkillDropdown,setShowSkillDropdown] = useState<boolean>(false);
   const [matrixSkills,setMatrixSkills] = useState<Skill[]>([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const skillDropdownRef = useRef<HTMLDivElement>(null);
 
   const canViewAll = user?.role.name === "hr" || verifyLead(user.id);
   const isHR = user?.role.name === "hr";
@@ -91,6 +93,23 @@ const SkillMatrixPage = () => {
 
     return filtered;
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        skillDropdownRef.current &&
+        !skillDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowSkillDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
 
   // Check if HR has selected required filters
   const hasRequiredFilters = () => {
@@ -220,12 +239,26 @@ const SkillMatrixPage = () => {
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg bg-white shadow-sm">
-        <div className="p-5 border-b border-gray-200">
+      <div
+        className={`border border-gray-200 rounded-lg bg-white shadow-sm ${
+          isFullscreen
+            ? "fixed top-0 left-0 w-full h-full z-50 overflow-auto p-5 bg-white"
+            : ""
+        }`}
+      >
+        <div className="p-5 border-b border-gray-200 relative">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <LayoutGridIcon className="w-5 h-5" />
               <h2 className="text-lg font-semibold">Skills Matrix</h2>
+            </div>
+            <div className="absolute top-4 right-4 z-50">
+              <button
+                onClick={() => setIsFullscreen((prev) => !prev)}
+                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                {isFullscreen ? "Close" : "Expand"}
+              </button>
             </div>
             <div className="flex flex-wrap gap-2">
               <div className="relative">
@@ -270,7 +303,7 @@ const SkillMatrixPage = () => {
                         </option>
                       ))}
                     </select>
-                <div className="relative inline-block text-left min-w-[200px]">
+                <div className="relative inline-block text-left min-w-[200px]" ref={skillDropdownRef}>
                   <div
                     onClick={() => setShowSkillDropdown(!showSkillDropdown)}
                     className="flex items-center justify-between px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -346,12 +379,12 @@ const SkillMatrixPage = () => {
               <table className="w-full table-fixed" id="skill-matrix-table">
                 <thead>
                   <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 min-w-40 sticky left-0 bg-white">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 min-w-40 sticky left-0 bg-white break-word">
                       Employee
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    {/* <th className="text-left py-3 px-4 font-semibold text-gray-700">
                       Role
-                    </th>
+                    </th> */}
                     {matrixSkills.map((skill) => (
                       <th
                         key={skill.id}
@@ -377,9 +410,9 @@ const SkillMatrixPage = () => {
                         <td className="py-3 px-4 font-medium text-gray-900 sticky left-0 bg-white">
                           {employee.name}
                         </td>
-                        <td className="py-3 px-4 text-gray-600">
+                        {/* <td className="py-3 px-4 text-gray-600">
                           {employee.role?.name || "N/A"}
-                        </td>
+                        </td> */}
                         {matrixSkills.map((skill) => {
                           const skillScore = getSkillScore(employee, skill.id);
                           return (

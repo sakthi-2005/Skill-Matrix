@@ -13,10 +13,11 @@ interface ApiOptions {
 interface SkillDetails {
   id: number;
   name: string;
+  basic:string;
   low: string;
   medium: string;
-  average: string;
   high: string;
+  expert:string;
   position: number[];
 }
 
