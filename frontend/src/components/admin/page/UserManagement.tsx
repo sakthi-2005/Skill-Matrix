@@ -649,73 +649,97 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                 {/* Bulk Upload Dialog */}
                 <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
                   <DialogContent>
-                      <div >
-                        <h2 className="text-lg font-semibold mb-4">Upload Bulk Users</h2>
+                    <div>
+                      <h2 className="text-lg font-semibold mb-4">Upload Bulk Users</h2>
+
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleSaveMultipleUser(); // 👈 Call on submit
+                        }}
+                        className="space-y-4"
+                      >
                         <input
                           type="file"
                           accept=".csv"
                           onChange={handleFileChange}
+                          required
                         />
-                      </div>
+
+                        <div className="flex justify-end gap-2 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsBulkOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+
+                          <Button type="submit">
+                            Submit
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
                   </DialogContent>
                 </Dialog>
-
+              
                 {/* Dropdown trigger button */}
                 <div className="relative">
-            <Select
-              onValueChange={(value) => {
-                if (value === "single") {
-                  setFormData({
-                    userId: '',
-                    name: '',
-                    email: '',
-                    roleId: 0,
-                    positionId: 0,
-                    teamId: 0,
-                    subTeamId: undefined,
-                    leadId: undefined,
-                    hrId: undefined,
-                    isActive: true,
-                  });
-                  setIsSingleOpen(true);
-                }
-                if (value === "bulk") setIsBulkOpen(true);
-              }}
-            >
-              <SelectTrigger className="bg-blue-600 text-white hover:bg-blue-700 px-2 py-2 rounded flex items-center justify-between w-[160px]">
-                <span className="font-medium">Add User</span>
-              </SelectTrigger>
+                  <Select
+                    onValueChange={(value) => {
+                      if (value === "single") {
+                        setFormData({
+                          userId: '',
+                          name: '',
+                          email: '',
+                          roleId: 0,
+                          positionId: 0,
+                          teamId: 0,
+                          subTeamId: undefined,
+                          leadId: undefined,
+                          hrId: undefined,
+                          isActive: true,
+                        });
+                        setIsSingleOpen(true);
+                      }
+                      if (value === "bulk") setIsBulkOpen(true);
+                    }}
+                  >
+                  <SelectTrigger className="bg-black text-white hover:bg-black px-2 py-2 rounded flex items-center justify-between w-[160px]">
+                    <span className="font-medium">Add User</span>
+                  </SelectTrigger>
 
-              <SelectContent className="w-48">
-                <div
-                  onClick={() => {
-                    setIsSingleOpen(true);
-                    setFormData({
-                    userId: '',
-                    name: '',
-                    email: '',
-                    roleId: 0,
-                    positionId: 0,
-                    teamId: 0,
-                    subTeamId: undefined,
-                    leadId: undefined,
-                    hrId: undefined,
-                    isActive: true,
-                  });
-                  }}
-                  className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
-                >
-                  Add Single User
-                </div>
-                <div
-                  onClick={() => setIsBulkOpen(true)}
-                  className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
-                >
-                  Upload Bulk Users
-                </div>
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectContent className="w-48">
+                  <div
+                    onClick={() => {
+                      setIsSingleOpen(true);
+                      setFormData({
+                      userId: '',
+                      name: '',
+                      email: '',
+                      roleId: 0,
+                      positionId: 0,
+                      teamId: 0,
+                      subTeamId: undefined,
+                      leadId: undefined,
+                      hrId: undefined,
+                      isActive: true,
+                    });
+                    }}
+                    className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
+                  >
+                    Add Single User
+                  </div>
+                  <div
+                    onClick={() => setIsBulkOpen(true)}
+                    className="cursor-pointer px-3 py-2 hover:bg-blue-100 rounded text-sm"
+                  >
+                    Upload Bulk Users
+                  </div>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
