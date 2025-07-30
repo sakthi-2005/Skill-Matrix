@@ -54,8 +54,6 @@ const UserService = {
 
   // Hr CRUD Operations
   createUser: async (data: UserType): Promise<void> => {
-    console.log(data);
-
     const id = await AppDataSource.query(`SELECT * FROM users ORDER BY  CAST(id AS INTEGER) DESC LIMIT 1;`);
 
     await AppDataSource.query(`
@@ -65,10 +63,7 @@ const UserService = {
       )`);
 
     try{
-      console.log(id[0])
-      console.log(id[0].id,parseInt(id[0].id))
       data.id = (parseInt(id[0].id) + 1).toString();
-      console.log(data);
       await userRepo.save(data);
     }
     catch(err){
@@ -79,7 +74,6 @@ const UserService = {
   updateUser: async (data: UserData): Promise<UserType> => {
 
     try{
-      console.log(data);
       const roleId = await roleRepo.findOneBy({name: data.role});
       const leadId = await userRepo.findOneBy({userId: data.lead});
       const hrId = await userRepo.findOneBy({userId: data.hr});
@@ -98,7 +92,6 @@ const UserService = {
       delete data.subTeam;
       delete data.lead;
       delete data.hr;
-      console.log(data);
       const updatedUser = await userRepo.save(data);
       return updatedUser;
     }

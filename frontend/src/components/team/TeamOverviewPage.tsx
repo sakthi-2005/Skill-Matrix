@@ -91,7 +91,7 @@ const TeamOverviewPage = () => {
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (member.email &&
         member.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    return matchesSearch;
+    return matchesSearch && (member.id !== user.id);
   });
 
   const getSkillLevelColor = (level: number) => {
@@ -221,23 +221,12 @@ const TeamOverviewPage = () => {
     setShowUserModal(true);
   };
 
-  const handleEditUser = (member: TeamMember) => {
-    setUserModalMode("edit");
-    setEditingUser(member);
-    setShowUserModal(true);
-  };
-
-  const handleDeleteUser = (member: TeamMember) => {
-    setUserToDelete(member);
-    setShowDeleteModal(true);
-  };
-
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
 
     setIsDeleting(true);
     try {
-      await userService.deleteUser(parseInt(userToDelete.id));
+      await userService.deleteUser((userToDelete.id));
       toast({
         title: "Success",
         description: "User deleted successfully",
