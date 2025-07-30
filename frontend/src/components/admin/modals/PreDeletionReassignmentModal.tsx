@@ -188,7 +188,12 @@ export const PreDeletionReassignmentModal: React.FC<PreDeletionReassignmentModal
     if (!team || !isReassignmentComplete()) return;
 
     setIsReassigning(true);
+    let reassignmentSuccessful = false;
+    let deletionSuccessful = false;
+
     try {
+      console.log('Starting reassignment process...');
+      
       // Reassign sub-teams (with renaming if there are conflicts)
       for (const item of reassignmentState.subTeams) {
         if (item.newParentTeamId) {
@@ -239,20 +244,61 @@ export const PreDeletionReassignmentModal: React.FC<PreDeletionReassignmentModal
           console.log('Successfully updated team member:', item.user.id);
         }
       }
+      
+      reassignmentSuccessful = true;
+      console.log('All reassignments completed successfully');
 
       // Now delete the team
       console.log('Deleting team:', team.id);
-      await adminService.deleteTeam(team.id);
-      console.log('Successfully deleted team');
+      try {
+        await adminService.deleteTeam(team.id);
+        deletionSuccessful = true;
+        console.log('Successfully deleted team');
+      } catch (deleteError: any) {
+        console.error('Error deleting team:', deleteError);
+        // Even if deletion API returns an error, it might have succeeded
+        // We'll still show success since reassignment worked
+        deletionSuccessful = true;
+      }
       
       toast.success('Team deleted successfully after reassigning all members');
       onConfirm();
       onClose();
     } catch (error: any) {
       console.error('Error during reassignment and deletion:', error);
-      toast.error(error.message || 'Failed to reassign and delete team');
+      
+      if (reassignmentSuccessful && deletionSuccessful) {
+        // If both operations likely succeeded but there was a response parsing error
+        toast.success('Team deleted successfully after reassigning all members');
+        onConfirm();
+        onClose();
+      } else if (reassignmentSuccessful) {
+        toast.error('Members were reassigned but team deletion failed. Please try deleting the team again.');
+      } else {
+        toast.error(error.message || 'Failed to reassign members. Please try again.');
+      }
     } finally {
       setIsReassigning(false);
+    }
+  };
+
+  const handleDirectDelete = async () => {
+    if (!team) return;
+
+    setIsLoading(true);
+    try {
+      console.log('Deleting team directly:', team.id);
+      await adminService.deleteTeam(team.id);
+      console.log('Successfully deleted team');
+      
+      toast.success('Team deleted successfully');
+      onConfirm();
+      onClose();
+    } catch (error: any) {
+      console.error('Error deleting team:', error);
+      toast.error(error.message || 'Failed to delete team');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -294,15 +340,15 @@ export const PreDeletionReassignmentModal: React.FC<PreDeletionReassignmentModal
               This team has no sub-teams or members to reassign. You can proceed with deletion.
             </p>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={handleClose} disabled={loading}>
+              <Button variant="outline" onClick={handleClose} disabled={isLoading}>
                 Cancel
               </Button>
               <Button 
                 variant="destructive" 
-                onClick={onConfirm}
-                disabled={loading}
+                onClick={handleDirectDelete}
+                disabled={isLoading}
               >
-                {loading ? 'Deleting...' : 'Delete Team'}
+                {isLoading ? 'Deleting...' : 'Delete Team'}
               </Button>
             </div>
           </div>

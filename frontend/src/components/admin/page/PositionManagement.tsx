@@ -23,6 +23,7 @@ import { Position, CreatePositionRequest } from '../../../types/admin';
 import { toast } from 'sonner';
 import { PositionDetailModal } from '../modals/PositionDetailModal';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
+import { PositionReassignmentModal } from '../modals/PositionReassignmentModal';
  
 interface PositionManagementProps {
   onStatsUpdate: () => void;
@@ -55,6 +56,15 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
   }>({
     isOpen: false,
     type: 'delete',
+    position: null,
+    loading: false
+  });
+  const [reassignmentModal, setReassignmentModal] = useState<{
+    isOpen: boolean;
+    position: Position | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
     position: null,
     loading: false
   });
@@ -156,12 +166,21 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
   };
  
   const openConfirmationModal = (type: 'delete' | 'deactivate' | 'activate', position: Position) => {
-    setConfirmationModal({
-      isOpen: true,
-      type,
-      position,
-      loading: false
-    });
+    if (type === 'delete') {
+      // Open reassignment modal for deletion
+      setReassignmentModal({
+        isOpen: true,
+        position,
+        loading: false
+      });
+    } else {
+      setConfirmationModal({
+        isOpen: true,
+        type,
+        position,
+        loading: false
+      });
+    }
   };
  
   const closeConfirmationModal = () => {
@@ -171,6 +190,48 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
       position: null,
       loading: false
     });
+  };
+
+  const closeReassignmentModal = () => {
+    setReassignmentModal({
+      isOpen: false,
+      position: null,
+      loading: false
+    });
+  };
+
+  const handleDirectDelete = async () => {
+    if (!reassignmentModal.position) return;
+
+    setReassignmentModal(prev => ({ ...prev, loading: true }));
+
+    try {
+      await adminService.deletePosition(reassignmentModal.position.id);
+      toast.success('Position deleted successfully');
+      loadPositions();
+      onStatsUpdate();
+      closeReassignmentModal();
+    } catch (error: any) {
+      console.error('Error deleting position:', error);
+      // Even if the API returns an error, the deletion might have succeeded
+      // Let's refresh the data to check
+      try {
+        await loadPositions();
+        onStatsUpdate();
+        // If the position is no longer in the list, it was deleted successfully
+        const stillExists = positions.find(p => p.id === reassignmentModal.position?.id);
+        if (!stillExists) {
+          toast.success('Position deleted successfully');
+          closeReassignmentModal();
+        } else {
+          toast.error(error.message || 'Failed to delete position');
+          setReassignmentModal(prev => ({ ...prev, loading: false }));
+        }
+      } catch (refreshError) {
+        toast.error(error.message || 'Failed to delete position');
+        setReassignmentModal(prev => ({ ...prev, loading: false }));
+      }
+    }
   };
  
   const handleConfirmAction = async () => {
@@ -187,10 +248,6 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         case 'deactivate':
           await adminService.deactivatePosition(confirmationModal.position.id);
           toast.success('Position deactivated successfully');
-          break;
-        case 'delete':
-          await adminService.deletePosition(confirmationModal.position.id);
-          toast.success('Position deleted successfully');
           break;
       }
      
@@ -443,8 +500,20 @@ export const PositionManagement: React.FC<PositionManagementProps> = ({ onStatsU
         type={confirmationModal.type}
         loading={confirmationModal.loading}
       />
- 
- 
+
+      <PositionReassignmentModal
+        isOpen={reassignmentModal.isOpen}
+        onClose={closeReassignmentModal}
+        onConfirm={() => {
+          // This will be called after successful operations to refresh data
+          loadPositions();
+          onStatsUpdate();
+          closeReassignmentModal();
+        }}
+        position={reassignmentModal.position}
+        loading={reassignmentModal.loading}
+      />
+
     </div>
   );
 };

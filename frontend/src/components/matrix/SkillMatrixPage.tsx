@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { userService, skillService } from "@/services/api";
+import { Download, LayoutGridIcon, Search, Users } from "lucide-react";
 import {
-  Download,
-  LayoutGridIcon,
-  Search,
-  Users,
-} from "lucide-react";
-import { exportPDF, getAverageSkillLevel, getSkillLevelColor, getSkillScore, verifyLead } from "@/utils/helper";
-import {SkillScore,SkillMatrixData,Skill} from "../../types/matrixTypes";
+  exportPDF,
+  getAverageSkillLevel,
+  getSkillLevelColor,
+  getSkillScore,
+  verifyLead,
+} from "@/utils/helper";
+import { SkillScore, SkillMatrixData, Skill } from "../../types/matrixTypes";
+import { DropdownButton } from "../ui/DropdownButton";
 
 const SkillMatrixPage = () => {
   const { user } = useAuth();
@@ -19,8 +21,8 @@ const SkillMatrixPage = () => {
   const [skillCategories, setSkillCategories] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showSkillDropdown,setShowSkillDropdown] = useState<boolean>(false);
-  const [matrixSkills,setMatrixSkills] = useState<Skill[]>([]);
+  const [showSkillDropdown, setShowSkillDropdown] = useState<boolean>(false);
+  const [matrixSkills, setMatrixSkills] = useState<Skill[]>([]);
 
   const canViewAll = user?.role.name === "hr" || verifyLead(user.id);
   const isHR = user?.role.name === "hr";
@@ -60,9 +62,9 @@ const SkillMatrixPage = () => {
     fetchData();
   }, [user]);
 
-  useEffect(()=>{
+  useEffect(() => {
     setMatrixSkills(getRelevantSkills(getFilteredData()[0]?.position?.id));
-  },[selectedPosition])
+  }, [selectedPosition]);
 
   // Filter data
   const getFilteredData = () => {
@@ -75,8 +77,7 @@ const SkillMatrixPage = () => {
     const filtered = searchFiltered.filter((employee) => {
       const teamMatch =
         selectedTeam === "all" || employee.Team?.name === selectedTeam;
-      const positionMatch =
-        selectedPosition === employee.position?.name;
+      const positionMatch = selectedPosition === employee.position?.name;
 
       if (isHR) {
         // HR must select both team and position (not "all") to see data
@@ -95,14 +96,14 @@ const SkillMatrixPage = () => {
   // Check if HR has selected required filters
   const hasRequiredFilters = () => {
     if (isHR) {
-      return selectedPosition !== "all"; 
+      return selectedPosition !== "all";
     }
     return true;
   };
 
   // Get relevant skills for the filtered employees to show in the columns
   const getRelevantSkills = (id: number) => {
-    if(!id){
+    if (!id) {
       return [];
     }
     return skillCategories.filter((skill) => skill.positionId === id);
@@ -126,8 +127,16 @@ const SkillMatrixPage = () => {
 
   // Export to PDF function using jsPDF
   const exportToPDF = () => {
-    exportPDF(filteredData, relevantSkills, searchTerm, isHR, isLead, selectedTeam, selectedPosition);
-  }
+    exportPDF(
+      filteredData,
+      relevantSkills,
+      searchTerm,
+      isHR,
+      isLead,
+      selectedTeam,
+      selectedPosition
+    );
+  };
 
   if (loading) {
     return (
@@ -156,7 +165,6 @@ const SkillMatrixPage = () => {
     );
   }
 
-
   return (
     <div className="flex flex-col gap-6 p-5">
       <div className="flex justify-between items-center">
@@ -166,7 +174,11 @@ const SkillMatrixPage = () => {
           <button
             onClick={exportToPDF}
             disabled={!hasRequiredFilters() || filteredData.length === 0}
-            title={!hasRequiredFilters() ? "Please select a position to generate the report." : ""}
+            title={
+              !hasRequiredFilters()
+                ? "Please select a position to generate the report."
+                : ""
+            }
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 bg-white rounded hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" /> Export Matrix
@@ -243,81 +255,48 @@ const SkillMatrixPage = () => {
               {canViewAll && (
                 <>
                   {isHR && (
-                    <>
-                      <select
-                        className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={selectedTeam}
-                        onChange={(e) => setSelectedTeam(e.target.value)}
-                      >
-                        <option value="all">All Teams</option>
-                        {teams.map((team) => (
-                          <option key={team} value={team}>
-                            {team}
-                          </option>
-                        ))}
-                      </select>
-                    </>
+                    <DropdownButton
+                      label="All Teams"
+                      options={[
+                        { label: "All Teams", value: "all" },
+                        ...teams.map((team) => ({ label: team, value: team })),
+                      ]}
+                      selected={selectedTeam}
+                      onSelect={(value) => setSelectedTeam(value as string)}
+                      widthClass="min-w-[160px]"
+                    />
                   )}
-                    <select
-                      className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={selectedPosition}
-                      onChange={(e) => {setSelectedPosition(e.target.value);}}
-                    >
-                      <option value="all">Select Positions *</option>
-                      {positions.map((position) => (
-                        <option key={position} value={position}>
-                          {position}
-                        </option>
-                      ))}
-                    </select>
-                <div className="relative inline-block text-left min-w-[200px]">
-                  <div
-                    onClick={() => setShowSkillDropdown(!showSkillDropdown)}
-                    className="flex items-center justify-between px-3 py-3 border border-gray-300 rounded bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <span className="text-black-800 font-">
-                      {matrixSkills.length > 0
-                        ? `${matrixSkills.length} skill${matrixSkills.length > 1 ? 's' : ''} selected`
-                        : 'Select Skills *'}
-                    </span>
-                    {/* Down Arrow Icon (matches select) */}
-                    <svg
-                      className="w-4 h-4 text-black-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
- 
-                  {showSkillDropdown && relevantSkills.length !== 0 && (
-                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded shadow-lg max-h-60 overflow-y-auto">
-                      {relevantSkills.map((skill) => (
-                        <label
-                          key={skill.id}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            className="mr-2"
-                            checked={matrixSkills.filter(val=>val.id == skill.id).length !== 0}
-                            onChange={(event) => {
-                              if(!event.target.checked){
-                                setMatrixSkills(e=>e.filter(val=>val.id !== skill.id))
-                              }
-                              else{
-                                setMatrixSkills(e=>[...e,skill])
-                              }
-                            }}
-                          />
-                          {skill.name}
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  <DropdownButton
+                    label="Select Positions *"
+                    options={[
+                      { label: "Select Positions *", value: "all" },
+                      ...positions.map((position) => ({
+                        label: position,
+                        value: position,
+                      })),
+                    ]}
+                    selected={selectedPosition}
+                    onSelect={(value) => setSelectedPosition(value as string)}
+                    widthClass="min-w-[180px]"
+                  />
+                  <DropdownButton
+                    label="Select Skills *"
+                    options={relevantSkills.map((skill) => ({
+                      label: skill.name,
+                      value: skill.id,
+                    }))}
+                    selected={matrixSkills.map((s) => s.id)}
+                    onSelect={(skillId) => {
+                      const id = Number(skillId);
+                      setMatrixSkills((prev) =>
+                        prev.some((s) => s.id === id)
+                          ? prev.filter((s) => s.id !== id)
+                          : [...prev, relevantSkills.find((s) => s.id === id)!]
+                      );
+                    }}
+                    multiSelect
+                    widthClass="min-w-[200px]"
+                  />
                 </>
               )}
             </div>
@@ -386,24 +365,19 @@ const SkillMatrixPage = () => {
                             <td
                               key={skill.id}
                               className={`text-center py-3 px-2 text-xs font-medium min-w-8 ${getSkillLevelColor(
-                                  skillScore
-                                )}`}
+                                skillScore
+                              )}`}
                             >
-                              <span
-                                
-                              >
-                                {skillScore || "N/A"}
-                              </span>
+                              <span>{skillScore || "N/A"}</span>
                             </td>
                           );
                         })}
-                        <td className={`text-center py-3 px-4 text-xs font-medium ${getSkillLevelColor(
-                              Math.round(avgSkill)
-                            )}`}>
-                          <span
-                          >
-                            {avgSkill.toFixed(1)}
-                          </span>
+                        <td
+                          className={`text-center py-3 px-4 text-xs font-medium ${getSkillLevelColor(
+                            Math.round(avgSkill)
+                          )}`}
+                        >
+                          <span>{avgSkill.toFixed(1)}</span>
                         </td>
                       </tr>
                     );
