@@ -237,6 +237,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       if (editingUser) {
         await userService.updateUser({ id: editingUser.id, ...formData });
@@ -245,6 +246,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         await userService.createUser([formData]);
         toast.success('User created successfully');
       }
+      setLoading(false);
+      setIsSingleOpen(false);
       setIsDialogOpen(false);
       setEditingUser(null);
       setFormData({
@@ -436,11 +439,13 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
   async function handleSaveMultipleUser(){
     try{
+      setLoading(true);
       await userService.createUser(BulkUser);
+      setLoading(false);
       loadData();
       onStatsUpdate();
-      toast.success("Users added successfully");
-      setIsOpen(false);
+      toast.success("Users added to the queue");
+      setIsBulkOpen(false);
     }
     catch(err){
       toast.error(err.message || `Failed to add users`);
@@ -650,7 +655,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                         <Button variant="outline" type="button" onClick={() => setIsSingleOpen(false)}>
                           Cancel
                         </Button>
-                        <Button type="submit">{editingUser ? "Update" : "Create"}</Button>
+                        <Button type="submit">{editingUser ? loading ? "updating..." : "Update" : loading ? "creating..." : "Create"}</Button>
                       </div>
                     </form>
                   </DialogContent>
@@ -686,7 +691,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                           </Button>
 
                           <Button type="submit">
-                            Submit
+                            {loading ? "submitting..." : "Submit" }
                           </Button>
                         </div>
                       </form>

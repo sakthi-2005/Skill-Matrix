@@ -2,7 +2,7 @@ import UserService from "../services/UserService";
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import { Controller, AuthRequest } from '../types/hapi';
 import { UserType } from "../types/entities";
-import { Queue } from "bullmq";
+import { Queue, QueueEvents } from "bullmq";
 import { config } from "../config/redisConfig";
 
 const UserController: Controller = {
@@ -27,21 +27,40 @@ const UserController: Controller = {
 
   createUser: async (req: Request, h: ResponseToolkit) => {
     try {
-      const data = req.payload as any;
+      const data = req.payload as any[];
+      let count = 0
+
+      const requiredFields: string[] = ['name','userId','email','role','position','team','subTeam','lead','hr','isActive']
+      const fields = Object.keys(data[0]);
+
+      console.log(requiredFields,fields);
+
+      fields.forEach((val)=>{
+        if(!requiredFields.includes(val)) throw new Error("verify fields and upload again")
+      });
+
+      requiredFields.forEach((val)=>{
+        if(!fields.includes(val)) throw new Error("verify fields and upload again");
+      });
       
       if(!data || !data.length)throw new Error("Verify User Data!");
 
       const split = parseInt(process.env.UPLOAD_LIMIT);
       const queue = new Queue("addUsers",config);
-
+      const queueEvents = new QueueEvents("addUsers",config);
+      
       for(let i=0;i<data.length;i+=split){
         const queue_data = data.slice(i,i+split);
-        await queue.add("users",{ users : queue_data });
+        console.log(queue_data);
+        const job = await queue.add("users",{ users : queue_data });
+        await queueEvents.waitUntilReady();
+        count += await job.waitUntilFinished(queueEvents)
+                        .finally(() => queueEvents.close())
       }
-      // const created = await UserService.createUser(data);
-      
-      return h.response({message: "User Added successfully!<br/>Refresh after some time to see the changes"}).code(201);
+
+      return h.response({message: `${count} Users Added successfully!`}).code(201);
     } catch (err: any) {
+      console.log(err.message)
       return h.response({ error: err.message }).code(400);
     }
   },

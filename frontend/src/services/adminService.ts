@@ -30,7 +30,9 @@ class AdminService {
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorData.error || errorMessage;
+        console.error('API Error Response:', errorData);
       } catch (parseError) {
+        console.error('Failed to parse error response:', parseError);
         // If we can't parse the error response, use a generic message
         if (response.status >= 500) {
           errorMessage = 'An internal server error occurred';
@@ -54,7 +56,32 @@ class AdminService {
       
       throw new Error(errorMessage);
     }
-    return response.json();
+
+    // Handle empty responses (like 204 No Content)
+    const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    
+    // Check if response is empty or not JSON
+    if (!contentType || !contentType.includes('application/json') || contentLength === '0') {
+      console.log('Received empty or non-JSON response, returning default success response');
+      return {
+        success: true,
+        message: 'Operation completed successfully',
+        data: null
+      } as T;
+    }
+
+    try {
+      return await response.json();
+    } catch (parseError) {
+      // If JSON parsing fails but response was ok, return a default success response
+      console.log('Failed to parse JSON response, returning default success response:', parseError);
+      return {
+        success: true,
+        message: 'Operation completed successfully',
+        data: null
+      } as T;
+    }
   }
 
   // ============ TEAMS ============
@@ -334,6 +361,59 @@ class AdminService {
       headers: this.getAuthHeaders(),
     });
     return this.handleResponse<ApiResponse<any[]>>(response);
+  }
+
+  async getSubTeamMembers(subTeamId: number): Promise<ApiResponse<any[]>> {
+    // Get sub-team details which includes members
+    const subTeamResponse = await this.getSubTeamById(subTeamId, false);
+    if (subTeamResponse.success && subTeamResponse.data?.user) {
+      return {
+        success: true,
+        message: 'Sub-team members retrieved successfully',
+        data: subTeamResponse.data.user
+      };
+    }
+    return {
+      success: false,
+      message: 'Failed to get sub-team members',
+      data: []
+    };
+  }
+
+  async getPositionMembers(positionId: number): Promise<ApiResponse<any[]>> {
+    try {
+      // First get the position details to get the position name
+      const positionResponse = await this.getPositionById(positionId, false);
+      if (!positionResponse.success || !positionResponse.data) {
+        return {
+          success: false,
+          message: 'Position not found',
+          data: []
+        };
+      }
+
+      // Use the existing getAllUsers API with position filter
+      const response = await fetch(`${API_BASE_URL}/users/all-users`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ position: positionResponse.data.name }),
+      });
+
+      const result = await this.handleResponse<any[]>(response);
+      
+      return {
+        success: true,
+        message: 'Position members retrieved successfully',
+        data: result || []
+      };
+    } catch (error: any) {
+      console.error('Error getting position members:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to get position members',
+        data: []
+      };
+    }
   }
 
   async deleteUser(id: number): Promise<ApiResponse<void>> {

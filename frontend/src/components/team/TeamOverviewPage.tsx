@@ -215,12 +215,20 @@ const TeamOverviewPage = () => {
     setSkillModalData(null);
   };
 
+  const handleAddUser = () => {
+    setUserModalMode("add");
+    setEditingUser(null);
+    setShowUserModal(true);
+  };
+
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
 
     setIsDeleting(true);
     try {
+
       await userService.deleteUser(userToDelete.id);
+
       toast({
         title: "Success",
         description: "User deleted successfully",

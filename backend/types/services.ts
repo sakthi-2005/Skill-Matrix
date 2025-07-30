@@ -58,6 +58,17 @@ export interface UserData {
   [key: string]: any;
 }
 
+export interface addUser {
+  name: string;
+  email: string;
+  role: string;
+  position: string;
+  team: string;
+  subTeam: string;
+  lead: string;
+  hr: string;
+}
+
 export interface SkillData {
   id?: number;
   name: string;
