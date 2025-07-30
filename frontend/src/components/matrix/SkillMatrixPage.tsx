@@ -3,14 +3,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { userService, skillService } from "@/services/api";
 import { Download, LayoutGridIcon, Search, Users } from "lucide-react";
 import {
-  exportPDF,
-  getAverageSkillLevel,
-  getSkillLevelColor,
-  getSkillScore,
-  verifyLead,
-} from "@/utils/helper";
-import { SkillScore, SkillMatrixData, Skill } from "../../types/matrixTypes";
+  Download,
+  LayoutGridIcon,
+  Search,
+  Users,
+} from "lucide-react";
+import { exportPDF, getAverageSkillLevel, getSkillLevelColor, getSkillScore, verifyLead } from "@/utils/helper";
+import {SkillScore,SkillMatrixData,Skill} from "../../types/matrixTypes";
+import { Maximize2, X } from "lucide-react";
 import { DropdownButton } from "../ui/DropdownButton";
+
 
 const SkillMatrixPage = () => {
   const { user } = useAuth();
@@ -21,12 +23,17 @@ const SkillMatrixPage = () => {
   const [skillCategories, setSkillCategories] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showSkillDropdown, setShowSkillDropdown] = useState<boolean>(false);
-  const [matrixSkills, setMatrixSkills] = useState<Skill[]>([]);
 
+  const [showSkillDropdown,setShowSkillDropdown] = useState<boolean>(false);
+  const [matrixSkills,setMatrixSkills] = useState<Skill[]>([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const skillDropdownRef = useRef<HTMLDivElement>(null);
+  const [selectedEmployee, setSelectedEmployee]=useState(null);
   const canViewAll = user?.role.name === "hr" || verifyLead(user.id);
   const isHR = user?.role.name === "hr";
   const isLead = verifyLead(user.id);
+  const [hoveredEmployee, setHoveredEmployee] = useState<SkillMatrixData | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,6 +100,23 @@ const SkillMatrixPage = () => {
     return filtered;
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        skillDropdownRef.current &&
+        !skillDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowSkillDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+
   // Check if HR has selected required filters
   const hasRequiredFilters = () => {
     if (isHR) {
@@ -137,6 +161,11 @@ const SkillMatrixPage = () => {
       selectedPosition
     );
   };
+
+  const handleEmployeeClick=(employee)=>{
+    setSelectedEmployee(employee);
+  };
+  const closePopup=()=>setSelectedEmployee(null);
 
   if (loading) {
     return (
@@ -232,12 +261,37 @@ const SkillMatrixPage = () => {
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg bg-white shadow-sm">
-        <div className="p-5 border-b border-gray-200">
+      <div
+        className={`border border-gray-200 rounded-lg bg-white shadow-sm ${
+          isFullscreen
+            ? "fixed top-0 left-0 w-full h-full z-50 bg-white overflow-hidden"
+            : ""
+        }`}
+      >
+        <div className="p-5 border-b border-gray-200 relative">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <LayoutGridIcon className="w-5 h-5" />
               <h2 className="text-lg font-semibold">Skills Matrix</h2>
+            </div>
+            <div className="absolute top-4 right-4 z-50">
+              {isFullscreen ? (
+                <button
+                  onClick={() => setIsFullscreen(false)}
+                  className="p-2 bg-white-100 hover:bg-white-200 rounded-full"
+                  title="Close Fullscreen"
+                >
+                  <X className="w-5 h-5 text-gray-800" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsFullscreen(true)}
+                  className="p-2 bg-white-100 hover:bg-white-200 rounded-full"
+                  title="Expand to Fullscreen"
+                >
+                  <Maximize2 className="w-5 h-5 text-gray-800" />
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               <div className="relative">
@@ -265,6 +319,7 @@ const SkillMatrixPage = () => {
                       onSelect={(value) => setSelectedTeam(value as string)}
                       widthClass="min-w-[160px]"
                     />
+
                   )}
                   <DropdownButton
                     label="Select Positions *"
@@ -322,24 +377,32 @@ const SkillMatrixPage = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed" id="skill-matrix-table">
+              <table className={`w-full ${isFullscreen ? "table-fixed" : ""}`} id="skill-matrix-table">
                 <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 min-w-40 sticky left-0 bg-white">
+                  <tr className="border-b-1 border-gray-200 text-sm">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 min-w-[200px] sticky left-0 bg-white z-10 whitespace-nowrap">
                       Employee
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    {/* <th className="text-left py-3 px-4 font-semibold text-gray-700">
                       Role
-                    </th>
+                    </th> */}
                     {matrixSkills.map((skill) => (
-                      <th
+                     <th
                         key={skill.id}
-                        className="text-center align-middle py-3 px-2 font-semibold text-gray-700 min-w-20 break-words"
+                        className="text-center px-1 py-2 font-semibold text-gray-700  align-bottom"
+                        style={{
+                          minWidth: matrixSkills.length > 10 ? "100px" : "100px",
+                          maxWidth: "150px",
+                          wordBreak: 'break-word',
+                          whiteSpace: 'normal',
+                        }}
                       >
-                        {skill.name}
+                        <div className="text-[11px] leading-tight">
+                          { skill.name}
+                        </div>
                       </th>
                     ))}
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                    <th className="text-center py-2 px-3 font-semibold text-gray-700 w-[50px]">
                       Avg
                     </th>
                   </tr>
@@ -353,17 +416,29 @@ const SkillMatrixPage = () => {
                         key={employee.id}
                         className="border-b border-gray-100 hover:bg-gray-50"
                       >
-                        <td className="py-3 px-4 font-medium text-gray-900 sticky left-0 bg-white">
+                       <td
+                          className="sticky left-0 bg-white font-medium text-gray-900 px-4 py-3 min-w-[200px] max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap cursor-default hover:bg-blue-50 transition-colors duration-150"
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoveredEmployee(employee);
+                            setHoverPosition({ x: rect.right + 10, y: rect.top });
+                          }}
+                          onMouseLeave={() => {
+                            setHoveredEmployee(null);
+                            setHoverPosition(null);
+                          }}
+                        >
                           {employee.name}
                         </td>
-                        <td className="py-3 px-4 text-gray-600">
+                        {/* <td className="py-3 px-4 text-gray-600">
                           {employee.role?.name || "N/A"}
-                        </td>
+                        </td> */}
                         {matrixSkills.map((skill) => {
                           const skillScore = getSkillScore(employee, skill.id);
                           return (
                             <td
                               key={skill.id}
+
                               className={`text-center py-3 px-2 text-xs font-medium min-w-8 ${getSkillLevelColor(
                                 skillScore
                               )}`}
@@ -384,6 +459,22 @@ const SkillMatrixPage = () => {
                   })}
                 </tbody>
               </table>
+              {hoveredEmployee && hoverPosition && (
+                <div
+                  className="absolute z-50 bg-white border border-gray-300 rounded shadow-lg p-3 text-sm"
+                  style={{
+                    top: `${hoverPosition.y}px`,
+                    left: `${hoverPosition.x}px`,
+                    minWidth: '220px'
+                  }}
+                >
+                  <div className="font-semibold text-gray-800 mb-1">Employee Info</div>
+                  <p><strong>Name:</strong> {hoveredEmployee.name}</p>
+                  <p><strong>ID:</strong> {hoveredEmployee.userId}</p>
+                  <p><strong>Role:</strong> {hoveredEmployee.role?.name || 'N/A'}</p>
+                  <p><strong>Position:</strong> {hoveredEmployee.position?.name || 'N/A'}</p>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -20,7 +20,7 @@ const SkillController: Controller = {
         high: payload.high,
         expert: payload.expert,
         createdBy: req.auth.credentials.user.id,
-        positionId: payload.position,
+        positionId: payload.position[0],
       };
       const createdSkill = await SkillService.createSkill(SkillData);
       // Handle different possible return types from the service

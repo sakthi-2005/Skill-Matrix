@@ -4,7 +4,7 @@ const assessmentCycleRoutes = {
   name: "assessment-cycle-routes",
   register: async function (server, options) {
     server.route([
-// ===== NEW TEAM-BASED BULK ASSESSMENT ROUTES =====
+      // ===== NEW TEAM-BASED BULK ASSESSMENT ROUTES =====
 
       // HR initiates bulk assessment
       {
