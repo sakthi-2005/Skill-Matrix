@@ -128,6 +128,21 @@ const UserController: Controller = {
     }
   },
 
+  getRecentAssessmentScore: async(req: Request, h: ResponseToolkit) => {
+
+    try{
+      const { userId } = req.query as { userId: number };
+      const data = await UserService.getMostRecentApprovedScores(userId);
+
+      if(!data)throw new Error("Failed to Fetch Scores");
+
+      return h.response({ message: "Fetched Previous Assessment Scores" , data }).code(500);
+    }
+    catch(err){
+      return h.response({ error: err.message }).code(500);
+    }
+  },
+
   getAllDetails: async (req: Request, h: ResponseToolkit) => {
     try {
       const type = req.query.type as string || "all";
