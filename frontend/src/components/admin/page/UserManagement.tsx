@@ -168,8 +168,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
     position: '',
     team: '',
     subTeam: '',
-    lead: '',
-    hr: '',
+    lead: 'unassigned',
+    hr: 'unassigned',
     isActive: true,
   });
   const [BulkUser,setBulkUser] = useState<any[]|null>([])
@@ -258,8 +258,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         position: '',
         team: '',
         subTeam: '',
-        lead: '',
-        hr: '',
+        lead: 'unassigned',
+        hr: 'unassigned',
         isActive: true,
       });
       loadData();
@@ -342,13 +342,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
   };
 
   const openEditDialog = (user: UserData) => {
-    console.log('Editing user:', user);
-    console.log('User lead:', user.lead);
-    console.log('User hr:', user.hr);
-    console.log('User leadId:', user.leadId);
-    console.log('User hrId:', user.hrId);
-    
     setEditingUser(user);
+    
+    // Set form states first
+    setFormRole(user.role?.id);
+    setFormTeam(user.Team?.id);
+    
     const formDataToSet = {
       userId: user.userId,
       name: user.name,
@@ -357,14 +356,11 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       position: user.position?.name || '',
       team: user.Team?.name || '',
       subTeam: user.SubTeam?.name || '',
-      lead: user.lead?.userId || '',
-      hr: user.hr?.userId || '',
+      lead: user.lead?.userId || 'unassigned',
+      hr: user.hr?.userId || 'unassigned',
       isActive: user.isActive !== false,
     };
-    setFormRole(user.role?.id);
-    setFormTeam(user.Team?.id);
     
-    console.log('Form data to set:', formDataToSet);
     setFormData(formDataToSet);
     setIsDialogOpen(true);
   };
@@ -379,8 +375,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
       position: '',
       team: '',
       subTeam: '',
-      lead: '',
-      hr: '',
+      lead: 'unassigned',
+      hr: 'unassigned',
       isActive: true,
     });
     setIsDialogOpen(true);
@@ -567,7 +563,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                           <Label>Sub Team</Label>
                           <Select
                             value={formData.subTeam}
-                            onValueChange={(value) =>
+                            onValueChange={(value) => 
                               setFormData({
                                 ...formData,
                                 subTeam: value
@@ -598,7 +594,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                             onValueChange={(value) =>
                               setFormData({
                                 ...formData,
-                                lead: value === "unassigned" ? null : value
+                                lead: value === "unassigned" ? "" : value
                               })
                             }
                           >
@@ -606,7 +602,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                             <SelectContent>
                               <SelectItem value="unassigned">Unassigned</SelectItem>
                               {potentialLeads.map(lead => (
-                                <SelectItem key={lead.id} value={lead.id.toString()}>
+                                <SelectItem key={lead.id} value={lead.userId}>
                                   {lead.name}
                                 </SelectItem>
                               ))}
@@ -620,7 +616,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                             onValueChange={(value) =>
                               setFormData({
                                 ...formData,
-                                hr: value === "unassigned" ? null : value
+                                hr: value === "unassigned" ? "" : value
                               })
                             }
                           >
@@ -628,7 +624,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                             <SelectContent>
                               <SelectItem value="unassigned">Unassigned</SelectItem>
                               {potentialHRs.map(hr => (
-                                <SelectItem key={hr.id} value={hr.id.toString()}>
+                                <SelectItem key={hr.id} value={hr.userId}>
                                   {hr.name}
                                 </SelectItem>
                               ))}
@@ -712,8 +708,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                     position: '',
                     team: '',
                     subTeam: '',
-                    lead: '',
-                    hr: '',
+                    lead: 'unassigned',
+                    hr: 'unassigned',
                     isActive: true,
                   });
                   setIsSingleOpen(true);
@@ -737,8 +733,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
                       position: '',
                       team: '',
                       subTeam: '',
-                      lead: '',
-                      hr: '',
+                      lead: 'unassigned',
+                      hr: 'unassigned',
                       isActive: true,
                   });
                   }}

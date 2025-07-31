@@ -13,8 +13,7 @@ import {
 } from "lucide-react";
 import { assessmentService, userService } from "@/services/api";
 import { toast } from "sonner";
-import {UserProfile,Skill} from "../../types/profileTypes";
-
+import { UserProfile, Skill } from "../../types/profileTypes";
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -84,9 +83,9 @@ const ProfilePage = () => {
                   >
                     Full Name
                   </label>
-                    <p className="text-sm font-medium">
-                      {profileData.name || user?.name}
-                    </p>
+                  <p className="text-sm font-medium">
+                    {profileData.name || user?.name}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -158,9 +157,11 @@ const ProfilePage = () => {
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-gray-500" />
                     <p className="text-sm font-medium">
-                      {(profileData.Team?.name ||
+                      {(
+                        profileData.Team?.name ||
                         user?.Team?.name ||
-                        "Not assigned").toUpperCase()}
+                        "Not assigned"
+                      ).toUpperCase()}
                     </p>
                   </div>
                 </div>
@@ -175,9 +176,11 @@ const ProfilePage = () => {
                   <div className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-gray-500" />
                     <p className="text-sm font-medium">
-                      {(profileData.position?.name ||
+                      {(
+                        profileData.position?.name ||
                         user?.position?.name ||
-                        "Not assigned").toUpperCase()}
+                        "Not assigned"
+                      ).toUpperCase()}
                     </p>
                   </div>
                 </div>
@@ -207,7 +210,7 @@ const ProfilePage = () => {
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
                     <p className="text-sm font-medium">
-                      {profileData.leadId?.name || "Not assigned"}
+                      {profileData.lead?.name || "Not assigned"}
                     </p>
                   </div>
                 </div>
@@ -221,7 +224,7 @@ const ProfilePage = () => {
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
                     <p className="text-sm font-medium">
-                      {profileData.hrId?.name || "Not assigned"}
+                      {profileData.hr?.name || "Not assigned"}
                     </p>
                   </div>
                 </div>

@@ -16,7 +16,29 @@ export const ReviewAssessmentModal: React.FC<{
   isSubmitting: boolean;
   onSubmit: (approved: boolean) => void;
   onClose: () => void;
-}> = ({ assessment, comments, setComments, isSubmitting, onSubmit, onClose }) => {
+  context?: 'employee' | 'lead';
+  labels?: {
+    assessorLabel: string;
+    reviewInstructions: string[];
+  };
+}> = ({ assessment, comments, setComments, isSubmitting, onSubmit, onClose, context = 'employee', labels }) => {
+  
+  const defaultLabels = {
+    assessorLabel: context === 'lead' ? 'Head Lead' : 'Team Lead',
+    reviewInstructions: context === 'lead' ? [
+      "• Review the skill ratings provided by your Head Lead",
+      "• If you agree with the assessment, click \"Approve\"",
+      "• If you disagree, click \"Request Changes\" with your feedback",
+      "• Your decision will be sent to HR for final review"
+    ] : [
+      "• Review the skill ratings provided by your team lead",
+      "• If you agree with the assessment, click \"Approve\"",
+      "• If you disagree, click \"Request Changes\" with your feedback",
+      "• Your decision will be sent to HR for final review"
+    ]
+  };
+
+  const currentLabels = labels || defaultLabels;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -53,7 +75,7 @@ export const ReviewAssessmentModal: React.FC<{
 
           {/* Skill Scores Review */}
           <div>
-            <h3 className="font-medium mb-3">Lead's Assessment</h3>
+            <h3 className="font-medium mb-3">{currentLabels.assessorLabel}'s Assessment</h3>
             <div className="space-y-3">
               {assessment.detailedScores?.map((score: DetailedScore) => (
                 <div key={score.skillId} className="border border-gray-200 rounded-lg p-4">
@@ -89,10 +111,9 @@ export const ReviewAssessmentModal: React.FC<{
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">Review Instructions</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Review the skill ratings provided by your team lead</li>
-              <li>• If you agree with the assessment, click "Approve"</li>
-              <li>• If you disagree, click "Request Changes" with your feedback</li>
-              <li>• Your decision will be sent to HR for final review</li>
+              {currentLabels.reviewInstructions.map((instruction, index) => (
+                <li key={index}>{instruction}</li>
+              ))}
             </ul>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   CheckCircle,
   AlertCircle,
   Eye,
+  User,
 } from "lucide-react";
 import { userService, assessmentService, skillService } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
@@ -26,6 +27,7 @@ import PendingActionsTab from "./page/PendingActionsTab";
 import WriteAssessmentModal from "./WriteAssessmentModal";
 import AssessmentHistoryModal from "./modals/AssessmentHistoryModal";
 import SkillScoresModal from "./modals/SkillScoresModal";
+import UnifiedAssessmentReview from "../shared/UnifiedAssessmentReview";
 
 interface Skill {
   id: number;
@@ -276,6 +278,7 @@ const TeamAssessment = () => {
     const tabs = [
         { id: "assessments", label: "All Assessments", icon: FileText },
         { id: "pending", label: "Pending Actions", icon: Clock },
+        { id: "myAssessment", label: "My Assessment", icon: User },
         { id: "writeAssessment", label: "Write Assessment", hidden:true},
     ];
 
@@ -388,6 +391,10 @@ const TeamAssessment = () => {
                             getStatusIcon={getStatusIcon}
                             formatDate={formatDate}
                         />
+                    )}
+
+                    {selectedTab === "myAssessment" && (
+                        <UnifiedAssessmentReview context="auto" />
                     )}
 
                     {selectedTab === "writeAssessment" && selectedAssessment && (

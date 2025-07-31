@@ -197,6 +197,7 @@ export const assessmentService = {
   employeeReviewAssessment: (assessmentId: number, data: {
     approved: boolean;
     comments?: string;
+    reviewerContext?: 'employee' | 'lead';
   }) => apiRequest(`/assess/employee-review/${assessmentId}`, { method: "POST", body: data }),
 
   hrFinalReview: (assessmentId: number, data: {
