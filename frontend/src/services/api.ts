@@ -52,11 +52,9 @@ export const apiRequest = async (
     const response = await fetch(`${API_BASE_URL}${endpoint}`, requestOptions);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `Request failed with status ${response.status}`
-      );
-    }
+    const errorData = await response.json().catch(() => ({}));
+    throw errorData; // Throw full error object for frontend to handle
+  }
 
     return await response.json();
   } catch (error) {

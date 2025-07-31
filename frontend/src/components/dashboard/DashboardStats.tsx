@@ -8,7 +8,7 @@ const DashboardStats = ({
 }: DashboardStatsProps) => {
   const skillLevels = [
     { level: "Basic", 
-      count: stats.low, 
+      count: stats.basic, 
       color: "bg-gray-100 text-gray-800" 
     },
     { level: "Low", 
@@ -22,11 +22,11 @@ const DashboardStats = ({
     },
     {
       level: "High",
-      count: stats.average,
+      count: stats.high,
       color: "bg-blue-100 text-blue-800",
     },
     { level: "Expert", 
-      count: stats.high, 
+      count: stats.expert, 
       color: "bg-green-100 text-green-800" },
   ];
 
@@ -47,7 +47,7 @@ const DashboardStats = ({
             <CardContent>
               <div className="text-2xl font-bold">{skill.count}</div>
               <p className="text-xs text-muted-foreground">
-                skills at {skill.level.toLowerCase()} level
+                skills at123 {skill.level.toLowerCase()} level
               </p>
             </CardContent>
           </Card>

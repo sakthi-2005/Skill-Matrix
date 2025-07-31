@@ -139,7 +139,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
   const [isSingleOpen, setIsSingleOpen] = useState(false);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
-
+  const [errors, setErrors] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPositionFilter, setSelectedPositionFilter] = useState<string>('all');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all');
@@ -149,6 +149,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [formRole,setFormRole] = useState(null);
   const [formTeam,setFormTeam] = useState(null);
+  const [isDialog,setIsDialog]=useState(false);
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean;
     type: 'delete' | 'deactivate' | 'activate';
@@ -433,22 +434,36 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
   }
 
-  async function handleSaveMultipleUser(){
-    try{
-      setLoading(true);
-      await userService.createUser(BulkUser);
-      setLoading(false);
-      loadData();
-      onStatsUpdate();
-      toast.success("Users added to the queue");
-      setIsBulkOpen(false);
+  async function handleSaveMultipleUser() {
+  try {
+    setLoading(true);
+    const res = await userService.createUser(BulkUser);
+    setLoading(false);
+
+    loadData();
+    onStatsUpdate();
+    setIsBulkOpen(false);
+
+    if (res.errors && res.errors.length > 0) {
+      setErrors(res.errors); // Show in modal
+      setIsDialog(true); // Open modal
+      toast.warning(`${res.errors.length} users failed. Please review.`);
+    } else {
+      toast.success("All users added successfully");
     }
-    catch(err){
-      toast.error(err.message || `Failed to add users`);
+  } catch (err: any) {
+    setLoading(false);
+    if (err?.errors && Array.isArray(err.errors)) {
+      setErrors(err.errors);
+      setIsDialog(true);
+      toast.error(`${err.errors.length} errors occurred.`);
+    } else if (err.message) {
+      toast.error(err.message);
+    } else {
+      toast.error("Unknown error occurred");
     }
   }
-
-
+}
 
   return (
     <div className="space-y-6">
@@ -948,6 +963,38 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         type={confirmationModal.type}
         loading={confirmationModal.loading}
       />
+
+      {/* Bulk upload error */}
+      {errors.length > 0 && (
+  <Dialog open={isDialog} onOpenChange={setIsDialog}>
+    <DialogContent>
+      <DialogTitle>Upload Errors</DialogTitle>
+      <div className="max-h-[400px] max-w-[700px] overflow-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead className="sticky top-0 bg-white">
+            <tr>
+              <th className="px-4 py-2 border">#</th>
+              <th className="px-4 py-2 border">User ID</th>
+              <th className="px-4 py-2 border">Email</th>
+              <th className="px-4 py-2 border">Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {errors.map((err, idx) => (
+              <tr key={idx}>
+                <td className="px-4 py-2 border text-center">{ idx + 1}</td>
+                <td className="px-4 py-2 border">{err.userId || "-"}</td>
+                <td className="px-4 py-2 border">{err.email || "-"}</td>
+                <td className="px-4 py-2 border">{err.reason || err.message || "Unknown error"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </DialogContent>
+  </Dialog>
+)}
+
     </div>
   );
 };

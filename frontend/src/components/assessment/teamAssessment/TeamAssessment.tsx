@@ -223,7 +223,7 @@ const TeamAssessment = () => {
         try {
             const skillAssessments: LeadSkillAssessment[] = selectedAssessment.detailedScores.map((score: DetailedScore) => ({
                 skillId: score.skillId,
-                leadScore: skillScores[score.skillId] || 1,
+                leadScore: skillScores[score.skillId] || 0,
             }));
             const payload={
                 assessmentId:selectedAssessment.id,

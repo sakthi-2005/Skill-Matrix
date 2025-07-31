@@ -19,10 +19,11 @@ const EmployeeDashboard = ({
 }) => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
+    basic:0,
     low: 0,
     medium: 0,
-    average: 0,
     high: 0,
+    expert: 0,
   });
   const [pendingStatus, setPendingStatus] = useState(0);
   const [skillProgress, setSkillProgress] = useState<SkillProgressItem[]>([]);
@@ -46,14 +47,15 @@ const EmployeeDashboard = ({
       console.log(userSkills)
       // Calculate skill stats
       const skillStats = {
-        low: userSkills.filter((skill: any) => skill.score <= 1).length,
+        basic:userSkills.filter((skill: any) => skill.score == 1).length,
+        low: userSkills.filter((skill: any) => skill.score == 2).length,
         medium: userSkills.filter(
-          (skill: any) => skill.score > 1 && skill.score <= 2
+          (skill: any) =>  skill.score == 3
         ).length,
-        average: userSkills.filter(
-          (skill: any) => skill.score > 2 && skill.score <= 3
+        high: userSkills.filter(
+          (skill: any) =>  skill.score == 4
         ).length,
-        high: userSkills.filter((skill: any) => skill.score > 3).length,
+        expert: userSkills.filter((skill: any) => skill.score ==5).length,
       };
       setStats(skillStats);
 

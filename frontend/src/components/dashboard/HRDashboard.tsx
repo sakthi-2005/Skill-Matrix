@@ -8,7 +8,7 @@ import { getAverageSkillLevel } from '@/utils/helper';
 
 const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ low: 0, medium: 0, average: 0, high: 0 });
+  const [stats, setStats] = useState({ basic:0, low: 0, medium: 0, high: 0, expert:0 });
   const [pendingRequests, setPendingRequests] = useState(0);
   const [organizationStats, setOrganizationStats] = useState({
     totalEmployees: 0,
@@ -16,7 +16,7 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
     skillCriteria: 0,
     avgOrgSkillLevel: 0
   });
-  const [orgSkillStats, setOrgSkillStats] = useState({ low: 0, medium: 0, average: 0, high: 0 });
+  const [orgSkillStats, setOrgSkillStats] = useState({basic:0, low: 0, medium: 0, high: 0, expert:0 });
 
   useEffect(() => {
     fetchDashboardData();
@@ -37,14 +37,11 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
       // Check if skillDetails exists and has mostRecentAssessmentScores
       const userSkills = skillDetails?.mostRecentAssessmentScores || [];
       const skillStats = {
-        low: userSkills.length > 0 ? userSkills.filter((skill) => skill.Score <= 1).length : 0,
-        medium: userSkills.length > 0 ? userSkills.filter(
-          (skill) => skill.Score > 1 && skill.Score <= 2
-        ).length : 0,
-        average: userSkills.length > 0 ? userSkills.filter(
-          (skill) => skill.Score > 2 && skill.Score <= 3
-        ).length : 0,
-        high: userSkills.length > 0 ? userSkills.filter((skill) => skill.Score > 3).length : 0,
+        basic:userSkills.length > 0 ? userSkills.filter((skill) => skill.Score == 1).length : 0,
+        low: userSkills.length > 0 ? userSkills.filter((skill) => skill.Score == 2).length : 0,
+        medium: userSkills.length > 0 ? userSkills.filter((skill) => skill.Score == 3).length : 0,
+        high: userSkills.length > 0 ? userSkills.filter((skill) => skill.Score == 4).length : 0,
+        expert:userSkills.length>0 ? userSkills.filter((skill)=>skill.score == 5).length:0,
       };
       const avg: number = matrix.length
                   ? parseFloat((

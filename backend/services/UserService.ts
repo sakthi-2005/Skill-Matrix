@@ -239,7 +239,7 @@ const UserService = {
   
 
   // Organization-wide skill level stats
-  getOrganizationSkillLevelStats: async (): Promise<{ low: number; medium: number; average: number; high: number }> => {
+  getOrganizationSkillLevelStats: async (): Promise<{ basic:number; low: number; medium: number; high: number; expert:number }> => {
     try {
       // Get all users
       const users = await userRepo.find({ select: ["id"] });
@@ -254,12 +254,13 @@ const UserService = {
         }
       }
       // Count by level
-      const stats = { low: 0, medium: 0, average: 0, high: 0 };
+      const stats = { basic:0, low: 0, medium: 0, high: 0, expert:0 };
       for (const score of allScores) {
-        if (score <= 1) stats.low++;
-        else if (score > 1 && score <= 2) stats.medium++;
-        else if (score > 2 && score <= 3) stats.average++;
-        else if (score > 3) stats.high++;
+        if (score==1) stats.basic++;
+        else if (score == 2) stats.low++;
+        else if (score == 3) stats.medium++;
+        else if (score == 4) stats.high++;
+        else if(score ==5) stats.expert++;
       }
       return stats;
     } catch (error: any) {

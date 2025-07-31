@@ -26,44 +26,57 @@ const UserController: Controller = {
   },
 
   createUser: async (req: Request, h: ResponseToolkit) => {
-    try {
-      const data = req.payload as any[];
-      let count = 0
+  try {
+    const data = req.payload as any[];
+    if (!data || !data.length) throw new Error("Verify User Data!");
 
-      const requiredFields: string[] = ['name','userId','email','role','position','team','subTeam','lead','hr','isActive']
-      const fields = Object.keys(data[0]);
+    const requiredFields: string[] = [
+      'name', 'userId', 'email', 'role',
+      'position', 'team', 'subTeam', 'lead', 'hr', 'isActive'
+    ];
+    const fields = Object.keys(data[0]);
 
-      console.log(requiredFields,fields);
+    fields.forEach((field) => {
+      if (!requiredFields.includes(field)) throw new Error("Verify fields and upload again");
+    });
+    requiredFields.forEach((field) => {
+      if (!fields.includes(field)) throw new Error("Verify fields and upload again");
+    });
 
-      fields.forEach((val)=>{
-        if(!requiredFields.includes(val)) throw new Error("verify fields and upload again")
-      });
+    const split = parseInt(process.env.UPLOAD_LIMIT);
+    const queue = new Queue("addUsers", config);
+    const queueEvents = new QueueEvents("addUsers", config);
+    await queueEvents.waitUntilReady();
 
-      requiredFields.forEach((val)=>{
-        if(!fields.includes(val)) throw new Error("verify fields and upload again");
-      });
-      
-      if(!data || !data.length)throw new Error("Verify User Data!");
+    let totalSuccess = 0;
+    let totalErrors = 0;
+    let allErrors: any[] = [];
 
-      const split = parseInt(process.env.UPLOAD_LIMIT);
-      const queue = new Queue("addUsers",config);
-      const queueEvents = new QueueEvents("addUsers",config);
-      
-      for(let i=0;i<data.length;i+=split){
-        const queue_data = data.slice(i,i+split);
-        console.log(queue_data);
-        const job = await queue.add("users",{ users : queue_data });
-        await queueEvents.waitUntilReady();
-        count += await job.waitUntilFinished(queueEvents)
-                        .finally(() => queueEvents.close())
-      }
+    for (let i = 0; i < data.length; i += split) {
+      const chunk = data.slice(i, i + split);
+      const job = await queue.add("users", { users: chunk });
+      const result = await job.waitUntilFinished(queueEvents);
 
-      return h.response({message: `${count} Users Added successfully!`}).code(201);
-    } catch (err: any) {
-      console.log(err.message)
-      return h.response({ error: err.message }).code(400);
+      totalSuccess += result.successcount || 0;
+      totalErrors += result.errorCount || 0;
+      allErrors.push(...(result.errors || []));
     }
-  },
+
+    await queueEvents.close();
+
+    return h.response({
+      message: `${totalSuccess} Users Added successfully!`,
+      successCount: totalSuccess,
+      errorCount: totalErrors,
+      errors: allErrors || [],
+    }).code(201);
+
+  } catch (err: any) {
+    console.log("User Bulk Upload Error:", err.message);
+    return h.response({ error: err.message }).code(400);
+  }
+},
+
 
   updateUser: async (req: Request, h: ResponseToolkit) => {
     try {

@@ -16,7 +16,7 @@ const TeamLeadDashboard = ({
   onNavigate: (tab: string) => void;
 }) => {
   const { user, token } = useAuth();
-  const [stats, setStats] = useState({ low: 0, medium: 0, average: 0, high: 0 });
+  const [stats, setStats] = useState({ basic:0, low: 0, medium: 0, high: 0, expert: 0 });
   const [pendingRequests, setPendingRequests] = useState(0);
   const [teamStats, setTeamStats] = useState({
     totalMembers: 0,
@@ -44,7 +44,7 @@ const TeamLeadDashboard = ({
     console.log('fetchScoreData called with:', teamMembers);
     
     // Reset stats before calculating
-    let newStats = { low: 0, medium: 0, average: 0, high: 0 };
+    let newStats = { basic:0, low: 0, medium: 0, high: 0, expert:0 };
     
     for(const teamMember of teamMembers){
       try {
@@ -60,32 +60,37 @@ const TeamLeadDashboard = ({
 
           // Calculate skill stats for this team member
           // Try both lead_score and other possible field names
+          const basicSkills =userSkills.filter((skill:any)=>{
+            const score=skill.lead_score || skill.score || skill.Score || 0;
+            return score==1;
+          });
+
           const lowSkills = userSkills.filter((skill: any) => {
             const score = skill.lead_score || skill.score || skill.Score || 0;
-            return score <= 1;
+            return score ==2;
           });
           
           const mediumSkills = userSkills.filter((skill: any) => {
             const score = skill.lead_score || skill.score || skill.Score || 0;
-            return score > 1 && score <= 2;
-          });
-          
-          const averageSkills = userSkills.filter((skill: any) => {
-            const score = skill.lead_score || skill.score || skill.Score || 0;
-            return score > 2 && score <= 3;
+            return score > 1 && score == 3;
           });
           
           const highSkills = userSkills.filter((skill: any) => {
             const score = skill.lead_score || skill.score || skill.Score || 0;
-            return score > 3;
+            return score == 4;
           });
-          
+
+          const expertSkills = userSkills.filter((skill: any) => {
+            const score = skill.lead_score || skill.score || skill.Score || 0;
+            return score == 5;
+          });
+          newStats.basic+=basicSkills.length;
           newStats.low += lowSkills.length;
           newStats.medium += mediumSkills.length;
-          newStats.average += averageSkills.length;
           newStats.high += highSkills.length;
+          newStats.expert += expertSkills.length;
           
-          console.log(`Stats for ${teamMember.id}: low=${lowSkills.length}, medium=${mediumSkills.length}, average=${averageSkills.length}, high=${highSkills.length}`);
+          console.log(`Stats for ${teamMember.id}: basic=${basicSkills.length} ,low=${lowSkills.length}, medium=${mediumSkills.length}, high=${highSkills.length}, expert=${expertSkills.length}`);
         } else {
           console.log(`No skill data found for team member ${teamMember.id}`);
         }
@@ -199,12 +204,12 @@ const TeamLeadDashboard = ({
           await fetchScoreData(data);
         } else {
           // Reset stats if no team members
-          setStats({ low: 0, medium: 0, average: 0, high: 0 });
+          setStats({ basic:0, low: 0, medium: 0, high: 0, expert:0 });
         }
       } catch (err) {
         console.error('Error fetching team data:', err);
         toast({ title: "Failed to load team members", variant: "destructive" });
-        setStats({ low: 0, medium: 0, average: 0, high: 0 });
+        setStats({ basic:0, low: 0, medium: 0, high: 0, expert:0 });
       } finally {
         setIsLoading(false);
       }
@@ -343,17 +348,7 @@ const TeamLeadDashboard = ({
                 </div>
                 <p className="text-sm text-gray-600">Skill Gaps Identified</p>
               </div>
-              <div className="text-sm text-gray-600">
-                Most needed skills:
-                <div className="flex flex-wrap gap-1 mt-2">
-                  <Badge variant="destructive" className="text-xs">
-                    React
-                  </Badge>
-                  <Badge variant="destructive" className="text-xs">
-                    Leadership
-                  </Badge>
-                </div>
-              </div>
+              
               <Button
                 onClick={() => onNavigate("skill-matrix")}
                 className="w-full"

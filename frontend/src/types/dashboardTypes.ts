@@ -1,9 +1,10 @@
 //components/dashboard/dashboardStats
 export interface SkillStats {
+  basic:number;
   low: number;
   medium: number;
-  average: number;
   high: number;
+  expert: number;
 }
 
 export interface DashboardStatsProps {
