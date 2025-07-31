@@ -9,6 +9,7 @@ import { TeamMember } from "@/types/teamTypes";
 import { userService,assessmentService } from "@/services/api";
 import {toast} from "../../hooks/use-toast";
 import { verifyLead } from "@/utils/helper";
+import { getUserHierarchyLevel, isUserInLeadRole } from "@/utils/assessmentUtils";
 const TeamLeadDashboard = ({
   onNavigate,
 }: {
@@ -26,6 +27,9 @@ const TeamLeadDashboard = ({
   const [searchTerm,setSearchTerm]=useState("");
   useEffect(()=>{
     if(user){
+      console.log('Current user:', user);
+      console.log('User hierarchy level:', getUserHierarchyLevel(user));
+      console.log('Is user in lead role:', isUserInLeadRole(user));
       fetchTeamData();
       fetchDashboardData();
     }
@@ -37,24 +41,62 @@ const TeamLeadDashboard = ({
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchScoreData = async(teamMembers: TeamMember[])=>{
+    console.log('fetchScoreData called with:', teamMembers);
+    
+    // Reset stats before calculating
+    let newStats = { low: 0, medium: 0, average: 0, high: 0 };
+    
     for(const teamMember of teamMembers){
+      try {
+        console.log(`Fetching skills for team member: ${teamMember.id} (${teamMember.name || 'Unknown'})`);
+        
         const skillDetails = await assessmentService.getUserLatestApprovedScoresByUserId(teamMember.id);
-            const userSkills = skillDetails.data;
+        
+        console.log(`Skill details for ${teamMember.id}:`, skillDetails);
+        
+        if (skillDetails.success && skillDetails.data && Array.isArray(skillDetails.data)) {
+          const userSkills = skillDetails.data;
+          console.log(`User skills for ${teamMember.id}:`, userSkills);
 
-            // Calculate skill stats
-            setStats((oldState)=>{
-              return {
-                low: oldState.low + userSkills.filter((skill: any) => skill.lead_score <= 1).length,
-                medium: oldState.medium + userSkills.filter(
-                  (skill: any) => skill.lead_score > 1 && skill.lead_score <= 2
-                ).length,
-                average: oldState.average + userSkills.filter(
-                  (skill: any) => skill.lead_score > 2 && skill.lead_score <= 3
-                ).length,
-                high: oldState.high + userSkills.filter((skill: any) => skill.lead_score > 3).length,
-              }
-            });
+          // Calculate skill stats for this team member
+          // Try both lead_score and other possible field names
+          const lowSkills = userSkills.filter((skill: any) => {
+            const score = skill.lead_score || skill.score || skill.Score || 0;
+            return score <= 1;
+          });
+          
+          const mediumSkills = userSkills.filter((skill: any) => {
+            const score = skill.lead_score || skill.score || skill.Score || 0;
+            return score > 1 && score <= 2;
+          });
+          
+          const averageSkills = userSkills.filter((skill: any) => {
+            const score = skill.lead_score || skill.score || skill.Score || 0;
+            return score > 2 && score <= 3;
+          });
+          
+          const highSkills = userSkills.filter((skill: any) => {
+            const score = skill.lead_score || skill.score || skill.Score || 0;
+            return score > 3;
+          });
+          
+          newStats.low += lowSkills.length;
+          newStats.medium += mediumSkills.length;
+          newStats.average += averageSkills.length;
+          newStats.high += highSkills.length;
+          
+          console.log(`Stats for ${teamMember.id}: low=${lowSkills.length}, medium=${mediumSkills.length}, average=${averageSkills.length}, high=${highSkills.length}`);
+        } else {
+          console.log(`No skill data found for team member ${teamMember.id}`);
+        }
+      } catch (error) {
+        console.error(`Error fetching skills for team member ${teamMember.id}:`, error);
       }
+    }
+    
+    // Set the final stats
+    console.log('Final calculated stats:', newStats);
+    setStats(newStats);
   }
   
   const fetchDashboardData = async () => {
@@ -79,26 +121,149 @@ const TeamLeadDashboard = ({
 
   const fetchTeamData = async () => {
       try {
-
-        let data;
-        if(verifyLead(user.id)){
-          data = await userService.getTeamMatrix(user?.Team?.name);
+        let data = [];
+        
+        // Check if user is a lead (await the async function)
+        console.log('User object:', user);
+        console.log('User ID:', user.id, 'Type:', typeof user.id);
+        
+        const isLead = await verifyLead(user.id);
+        console.log('Is user a lead:', isLead);
+        
+        // Also check if user role contains 'lead' as a fallback
+        const isLeadByRole = isUserInLeadRole(user);
+        console.log('Is user in lead role (by role name):', isLeadByRole);
+        
+        if(isLead || isLeadByRole){
+          // Get the user's hierarchy level to determine what team data to fetch
+          const userLevel = getUserHierarchyLevel(user);
+          console.log('User hierarchy level:', userLevel);
+          console.log('User role:', user?.role?.name);
+          
+          if (userLevel === 1) {
+            // Regular Lead - fetch team members (employees only, exclude self)
+            console.log('Fetching team matrix for regular lead');
+            const teamData = await userService.getTeamMatrix(user?.Team?.name);
+            data = teamData || [];
+            
+            // Ensure the Lead is NOT included in their own team dashboard
+            // Team Skills Overview should only show employees reporting to them
+            data = data.filter(member => member.id !== user.id);
+          } else if (userLevel >= 2) {
+            // Head Lead or higher - fetch direct reports (other Leads)
+            console.log('Fetching direct reports for head lead');
+            const directReports = await userService.getAllUsers({ leadId: user.id.toString() });
+            
+            console.log('Direct reports response:', directReports);
+            
+            if (directReports.success && directReports.data) {
+              // Get all direct reports (both Leads and employees)
+              const allDirectReports = directReports.data.filter(member => 
+                member.id !== user.id // Exclude self initially
+              );
+              
+              console.log('All direct reports:', allDirectReports);
+              
+              // For Head Leads, we want to show skills of their direct reports only (exclude self)
+              data = allDirectReports;
+              
+              // If no direct reports, fallback to team matrix (but exclude self)
+              if (allDirectReports.length === 0) {
+                console.log('No direct reports found, falling back to team matrix');
+                const teamData = await userService.getTeamMatrix(user?.Team?.name);
+                data = (teamData || []).filter(member => member.id !== user.id);
+              }
+            } else {
+              // Fallback to team matrix if direct reports API fails (exclude self)
+              console.log('Direct reports API failed, falling back to team matrix');
+              const teamData = await userService.getTeamMatrix(user?.Team?.name);
+              data = (teamData || []).filter(member => member.id !== user.id);
+            }
+          } else {
+            // Fallback for other cases (exclude self)
+            console.log('Fallback case - fetching team matrix');
+            const teamData = await userService.getTeamMatrix(user?.Team?.name);
+            data = (teamData || []).filter(member => member.id !== user.id);
+          }
+        } else {
+          console.log('User is not a lead, fetching team matrix');
+          const teamData = await userService.getTeamMatrix(user?.Team?.name);
+          data = teamData || [];
         }
-        setTeamMembers(data);
-        fetchScoreData(data);
+        
+        console.log('Final team data:', data);
+        console.log('Team data length:', data.length);
+        
+        setTeamMembers(data || []);
+        if (data && data.length > 0) {
+          await fetchScoreData(data);
+        } else {
+          // Reset stats if no team members
+          setStats({ low: 0, medium: 0, average: 0, high: 0 });
+        }
       } catch (err) {
+        console.error('Error fetching team data:', err);
         toast({ title: "Failed to load team members", variant: "destructive" });
+        setStats({ low: 0, medium: 0, average: 0, high: 0 });
       } finally {
         setIsLoading(false);
       }
     };
+
+  // Helper function to get team type label
+  const getTeamTypeLabel = (userLevel: number) => {
+    if (userLevel <= 1) {
+      return "Team"; // Regular Lead managing employees
+    } else if (userLevel === 2) {
+      return "Lead"; // Head Lead managing Leads
+    } else {
+      // Head Head Lead, etc. managing lower-level Heads
+      const headCount = userLevel - 2;
+      return headCount === 0 ? "Lead" : `${'Head '.repeat(headCount)}Lead`;
+    }
+  };
+
+  // Get context-aware title based on user hierarchy level
+  const getDashboardTitle = () => {
+    if (!user) return "Team Skills Overview";
+    
+    const userLevel = getUserHierarchyLevel(user);
+    const roleName = user?.role?.name?.toLowerCase() || '';
+    
+    console.log('Dashboard title - User level:', userLevel);
+    console.log('Dashboard title - Role name:', roleName);
+    
+    const teamType = getTeamTypeLabel(userLevel);
+    return `${teamType} Skills Overview`;
+  };
+
+  // Get team overview section title
+  const getTeamOverviewTitle = () => {
+    if (!user) return "Team Overview";
+    
+    const userLevel = getUserHierarchyLevel(user);
+    const teamType = getTeamTypeLabel(userLevel);
+    return `${teamType} Team Overview`;
+  };
+
+  // Get member type label
+  const getMemberTypeLabel = () => {
+    if (!user) return "Team Members";
+    
+    const userLevel = getUserHierarchyLevel(user);
+    if (userLevel <= 1) {
+      return "Team Members"; // Regular Lead managing employees
+    } else {
+      return "Direct Reports"; // Head Lead and above managing other leads
+    }
+  };
 
   return (
     <div className="space-y-8">
       <DashboardStats
         stats={stats}
         pendingRequests={pendingRequests}
-        title="Team Skills Overview"
+        title={getDashboardTitle()}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -106,7 +271,7 @@ const TeamLeadDashboard = ({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Team Overview
+              {getTeamOverviewTitle()}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -115,7 +280,9 @@ const TeamLeadDashboard = ({
                 <div className="text-2xl font-bold">
                   {teamMembers.length}
                 </div>
-                <p className="text-sm text-gray-600">Team Members</p>
+                <p className="text-sm text-gray-600">
+                  {getMemberTypeLabel()}
+                </p>
                 
               </div>
               <div>

@@ -21,11 +21,15 @@ export interface UserProfile {
     id: string;
     name: string;
   };
-  leadId?: {
+  lead?: {
+    id: string;
     name: string;
+    userId: string;
   };
-  hrId?: {
+  hr?: {
+    id: string;
     name: string;
+    userId: string;
   };
   userId?: string;
   createdAt?: string;
