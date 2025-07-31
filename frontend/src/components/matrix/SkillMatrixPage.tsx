@@ -2,12 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { userService, skillService } from "@/services/api";
 import { Download, LayoutGridIcon, Search, Users } from "lucide-react";
-import {
-  Download,
-  LayoutGridIcon,
-  Search,
-  Users,
-} from "lucide-react";
 import { exportPDF, getAverageSkillLevel, getSkillLevelColor, getSkillScore, verifyLead } from "@/utils/helper";
 import {SkillScore,SkillMatrixData,Skill} from "../../types/matrixTypes";
 import { Maximize2, X } from "lucide-react";

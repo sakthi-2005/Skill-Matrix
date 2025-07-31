@@ -228,7 +228,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   <label className="text-sm font-medium text-gray-500">Team Lead</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <UserCheck className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{user.lead?.name || 'N/A'}</span>
+                    <span className="text-sm">{user.lead?.name || 'Unassigned'}</span>
                   </div>
                 </div>
                 
@@ -236,7 +236,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   <label className="text-sm font-medium text-gray-500">HR Manager</label>
                   <div className="flex items-center space-x-1 mt-1">
                     <UserCheck className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{user.hr?.name || 'N/A'}</span>
+                    <span className="text-sm">{user.hr?.name || 'Unassigned'}</span>
                   </div>
                 </div>
               </div>
