@@ -150,7 +150,7 @@ const AssessmentService = {
               skillName: score.Skill?.name,
               previousScore: previousScore,
               currentScore: newScore,
-              comments: comments || `Score updated for ${score.Skill?.name}`,
+              comments:  `Score updated for ${score.Skill?.name}`,
               commentedBy: leadId,
               status: "SCORE_UPDATED",
               cycleNumber: assessment.currentCycle

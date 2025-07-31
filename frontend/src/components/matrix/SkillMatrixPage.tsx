@@ -192,21 +192,6 @@ const SkillMatrixPage = () => {
     <div className="flex flex-col gap-6 p-5">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Skill Matrix</h1>
-        <div className="flex gap-2">
-          {/* Download Button */}
-          <button
-            onClick={exportToPDF}
-            disabled={!hasRequiredFilters() || filteredData.length === 0}
-            title={
-              !hasRequiredFilters()
-                ? "Please select a position to generate the report."
-                : ""
-            }
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 bg-white rounded hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download className="w-4 h-4" /> Export Matrix
-          </button>
-        </div>
       </div>
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -269,6 +254,20 @@ const SkillMatrixPage = () => {
               <h2 className="text-lg font-semibold">Skills Matrix</h2>
             </div>
             <div className="absolute top-4 right-4 z-50">
+              <div className="flex gap-2">
+          {/* Download Button */}
+          <button
+            onClick={exportToPDF}
+            disabled={!hasRequiredFilters() || filteredData.length === 0}
+            title={
+              !hasRequiredFilters()
+                ? "Please select a position to generate the report."
+                : ""
+            }
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="w-4 h-4" />
+          </button>
               {isFullscreen ? (
                 <button
                   onClick={() => setIsFullscreen(false)}
@@ -286,13 +285,15 @@ const SkillMatrixPage = () => {
                   <Maximize2 className="w-5 h-5 text-gray-800" />
                 </button>
               )}
+              
+            </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search employees..."
-                  className="pl-8 pr-3 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-8 pr-3 py-1.5 border border-gray-300 rounded w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

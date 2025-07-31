@@ -40,16 +40,20 @@
     "hapi": "^18.1.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
     "node-cron": "^4.2.0",
     "pg": "^8.16.0",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.24"
+    "typeorm": "^0.3.24",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/hapi__hapi": "^20.0.13",
     "@types/hapi__jwt": "^2.0.5",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.0.8",
+    "@types/xlsx": "^0.0.35",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
