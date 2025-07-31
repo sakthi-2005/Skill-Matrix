@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import { AppDataSource } from "./config/dataSource";
 import userRoutes from "./routes/UserRoute";
 import skillRoutes from "./routes/skill/skillRoute";
-import guideRoutes from "./routes/skill/skillUpgradeGuideRoute";
 import skillTargetRoutes from "./routes/skill/skillTargetRoute";
 import Jwt from "@hapi/jwt";
 import authRoutes from "./routes/AuthRoute";
@@ -67,14 +66,6 @@ const init = async () => {
     options: {},
     routes: {
       prefix: "/api/users",
-    },
-  });
-
-  await server.register({
-    plugin: guideRoutes,
-    options: {},
-    routes: {
-      prefix: "/api/guides",
     },
   });
 

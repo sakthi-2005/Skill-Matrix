@@ -65,6 +65,11 @@ const userRoutes = {
         options: authorizeRoles([role.HR, role.LEAD]),
         handler: UserController.getOrganizationSkillStats,
       },
+      {
+        method: "GET",
+        path: "/skillScore",
+        handler: UserController.getRecentAssessmentScore
+      }
     ]);
   },
 };

@@ -6,14 +6,12 @@ export interface Resource {
 }
 
 export interface LearningPath {
-  id: string;
-  skillId: string;
+  id: number;
+  skillId: number;
   skillName: string;
-  currentLevel: number;
-  targetLevel: number;
+  fromLevel: number;
+  toLevel: number;
   priority: "High" | "Medium" | "Low";
-  resources: Resource[];
-  guidance?: string;
 }
 
 export interface Skill {
@@ -24,6 +22,7 @@ export interface Skill {
 
 export interface UpgradeGuide {
   id: string;
+  skillId: number;
   fromLevel: number;
   toLevel: number;
   guidance: string;
