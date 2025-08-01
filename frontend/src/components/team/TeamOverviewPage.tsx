@@ -447,7 +447,7 @@ const TeamOverviewPage = () => {
                         <div
                           className="bg-green-600 h-2 rounded-full transition-all duration-300"
                           style={{
-                            width: `${(member.avgScore / 4) * 100}%`,
+                            width: `${(member.avgScore / 5) * 100}%`,
                           }}
                         />
                       </div>

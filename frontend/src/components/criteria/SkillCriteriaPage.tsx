@@ -39,13 +39,15 @@ const SkillCriteriaPage = () => {
         setLoading(true);
         setError(null);
         let skillsData;
+        let positionsData;
         if (!(user?.role?.name === "hr" || user?.role?.name === "admin")) {
           skillsData = await skillService.getSkillsByPosition();
+          positionsData=await positionService.getAllPositions();
         } else {
           skillsData = await skillService.getAllSkills();
         }
 
-        const positionsData = await positionService.getAllPositions();
+        
         setPositions(positionsData);
         setCriteria(skillsData);
       } catch (err) {
@@ -152,7 +154,10 @@ const SkillCriteriaPage = () => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                </div>                <div className="relative">
+                </div> 
+                {(user?.role.name === "hr" || user?.role.name === "admin") && (              
+                 <div className="relative">
+                  
                   <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <select
                     className="pl-10 w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none"
@@ -169,8 +174,9 @@ const SkillCriteriaPage = () => {
                     ))}
                   </select> 
                 </div>
+                )}
         </div>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <button
                   onClick={refreshData}
                   className="flex items-center gap-2 px-4 py-2 bg-background border text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-150"
@@ -178,8 +184,8 @@ const SkillCriteriaPage = () => {
                   <RefreshCw className="h-4 w-4" />
                   Refresh
                 </button>
-                {/* Remove Add Criterion button - this is now view-only */}
-                {/* {canEdit && (
+                 Remove Add Criterion button - this is now view-only 
+                 {canEdit && (
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors duration-150"
@@ -187,8 +193,8 @@ const SkillCriteriaPage = () => {
                     <Plus className="h-4 w-4" />
                     Add Criterion
                   </button>
-                )} */}
-              </div>
+                )} 
+              </div> */}
             </div>
         </div>
         </div>

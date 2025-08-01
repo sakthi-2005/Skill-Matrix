@@ -52,11 +52,9 @@ export const apiRequest = async (
     const response = await fetch(`${API_BASE_URL}${endpoint}`, requestOptions);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `Request failed with status ${response.status}`
-      );
-    }
+    const errorData = await response.json().catch(() => ({}));
+    throw errorData; // Throw full error object for frontend to handle
+  }
 
     return await response.json();
   } catch (error) {
@@ -292,44 +290,31 @@ export const assessmentService = {
 
 // Skill Upgrade Guide Services
 export const skillUpgradeService = {
-  getGuide: (data: {
-    skillId: string;
-    currentLevel: number;
-    targetLevel: number;
-  }) => apiRequest("/guides/get", { 
+
+  getGuide: (
+    skillId: number,
+    currentLevel: number,
+    targetLevel: number,
+  ) => apiRequest("/targets/guide", { 
     method: "POST", 
     body: {
-      skillId: data.skillId,
-      fromLevel: data.currentLevel,
-      toLevel: data.targetLevel
+      skillId: skillId,
+      fromLevel: currentLevel,
+      toLevel: targetLevel
     }
   }),
 
-  getAllGuidesBySkillId: (skillId: string) =>
-    apiRequest(`/guides/skill/${skillId}`),
+  createTarget: (
+    data : { userId: string, skillId: number, from: number, to: number }
+  ) => apiRequest("/targets/create",{ method: "POST", body: data }),
 
-  createGuide: (data: {
-    skillId: number;
-    fromLevel: number;
-    toLevel: number;
-    guidance: string;
-    resourceLink?: string;
-  }) => {
-    console.log("API call data:", data);
-    return apiRequest("/guides/create", {
-      method: "POST",
-      body: data,
-    });
-  },
+  getTarget: ( id: string) => apiRequest(`/targets/skillTarget?id=${id}`),
 
-  updateGuide: (data: {
-    id: number;
-    skillId?: number;
-    fromLevel?: number;
-    toLevel?: number;
-    guidance?: string;
-    resourceLink?: string;
-  }) => apiRequest("/guides/update", { method: "POST", body: data }),
+  updateTarget: (
+    data : { userId: string, skillId: number, from: number, to: number }
+  ) => apiRequest("/targets/update",{ method: "PUT", body: data }),
+
+  deleteTarget: ( id: number ) => apiRequest(`/targets/delete?id=${id}`,{ method: "DELETE" }),
 };
 
 export const adminService = {
@@ -393,3 +378,4 @@ export const adminService = {
   restorePosition: (id: number) => 
     apiRequest(`/admin/positions/${id}/restore`, { method: "POST" }),
 };
+

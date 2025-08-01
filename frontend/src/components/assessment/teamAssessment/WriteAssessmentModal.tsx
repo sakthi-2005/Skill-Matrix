@@ -40,14 +40,14 @@ const WriteAssessmentPanel: React.FC<Props> = ({
 }) => {
   const [openSkillId, setOpenSkillId] = useState<number | null>(null);
 
-  const handleScoreChange = (skillId: number, score: number) => {
-    setSkillScores({ ...skillScores, [skillId]: score });
-  };
+ const handleScoreChange = (skillId: number, newScore: number, prevScore: number) => {
+  if (prevScore > 0 && newScore < prevScore) return; // Prevent lowering score
+  setSkillScores({ ...skillScores, [skillId]: newScore });
+};
 
   const toggleTable = (skillId: number) => {
     setOpenSkillId((prev) => (prev === skillId ? null : skillId));
   };
-
   return (
     <div className="bg-white w-full p-6 space-y-6">
       {/* Header */}
@@ -65,7 +65,6 @@ const WriteAssessmentPanel: React.FC<Props> = ({
           {assessment.detailedScores?.map((score: DetailedScore) => {
             const skill = skills.find((s) => s.id === score.skillId);
             const currentScore = skillScores[score.skillId] || 0;
-
             const levelDescriptions = [
               score.Skill?.basic || "Beginner",
               score.Skill?.low || "Intermediate",
@@ -87,25 +86,36 @@ const WriteAssessmentPanel: React.FC<Props> = ({
 
                   {/* Stars */}
                   <div className="flex items-center justify-center">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        onClick={() => handleScoreChange(score.skillId, rating)}
-                        className="p-0"
-                      >
-                        <svg
-                          className={`w-6 h-6 transition-colors duration-200 ${
-                            currentScore >= rating
-                              ? "text-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
+                    {[1, 2, 3, 4, 5].map((rating) => {
+                      const previousScore = score.score; // from last assessment
+                      console.log("Previous Score",previousScore);
+                      const isLowerThanPrevious = previousScore && rating < previousScore;
+                      return (
+                        <button
+                          key={rating}
+                          onClick={() => {
+                            if (!isLowerThanPrevious) handleScoreChange(score.skillId, rating, previousScore);
+                          }}
+                          className={`p-0 ${isLowerThanPrevious ? "cursor-not-allowed" : ""}`}
+                          title={
+                            isLowerThanPrevious
+                              ? `You cannot reduce below previous score (${previousScore})`
+                              : `Rate ${rating}`
+                          }
+                          disabled={isLowerThanPrevious}
                         >
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
-                      </button>
-                    ))}
+                          <svg
+                            className={`w-6 h-6 transition-colors duration-200 ${
+                              currentScore >= rating ? "text-yellow-400" : "text-gray-300"
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Dropdown */}
@@ -149,21 +159,23 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                         <tbody>
                           <tr>
                             {levelDescriptions.map((desc, idx) => {
-                              const isSelected = idx + 1 === currentScore;
+                              const isLowerThanPrevious = score.score > 0 && idx + 1 < score.score;
+                              const isSelected = currentScore === idx + 1;
+
                               return (
                                 <motion.td
                                   key={idx}
-                                  onClick={() => handleScoreChange(score.skillId, idx + 1)}
-                                  whileTap={{ scale: 0.95 }}
-                                  whileHover={{ scale: 1.05 }}
+                                  onClick={() => {
+                                    if (!isLowerThanPrevious) handleScoreChange(score.skillId, idx + 1, score.score);
+                                  }}
+                                  whileTap={!isLowerThanPrevious ? { scale: 0.95 } : undefined}
+                                  whileHover={!isLowerThanPrevious ? { scale: 1.05 } : undefined}
                                   className={`
                                     w-1/5 px-2 py-3 text-xs text-center cursor-pointer border-r transition
-                                    ${
-                                      isSelected
-                                        ? "bg-yellow-100 font-medium shadow-inner"
-                                        : "hover:bg-gray-100"
-                                    }`}
-                                  title={desc}
+                                    ${isLowerThanPrevious ? "cursor-not-allowed text-gray-400" :
+                                      isSelected ? "bg-yellow-100 font-medium shadow-inner" : "hover:bg-gray-100"}
+                                  `}
+                                  title={isLowerThanPrevious ? "Cannot reduce score once given" : desc}
                                 >
                                   <div className="flex flex-col items-center gap-1">
                                     <span>{desc}</span>
@@ -174,6 +186,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                                 </motion.td>
                               );
                             })}
+
                           </tr>
                         </tbody>
                       </table>

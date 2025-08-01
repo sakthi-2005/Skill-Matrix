@@ -26,6 +26,14 @@ const skillTargetRoutes = {
         options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
         handler: SkillTargetController.deleteTarget,
       },
+
+      {
+        method: "POST",
+        path: '/guide',
+        options: authorizeRoles([role.EMPLOYEE, role.LEAD]),
+        handler: SkillTargetController.getGuide,
+      }
+      
     ]);
   },
 };

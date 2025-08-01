@@ -1,5 +1,6 @@
 import { scoreRepo, skillRepo, SkillTargetRepo } from "../../config/dataSource";
-import { AuditType } from "../../types/entities";
+import { AuditType, SkillUpgradeGuideType } from "../../types/entities";
+import { SkillUpgradeGuideRepo } from "../../config/dataSource";
 
 const skillTargetService = {
     createTarget : async(userId: string, skillId: number, fromLevel: number, toLevel: number, id?: number)=>{
@@ -57,9 +58,27 @@ const skillTargetService = {
         return await SkillTargetRepo.find({
             where:{
                 userId: userId
-            }
+            },
+            relations: ["skill"]
         })
-    }
+    },
+
+    getGuide: async (skillId: number, fromLevel: number, toLevel: number): Promise<SkillUpgradeGuideType> => {
+        try {
+        const guide = await SkillUpgradeGuideRepo.findOne({
+            where: { skillId: skillId, fromLevel: fromLevel, toLevel: toLevel },
+            relations: ["skill"],
+        });
+
+        if (!guide) {
+            throw new Error("Guide not found");
+        }
+
+        return guide;
+        } catch (error: any) {
+        throw new Error(`Failed to retrieve guide: ${error.message}`);
+        }
+    },
 }
 
 export default skillTargetService;

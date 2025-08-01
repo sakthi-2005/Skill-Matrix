@@ -11,13 +11,11 @@ import {
   ExternalLink,
   Star,
   PlusCircle,
-  ArrowRight,
-  ChevronDown,
   ChevronUp,
   X,
+  Trash2
 } from "lucide-react";
 import {
-  userService,
   skillUpgradeService,
   skillService,
   assessmentService,
@@ -31,33 +29,71 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {Resource,LearningPath,Skill,UpgradeGuide} from "../../types/upgradeTypes";
+import DeleteModel from '../../lib/DeleteModal'
+
 
 const SKILL_LEVELS = [
-  { value: 1, label: "Low", color: "bg-red-100 text-red-800" },
-  { value: 2, label: "Medium", color: "bg-yellow-100 text-yellow-800" },
-  { value: 3, label: "Average", color: "bg-blue-100 text-blue-800" },
-  { value: 4, label: "High", color: "bg-green-100 text-green-800" },
+  { value: 1, label: "Basic", color: "bg-gray-100 text-gray-800" },
+  { value: 2, label: "Low", color: "bg-red-100 text-red-800" },
+  { value: 3, label: "Medium", color: "bg-yellow-100 text-yellow-800" },
+  { value: 4, label: "High", color: "bg-blue-100 text-blue-800" },
+  { value: 5, label: "Expert", color: "bg-green-100 text-green-800" },
 ];
+
 
 const SkillUpgradePage = () => {
   const { user } = useAuth();
   const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [selectedPath, setSelectedPath] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Add Learning Path state
   const [showAddPath, setShowAddPath] = useState(false);
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [selectedSkillId, setSelectedSkillId] = useState<string>("");
-  const [targetLevel, setTargetLevel] = useState<string>("");
-  const [currentLevel, setCurrentLevel] = useState<number>(0);
+  const [selectedSkillId, setSelectedSkillId] = useState<number|null>(null);
+  const [currentLevel, setCurrentLevel] = useState<number|null>(null);
+  const [targetLevel, setTargetLevel] = useState<number|null>(null);
   const [upgradeGuide, setUpgradeGuide] = useState<UpgradeGuide | null>(null);
   const [addPathLoading, setAddPathLoading] = useState(false);
   const [addPathError, setAddPathError] = useState<string | null>(null);
+  const [isDeleteModelOpen,setIsDeleteModelOpen] = useState<boolean>(false);
 
   useEffect(() => {
     fetchSkills();
+    fetchLearningPaths();
   }, [user]);
+
+  useEffect(()=>{
+    const path  = learningPaths.find((val)=>val.id === selectedPath);
+    if(path === null)return;
+    fetchUpgradeGuide(path?.skillId,path?.fromLevel,path?.toLevel);
+  },[selectedPath])
+
+  const fetchLearningPaths = async()=>{
+    try{
+      const targets = await skillUpgradeService.getTarget(user.id);
+
+      //id , skillId,userId,toLevel,fromLevel
+      targets.data.map((target)=>{
+        target.skillName = target.skill?.name;
+        const gap = target.toLevel - target.fromLevel;
+        if (gap >= 3) target.priority = "High";
+        else if (gap >= 2) target.priority = "Medium";
+        else target.priority = "Low";
+
+        delete target.skill;
+        delete target.userId;
+      })
+
+      console.log(targets);
+
+      setLearningPaths(targets.data);
+
+    }
+    catch(err){
+      toast.error("Failed to Fetch.")
+    }
+  }
 
   // Fetch skills for both initial load and add path section
   const fetchSkills = async (isAddPath = false) => {
@@ -86,7 +122,7 @@ const SkillUpgradePage = () => {
         return {
           id: skill.id,
           name: skill.name,
-          level: userSkill ? userSkill.lead_score : 0,
+          level: userSkill ? userSkill.score : 0,
         };
       });
 
@@ -107,132 +143,55 @@ const SkillUpgradePage = () => {
     }
   };
 
-  // Update current level when skill selection changes
-  useEffect(() => {
-    if (selectedSkillId) {
-      const selectedSkill = skills.find(
-        (skill) => skill.id === selectedSkillId
-      );
-      if (selectedSkill) {
-        setCurrentLevel(selectedSkill.level || 0);
-      }
+  const fetchUpgradeGuide = async(id: number, from: number, to: number) => {
+
+    try{
+        const guide = await skillUpgradeService.getGuide(id, from, to);
+        if(!guide) toast.info("No Upgrade Guide Found For the User");
+        setUpgradeGuide(guide);
     }
-  }, [selectedSkillId, skills]);
+    catch(err){
+        toast.error("Failed to Fetch Upgrade Guide Details.")
+    }
+  }
 
-  // Fetch upgrade guide when skill and target level are selected
-  useEffect(() => {
-    const fetchUpgradeGuide = async () => {
-      if (!selectedSkillId || !targetLevel || currentLevel === 0) return;
-
-      const targetLevelNum = parseInt(targetLevel);
-      if (targetLevelNum <= currentLevel) {
-        setAddPathError("Target level must be higher than your current level");
-        setUpgradeGuide(null);
-        return;
-      }
-
-      try {
-        setAddPathLoading(true);
-        setAddPathError(null);
-
-        const guideData = await skillUpgradeService.getGuide({
+  const handleAddPath = async() =>{
+    setAddPathLoading(true);
+    try{
+      if(!targetLevel)throw new Error("TargetLevel Must be selected")
+      if(targetLevel <= currentLevel)throw new Error("TargetLevel should be greater than CurrentLevel");
+        await skillUpgradeService.createTarget({
+          userId: user.id, 
           skillId: selectedSkillId,
-          currentLevel: currentLevel,
-          targetLevel: targetLevelNum,
-        });
+          from: currentLevel,
+          to: targetLevel
+      });
 
-        setUpgradeGuide(guideData);
-      } catch (err) {
-        console.error("Failed to fetch upgrade guide:", err);
-        setAddPathError(
-          "No upgrade guide found for this skill and level combination"
-        );
-        setUpgradeGuide(null);
-      } finally {
-        setAddPathLoading(false);
-      }
-    };
-
-    fetchUpgradeGuide();
-  }, [selectedSkillId, targetLevel, currentLevel]);
-
-  const handleAddPath = () => {
-    if (!selectedSkillId || !targetLevel || !upgradeGuide) {
-      setAddPathError("Please select a skill and target level");
-      return;
+      toast.success("Learning path has been created successfully.");
     }
-
-    const targetLevelNum = parseInt(targetLevel);
-    const selectedSkill = skills.find((skill) => skill.id === selectedSkillId);
-
-    if (!selectedSkill) {
-      setAddPathError("Invalid skill selection");
-      return;
+    catch(err){
+      console.log(err);
+      toast.error(err.message);
     }
-
-    // Determine priority based on level gap
-    let priority: "High" | "Medium" | "Low" = "Low";
-    const gap = targetLevelNum - currentLevel;
-    if (gap >= 3) priority = "High";
-    else if (gap >= 2) priority = "Medium";
-
-    // Create learning path object
-    const newPath: LearningPath = {
-      id:
-        upgradeGuide.id ||
-        `${selectedSkillId}-${currentLevel}-${targetLevelNum}`,
-      skillId: selectedSkillId,
-      skillName: selectedSkill.name,
-      currentLevel: currentLevel,
-      targetLevel: targetLevelNum,
-      priority: priority,
-      resources: upgradeGuide.resourceLink
-        ? [
-            {
-              id: `resource-${Date.now()}`,
-              title: "Recommended Resource",
-              type: "Documentation" as const,
-              url: upgradeGuide.resourceLink,
-            },
-          ]
-        : [],
-      guidance: upgradeGuide.guidance,
-    };
-
-    // Add the new path to the existing paths
-    setLearningPaths((prevPaths) => {
-      // Check if path already exists
-      const existingPathIndex = prevPaths.findIndex(
-        (path) =>
-          path.skillId === newPath.skillId &&
-          path.currentLevel === newPath.currentLevel &&
-          path.targetLevel === newPath.targetLevel
-      );
-
-      if (existingPathIndex >= 0) {
-        // Replace existing path
-        const updatedPaths = [...prevPaths];
-        updatedPaths[existingPathIndex] = newPath;
-        return updatedPaths;
-      } else {
-        // Add new path
-        return [...prevPaths, newPath];
-      }
-    });
-
-    // Select the new path
-    setSelectedPath(newPath.id);
-
-    toast.success("Learning path for ${newPath.skillName} has been added successfully.");
-
-    // Reset the form
+    setAddPathLoading(false);
     resetAddPathForm();
-  };
+    fetchLearningPaths();
+  }
+
+  const deletePath = async(id: number) =>{
+    try{
+      await skillUpgradeService.deleteTarget(id);
+    }
+    catch(err){
+      toast.error("Error Deleting Path");
+    }
+    fetchLearningPaths();
+    setIsDeleteModelOpen(false);
+  }
 
   const resetAddPathForm = () => {
-    setSelectedSkillId("");
-    setTargetLevel("");
-    setCurrentLevel(0);
+    setSelectedSkillId(null);
+    setTargetLevel(null);
     setUpgradeGuide(null);
     setAddPathError(null);
     setShowAddPath(false);
@@ -300,6 +259,7 @@ const SkillUpgradePage = () => {
                 fetchSkills(true);
               }
             }}
+            disabled={skills.filter((val)=>val.level !== 0).length == 0}
           >
             {showAddPath ? (
               <ChevronUp className="h-4 w-4" />
@@ -338,15 +298,19 @@ const SkillUpgradePage = () => {
               <div className="space-y-2">
                 <Label htmlFor="skill">Skill</Label>
                 <Select
-                  value={selectedSkillId}
-                  onValueChange={setSelectedSkillId}
+                  value={selectedSkillId?.toString()}
+                  onValueChange={(value)=>{
+                    setSelectedSkillId(parseInt(value));
+                    const skill = skills.filter((val)=>val.id === value);
+                    setCurrentLevel(skill[0].level);
+                  }}
                   disabled={addPathLoading}
                 >
                   <SelectTrigger id="skill">
                     <SelectValue placeholder="Select a skill" />
                   </SelectTrigger>
                   <SelectContent>
-                    {skills.map((skill) => (
+                    {skills.filter((val)=>val.level).map((skill) => (
                       <SelectItem key={skill.id} value={skill.id}>
                         {skill.name}{" "}
                         {skill.level ? `(Current: Level ${skill.level})` : ""}
@@ -360,9 +324,9 @@ const SkillUpgradePage = () => {
                 <div className="space-y-2">
                   <Label htmlFor="targetLevel">Target Level</Label>
                   <Select
-                    value={targetLevel}
-                    onValueChange={setTargetLevel}
-                    disabled={addPathLoading || currentLevel === 0}
+                    value={targetLevel?.toString()}
+                    onValueChange={(value)=>setTargetLevel(parseInt(value))}
+                    disabled={addPathLoading}
                   >
                     <SelectTrigger id="targetLevel">
                       <SelectValue placeholder="Select target level" />
@@ -380,6 +344,7 @@ const SkillUpgradePage = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  
                   {currentLevel > 0 && (
                     <p className="text-sm text-gray-500">
                       Your current level: {getLevelLabel(currentLevel)}
@@ -391,12 +356,12 @@ const SkillUpgradePage = () => {
 
             <div className="flex justify-end mt-4">
               <Button
-                onClick={handleAddPath}
+                type="submit"
+                onClick={()=>handleAddPath()}
                 disabled={
                   addPathLoading ||
                   !selectedSkillId ||
-                  !targetLevel ||
-                  !upgradeGuide
+                  !targetLevel
                 }
               >
                 <BookOpen className="h-4 w-4 mr-2" />
@@ -420,21 +385,41 @@ const SkillUpgradePage = () => {
                     : "hover:shadow-md"
                 }`}
               >
-                <div onClick={() =>
-                    setSelectedPath(selectedPath === path.id ? null : path.id)}>
+                <div onClick={() => fetchUpgradeGuide(path.skillId,path.fromLevel,path.toLevel) }>
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-3">
+                  {isDeleteModelOpen && 
+                    < DeleteModel
+                      isOpen={isDeleteModelOpen}
+                      onClose={()=>{setIsDeleteModelOpen(false)}}
+                      onConfirm={()=>deletePath(path.id)}
+                    />
+                  }
+
+                  <div className="flex gap-2 mb-3">
                     <div>
                       <h3 className="font-semibold text-lg">
                         {path.skillName}
                       </h3>
                       <p className="text-sm text-gray-600">
-                        Level {path.currentLevel} → {path.targetLevel}
+                        Level {path.fromLevel} → {path.toLevel}
                       </p>
                     </div>
-                    <Badge className={getPriorityColor(path.priority)}>
-                      {path.priority}
-                    </Badge>
+                    <div>
+                      <Badge className={getPriorityColor(path.priority)}>
+                        {path.priority}
+                      </Badge>
+                    </div>
+                    <div className="flex-1 flex justify-end">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 p-0 text-gray-600 hover:text-red-600"
+                        title="Delete"
+                        onClick={(event)=>{setIsDeleteModelOpen(true);event.stopPropagation()}}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -442,19 +427,19 @@ const SkillUpgradePage = () => {
                       <span>Progress</span>
                       <span>
                         {Math.round(
-                          (path.currentLevel / path.targetLevel) * 100
+                          (path.fromLevel / path.toLevel) * 100
                         )}
                         %
                       </span>
                     </div>
                     <Progress
-                      value={(path.currentLevel / path.targetLevel) * 100}
+                      value={(path.fromLevel / path.toLevel) * 100}
                       className="h-2"
                     />
                   </div>
 
                   <div className="flex justify-between items-center mt-3 text-sm text-gray-600">
-                    <div>{path.resources.length} resources</div>
+                    <div>resources</div>
                   </div>
                 </CardContent>
                 </div>
@@ -474,6 +459,7 @@ const SkillUpgradePage = () => {
                     fetchSkills(true);
                   }}
                   className="flex items-center gap-2"
+                  disabled={skills.filter((val)=>val.level !== 0).length == 0}
                 >
                   <PlusCircle className="h-4 w-4" />
                   Add Learning Path
@@ -487,8 +473,8 @@ const SkillUpgradePage = () => {
           <h2 className="text-xl font-semibold">Learning Path Details</h2>
           {selectedPath ? (
             (() => {
-              const path = learningPaths.find((p) => p.id === selectedPath);
-              if (!path) {
+              // const path = learningPaths.find((p) => p.id === selectedPath);
+              if (!upgradeGuide) {
                 return (
                   <p className="text-gray-600">
                     No details available for this path.
@@ -499,7 +485,7 @@ const SkillUpgradePage = () => {
               return (
                 <div className="space-y-4">
                   {/* Guidance Card */}
-                  {path.guidance && (
+                  {upgradeGuide.guidance && (
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-base">
@@ -507,7 +493,7 @@ const SkillUpgradePage = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
-                        <p className="text-gray-700">{path.guidance}</p>
+                        <p className="text-gray-700">{upgradeGuide.guidance}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -515,14 +501,12 @@ const SkillUpgradePage = () => {
                   {/* Resources Section */}
                   <div className="space-y-3">
                     <h3 className="text-base font-medium">Resources</h3>
-                    {path.resources && path.resources.length > 0 ? (
-                      path.resources.map((resource) => (
+                    {upgradeGuide?.resourceLink ? (
                         <Card
-                          key={resource.id}
                           className="hover:shadow-md transition-shadow"
                         >
                           <CardContent className="p-4">
-                            <div className="flex justify-between items-start mb-2">
+                            {/* <div className="flex justify-between items-start mb-2">
                               <div className="flex items-start gap-2">
                                 <span className="text-lg">
                                   {getResourceTypeIcon(resource.type)}
@@ -533,13 +517,13 @@ const SkillUpgradePage = () => {
                                   </h4>
                                 </div>
                               </div>
-                            </div>
+                            </div> */}
                             <div className="flex justify-between text-sm text-gray-500">
-                              <strong> Resource link: </strong><a href={resource.url} className="underline" > {resource.url} level</a>
+                              <strong> Resource link: </strong><a href={upgradeGuide.resourceLink} className="underline" > {upgradeGuide.resourceLink} level</a>
                               <Button
                                 variant="link"
                                 onClick={() =>
-                                  window.open(resource.url, "_blank")
+                                  window.open(upgradeGuide.resourceLink, "_blank")
                                 }
                               >
                                 Open
@@ -547,7 +531,6 @@ const SkillUpgradePage = () => {
                             </div>
                           </CardContent>
                         </Card>
-                      ))
                     ) : (
                       <p className="text-gray-600">
                         No resources available for this path.

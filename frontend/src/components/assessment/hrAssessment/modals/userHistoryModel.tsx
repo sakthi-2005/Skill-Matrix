@@ -88,12 +88,6 @@ export const UserHistoryModal: React.FC<{
                       <span className="text-gray-500">Completed:</span>
                       <span className="ml-2">{assessment.completedAt ? formatDate(assessment.completedAt) : 'Not completed'}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500">Comments/Feedback:</span>
-                      <span className="ml-2 font-medium text-green-600">
-                        {assessment.history?.filter(h => h.comments && h.comments.trim().length > 0).length || 0}
-                      </span>
-                    </div>
                   </div>
 
                   {/* Show skills and scores if available */}
