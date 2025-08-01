@@ -55,6 +55,13 @@ const HRAssessmentManagement: React.FC = () => {
   const [reviewComments, setReviewComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Bulk selection states
+  const [selectedAssessments, setSelectedAssessments] = useState<Set<number>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+  const [showBulkReviewModal, setShowBulkReviewModal] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'approve' | 'reject'>('approve');
+  const [bulkComments, setBulkComments] = useState("");
+
   // Form states
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
@@ -268,6 +275,80 @@ const HRAssessmentManagement: React.FC = () => {
     }
   };
 
+  // Bulk selection handlers
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedAssessments(new Set());
+      setSelectAll(false);
+    } else {
+      const pendingHRReviews = assessments.filter(a => 
+        a.status === AssessmentStatus.EMPLOYEE_APPROVED || 
+        a.status === AssessmentStatus.HR_FINAL_REVIEW
+      );
+      const allIds = new Set(pendingHRReviews.map(assessment => assessment.id));
+      setSelectedAssessments(allIds);
+      setSelectAll(true);
+    }
+  };
+
+  const handleSelectAssessment = (assessmentId: number) => {
+    const newSelected = new Set(selectedAssessments);
+    if (newSelected.has(assessmentId)) {
+      newSelected.delete(assessmentId);
+    } else {
+      newSelected.add(assessmentId);
+    }
+    setSelectedAssessments(newSelected);
+    
+    const pendingHRReviews = assessments.filter(a => 
+      a.status === AssessmentStatus.EMPLOYEE_APPROVED || 
+      a.status === AssessmentStatus.HR_FINAL_REVIEW
+    );
+    setSelectAll(newSelected.size === pendingHRReviews.length);
+  };
+
+  const handleBulkReview = async () => {
+    if (selectedAssessments.size === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one assessment",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await assessmentService.hrBulkFinalReview({
+        assessmentIds: Array.from(selectedAssessments),
+        approved: bulkAction === 'approve',
+        comments: bulkComments
+      });
+
+      if (response.success || response.successful !== undefined) {
+        const result = response.data || response;
+        toast({
+          title: "Bulk Review Completed",
+          description: `${result.successful} assessments processed successfully${result.failed > 0 ? `, ${result.failed} failed` : ''}`,
+        });
+        setShowBulkReviewModal(false);
+        setSelectedAssessments(new Set());
+        setSelectAll(false);
+        setBulkComments("");
+        loadHRData();
+      }
+    } catch (error) {
+      console.error("Error submitting bulk review:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit bulk review",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleShowScoreHistory = async (assessmentId: number) => {
     try {
       const response = await assessmentService.getAssessmentScoreHistory(assessmentId);
@@ -346,7 +427,10 @@ const HRAssessmentManagement: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const pendingHRReviews = assessments.filter(a => a.status === AssessmentStatus.EMPLOYEE_APPROVED);
+  const pendingHRReviews = assessments.filter(a => 
+    a.status === AssessmentStatus.EMPLOYEE_APPROVED || 
+    a.status === AssessmentStatus.HR_FINAL_REVIEW
+  );
 
   const statistics = {
     total: assessments.length,
@@ -511,6 +595,14 @@ const HRAssessmentManagement: React.FC = () => {
               onShowHistory={handleShowUserHistory}
               getStatusColor={getStatusColor}
               formatDate={formatDate}
+              selectedAssessments={selectedAssessments}
+              selectAll={selectAll}
+              onSelectAll={handleSelectAll}
+              onSelectAssessment={handleSelectAssessment}
+              onBulkAction={(action) => {
+                setBulkAction(action);
+                setShowBulkReviewModal(true);
+              }}
             />
           )}
         </div>
@@ -573,6 +665,18 @@ const HRAssessmentManagement: React.FC = () => {
           isSubmitting={isSubmitting}
           onSubmit={handleHRReview}
           onClose={() => setShowReviewModal(false)}
+        />
+      )}
+
+      {showBulkReviewModal && (
+        <BulkReviewModal
+          selectedCount={selectedAssessments.size}
+          action={bulkAction}
+          comments={bulkComments}
+          setComments={setBulkComments}
+          isSubmitting={isSubmitting}
+          onSubmit={handleBulkReview}
+          onClose={() => setShowBulkReviewModal(false)}
         />
       )}
 
@@ -1817,5 +1921,88 @@ const HRAssessmentManagement: React.FC = () => {
 //     </div>
 //   );
 // };
+
+const BulkReviewModal: React.FC<{
+  selectedCount: number;
+  action: 'approve' | 'reject';
+  comments: string;
+  setComments: (comments: string) => void;
+  isSubmitting: boolean;
+  onSubmit: () => void;
+  onClose: () => void;
+}> = ({ selectedCount, action, comments, setComments, isSubmitting, onSubmit, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">
+            {action === 'approve' ? 'Accept' : 'Reject'} {selectedCount} Assessment{selectedCount > 1 ? 's' : ''}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 mb-3">
+            Are you sure you want to {action === 'approve' ? 'accept' : 'reject'} {selectedCount} selected assessment{selectedCount > 1 ? 's' : ''}?
+          </p>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Comments {action === 'reject' ? '(Required for rejection)' : '(Optional)'}
+            </label>
+            <textarea
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              placeholder={`Add comments for this ${action === 'approve' ? 'approval' : 'rejection'}...`}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              required={action === 'reject'}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onSubmit}
+            disabled={isSubmitting || (action === 'reject' && !comments.trim())}
+            className={`px-4 py-2 text-white rounded-md disabled:opacity-50 flex items-center gap-2 ${
+              action === 'approve' 
+                ? 'bg-green-600 hover:bg-green-700' 
+                : 'bg-red-600 hover:bg-red-700'
+            }`}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Processing...
+              </>
+            ) : (
+              <>
+                {action === 'approve' ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                {action === 'approve' ? 'Accept All' : 'Reject All'}
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default HRAssessmentManagement;

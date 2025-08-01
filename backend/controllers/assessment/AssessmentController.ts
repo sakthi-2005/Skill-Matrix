@@ -151,6 +151,40 @@ const AssessmentController: Controller = {
     }
   },
 
+  // HR bulk final review
+  hrBulkFinalReview: async (req: AuthRequest, h: ResponseToolkit) => {
+    try {
+      const { assessmentIds, approved, comments } = req.payload as {
+        assessmentIds: number[];
+        approved: boolean;
+        comments?: string;
+      };
+      
+      if (!assessmentIds || !Array.isArray(assessmentIds) || assessmentIds.length === 0) {
+        return ResponseHelpers.error(h, "Assessment IDs array is required", HTTP_STATUS.BAD_REQUEST);
+      }
+      
+      const hrId = req.auth.credentials.user.id;
+      
+      const result = await AssessmentService.hrBulkFinalReview(
+        hrId,
+        assessmentIds,
+        approved,
+        comments ?? ""
+      );
+
+      return ResponseHelpers.success(
+        h, 
+        result, 
+        `Bulk review completed: ${result.successful} successful, ${result.failed} failed`
+      );
+    } catch (error: any) {
+      console.error("Error in HR bulk final review:", error);
+      const errorCode = ResponseHelpers.determineErrorCode(error.message);
+      return ResponseHelpers.error(h, error.message, errorCode);
+    }
+  },
+
       // Cancel assessment (updated for new workflow)
   cancelAssessment: async (req: AuthRequest, h: ResponseToolkit) => {
     try {

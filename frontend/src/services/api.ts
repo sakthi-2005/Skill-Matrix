@@ -205,6 +205,12 @@ export const assessmentService = {
     comments?: string;
   }) => apiRequest(`/assess/hr-final-review/${assessmentId}`, { method: "POST", body: data }),
 
+  hrBulkFinalReview: (data: {
+    assessmentIds: number[];
+    approved: boolean;
+    comments?: string;
+  }) => apiRequest("/assess/hr-bulk-final-review", { method: "POST", body: data }),
+
   getAssessmentWithHistory: (assessmentId: number) =>
     apiRequest(`/assess/history/${assessmentId}`),
 
