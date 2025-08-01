@@ -42,12 +42,10 @@ const SkillCriteriaPage = () => {
         let positionsData;
         if (!(user?.role?.name === "hr" || user?.role?.name === "admin")) {
           skillsData = await skillService.getSkillsByPosition();
-          positionsData=await positionService.getAllPositions();
         } else {
           skillsData = await skillService.getAllSkills();
         }
-
-        
+        positionsData=await positionService.getAllPositions();
         setPositions(positionsData);
         setCriteria(skillsData);
       } catch (err) {

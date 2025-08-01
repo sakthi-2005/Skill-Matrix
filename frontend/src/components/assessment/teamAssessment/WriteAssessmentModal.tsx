@@ -23,7 +23,7 @@ interface Props {
   setComments: (comments: string) => void;
   isSubmitting: boolean;
   onSubmit: () => void;
-  data: SkillModalData;
+  data: { [skillId: number]: number };
   onClose: () => void;
 }
 
@@ -36,6 +36,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
   setComments,
   isSubmitting,
   onSubmit,
+  data,
   onClose,
 }) => {
   const [openSkillId, setOpenSkillId] = useState<number | null>(null);
@@ -87,33 +88,33 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                   {/* Stars */}
                   <div className="flex items-center justify-center">
                     {[1, 2, 3, 4, 5].map((rating) => {
-                      const previousScore = score.score; // from last assessment
-                      console.log("Previous Score",previousScore);
-                      const isLowerThanPrevious = previousScore && rating < previousScore;
+                      const minScore = data?.[score.skillId] ?? 0; // 🔁 from props
+                      const isLocked = rating < minScore;
                       return (
                         <button
                           key={rating}
                           onClick={() => {
-                            if (!isLowerThanPrevious) handleScoreChange(score.skillId, rating, previousScore);
+                            if (!isLocked) handleScoreChange(score.skillId, rating, minScore);
                           }}
-                          className={`p-0 ${isLowerThanPrevious ? "cursor-not-allowed" : ""}`}
+                          className={`p-0 ${isLocked ? "cursor-not-allowed" : ""}`}
                           title={
-                            isLowerThanPrevious
-                              ? `You cannot reduce below previous score (${previousScore})`
+                            isLocked
+                              ? `Cannot reduce below latest approved score (${minScore})`
                               : `Rate ${rating}`
                           }
-                          disabled={isLowerThanPrevious}
+                          disabled={isLocked}
                         >
                           <svg
                             className={`w-6 h-6 transition-colors duration-200 ${
-                              currentScore >= rating ? "text-yellow-400" : "text-gray-300"
-                            }`}
+                              rating <= currentScore ? "text-yellow-400" : "text-gray-300"
+                            } ${isLocked ? "opacity-100 cursor-not-allowed" : "cursor-pointer"}`}
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                           </svg>
                         </button>
+
                       );
                     })}
                   </div>
