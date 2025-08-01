@@ -150,6 +150,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
   const [formRole,setFormRole] = useState(null);
   const [formTeam,setFormTeam] = useState(null);
   const [isDialog,setIsDialog]=useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [showTable, setShowTable] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean;
     type: 'delete' | 'deactivate' | 'activate';
@@ -434,19 +436,43 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
 
   }
 
+  function downloadCSV(data: any[]) {
+  const headers = ["Row", "User ID", "Email", "Reason"];
+  const rows = data.map((err, idx) => [
+    err.row || idx + 1,
+    err.user?.userId || "",
+    err.user?.email || "",
+    err.reason || "Unknown",
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map(String).join(","))
+    .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "upload_errors.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+
   async function handleSaveMultipleUser() {
   try {
     setLoading(true);
     const res = await userService.createUser(BulkUser);
     setLoading(false);
-
     loadData();
     onStatsUpdate();
     setIsBulkOpen(false);
 
     if (res.errors && res.errors.length > 0) {
       setErrors(res.errors); // Show in modal
-      setIsDialog(true); // Open modal
+      setShowErrorPopup(true);
       toast.warning(`${res.errors.length} users failed. Please review.`);
     } else {
       toast.success("All users added successfully");
@@ -964,36 +990,89 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate })
         loading={confirmationModal.loading}
       />
 
+      {showErrorPopup && (
+        <Dialog open={showErrorPopup} onOpenChange={setShowErrorPopup}>
+          <DialogContent>
+            <DialogTitle>User Upload Failed</DialogTitle>
+            <p className="text-sm text-gray-700 mb-2">
+              {errors.length} user{errors.length > 1 ? "s" : ""} failed to upload.
+            </p>
+
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={() => setShowTable(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                View Details
+              </button>
+
+              <button
+                onClick={() => downloadCSV(errors)}
+                className="bg-gray-200 text-black px-4 py-2 rounded hover:bg-gray-300"
+              >
+                Download CSV
+              </button>
+            </div>
+
+            {showTable && (
+              <div className="mt-4 max-h-[400px] max-w-[700px] overflow-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead className="sticky top-0 bg-white">
+                    <tr>
+                      <th className="px-4 py-2 border">S.No</th>
+                      <th className="px-4 py-2 border">User ID</th>
+                      <th className="px-4 py-2 border">Email</th>
+                      <th className="px-4 py-2 border">Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {errors.map((err, idx) => (
+                      <tr key={idx}>
+                        <td className="px-4 py-2 border text-center">{ idx + 1}</td>
+                        <td className="px-4 py-2 border">{err.userId || "-"}</td>
+                        <td className="px-4 py-2 border">{err.email || "-"}</td>
+                        <td className="px-4 py-2 border">{err.reason || "Unknown error"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
+
+
       {/* Bulk upload error */}
       {errors.length > 0 && (
-  <Dialog open={isDialog} onOpenChange={setIsDialog}>
-    <DialogContent>
-      <DialogTitle>Upload Errors</DialogTitle>
-      <div className="max-h-[400px] max-w-[700px] overflow-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead className="sticky top-0 bg-white">
-            <tr>
-              <th className="px-4 py-2 border">#</th>
-              <th className="px-4 py-2 border">User ID</th>
-              <th className="px-4 py-2 border">Email</th>
-              <th className="px-4 py-2 border">Reason</th>
-            </tr>
-          </thead>
-          <tbody>
-            {errors.map((err, idx) => (
-              <tr key={idx}>
-                <td className="px-4 py-2 border text-center">{ idx + 1}</td>
-                <td className="px-4 py-2 border">{err.userId || "-"}</td>
-                <td className="px-4 py-2 border">{err.email || "-"}</td>
-                <td className="px-4 py-2 border">{err.reason || err.message || "Unknown error"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </DialogContent>
-  </Dialog>
-)}
+        <Dialog open={isDialog} onOpenChange={setIsDialog}>
+          <DialogContent>
+            <DialogTitle>Upload Errors</DialogTitle>
+            <div className="max-h-[400px] max-w-[700px] overflow-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead className="sticky top-0 bg-white">
+                  <tr>
+                    <th className="px-4 py-2 border">#</th>
+                    <th className="px-4 py-2 border">User ID</th>
+                    <th className="px-4 py-2 border">Email</th>
+                    <th className="px-4 py-2 border">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {errors.map((err, idx) => (
+                    <tr key={idx}>
+                      <td className="px-4 py-2 border text-center">{ idx + 1}</td>
+                      <td className="px-4 py-2 border">{err.userId || "-"}</td>
+                      <td className="px-4 py-2 border">{err.email || "-"}</td>
+                      <td className="px-4 py-2 border">{err.reason || err.message || "Unknown error"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
     </div>
   );

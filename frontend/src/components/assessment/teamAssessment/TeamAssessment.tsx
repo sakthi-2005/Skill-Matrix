@@ -43,7 +43,7 @@ const TeamAssessment = () => {
     const [skills, setSkills] = useState<Skill[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTab, setSelectedTab] = useState("pending");
-    const [curLeadScore,setCurLeadScore]=useState();
+    const [curLeadScore,setCurLeadScore]=useState<{ [skillId: number]: number }>({});
     const [openDropdowns, setOpenDropdowns] = useState<{
         [key: string]: boolean;
     }>({});
@@ -182,43 +182,60 @@ const TeamAssessment = () => {
     };
 
     const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
-        setSelectedAssessment(assessment);
-        setSelectedTab("writeAssessment");
-        console.log("current detailedScores", assessment.detailedScores);
+    setSelectedAssessment(assessment);
+    setSelectedTab("writeAssessment");
 
-        const initialScores: { [skillId: number]: number } = {};
+    const initialScores: { [skillId: number]: number } = {};
+    const minAllowedScores: { [skillId: number]: number } = {}; // ✅ for locking lower stars
 
-        // Use current assessment if it has leadScores
-        assessment.detailedScores?.forEach((score) => {
-            if (score.score != null) {
-                initialScores[score.skillId] = score.score;
-            }
-        });
+    assessment.detailedScores?.forEach((score) => {
+        if (score.score != null) {
+            initialScores[score.skillId] = score.score;
+            minAllowedScores[score.skillId] = score.score;
+        }
+    });
 
-        // additionally fetch latest approved scores and merge
-        const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
+    const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
 
     const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
 
-        if (latestRes.success) {
-            latestRes.data.forEach((latest) => {
-                // Only set if no score yet
-                if (!initialScores[latest.skill_id]) {
-                    initialScores[latest.skill_id] = latest.lead_score ?? 0;
-                }
-            });
-        }
+    if (latestRes.success) {
+        latestRes.data.forEach((latest) => {
+            const skillId = latest.skill_id;
+            const latestScore = latest.score ?? 0;
 
-        console.log("final initialScores", initialScores);
+            if (initialScores[skillId] === undefined) {
+                initialScores[skillId] = latestScore;
+            }
 
-        setSkillScores(initialScores);
-        setComments("");
-    };
+            if (!minAllowedScores[skillId] || minAllowedScores[skillId] < latestScore) {
+                minAllowedScores[skillId] = latestScore;
+            }
+        });
+    }
+
+    setSkillScores(initialScores);
+    setCurLeadScore(minAllowedScores); // ✅ This holds lock levels
+    setComments("");
+};
+
 
 
     const handleSubmitAssessment = async () => {
         if (!selectedAssessment) return;
 
+        const unscoredSkills = selectedAssessment.detailedScores.filter(
+            (score) => !(skillScores[score.skillId] && skillScores[score.skillId] > 0)
+        );
+
+        if (unscoredSkills.length > 0) {
+            toast({
+            title: "Incomplete Scores",
+            description: "Please provide scores for all skills before submitting.",
+            variant: "destructive",
+            });
+            return;
+        }
         setIsSubmitting(true);
         try {
             const skillAssessments: LeadSkillAssessment[] = selectedAssessment.detailedScores.map((score: DetailedScore) => ({
@@ -399,7 +416,6 @@ const TeamAssessment = () => {
 
                     {selectedTab === "writeAssessment" && selectedAssessment && (
                         <WriteAssessmentModal
-                            data={curLeadScore}
                             assessment={selectedAssessment}
                             skills={skills}
                             skillScores={skillScores}
@@ -408,6 +424,7 @@ const TeamAssessment = () => {
                             setComments={setComments}
                             isSubmitting={isSubmitting}
                             onSubmit={handleSubmitAssessment}
+                            data={curLeadScore}
                             onClose={() => setSelectedTab("pending")} // go back when done
                         />
                     )}
