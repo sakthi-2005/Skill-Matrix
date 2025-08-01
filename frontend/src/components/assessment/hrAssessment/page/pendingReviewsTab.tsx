@@ -3,6 +3,7 @@ import {
   AlertCircle,
   FileText,
   Eye,
+  XCircle,
 } from "lucide-react";
 import {
   AssessmentWithHistory,
@@ -16,7 +17,32 @@ export const PendingReviewsTab: React.FC<{
   onShowHistory: (userId: string, userName: string) => void;
   getStatusColor: (status: AssessmentStatus) => string;
   formatDate: (date: string | Date) => string;
-}> = ({ pendingReviews, onReview, onShowHistory, getStatusColor, formatDate }) => {
+  selectedAssessments: Set<number>;
+  selectAll: boolean;
+  onSelectAll: () => void;
+  onSelectAssessment: (assessmentId: number) => void;
+  onBulkAction: (action: 'approve' | 'reject') => void;
+}> = ({ 
+  pendingReviews, 
+  onReview, 
+  onShowHistory, 
+  getStatusColor, 
+  formatDate,
+  selectedAssessments,
+  selectAll,
+  onSelectAll,
+  onSelectAssessment,
+  onBulkAction
+}) => {
+  
+  // Debug: Log props to verify they're being passed
+  console.log('PendingReviewsTab props:', {
+    pendingReviewsCount: pendingReviews.length,
+    selectedAssessmentsSize: selectedAssessments.size,
+    selectAll,
+    hasOnSelectAll: !!onSelectAll,
+    hasOnBulkAction: !!onBulkAction
+  });
   
   const getAssessmentCardColor = (assessment: AssessmentWithHistory) => {
     // Check if there was a recent employee rejection
@@ -56,7 +82,46 @@ export const PendingReviewsTab: React.FC<{
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Pending HR Reviews</h3>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h3 className="text-lg font-semibold">
+          Pending HR Reviews ({pendingReviews.length})
+        </h3>
+        {/* Show bulk selection controls when there are pending reviews */}
+        {(pendingReviews.length > 0 || true) && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-gray-50 p-3 rounded-lg border">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="selectAll"
+                checked={selectAll}
+                onChange={onSelectAll}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="selectAll" className="text-sm font-medium text-gray-700 cursor-pointer">
+                Select All ({selectedAssessments.size} selected)
+              </label>
+            </div>
+            {selectedAssessments.size > 0 && (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => onBulkAction('approve')}
+                  className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-1 whitespace-nowrap shadow-sm"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Accept All ({selectedAssessments.size})
+                </button>
+                <button
+                  onClick={() => onBulkAction('reject')}
+                  className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1 whitespace-nowrap shadow-sm"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Reject All ({selectedAssessments.size})
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       <div className="space-y-4">
         {pendingReviews.map((assessment) => {
           const cardColor = getAssessmentCardColor(assessment);
@@ -68,6 +133,12 @@ export const PendingReviewsTab: React.FC<{
             <div key={assessment.id} className={`${cardColor} border rounded-lg p-4`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedAssessments.has(assessment.id)}
+                    onChange={() => onSelectAssessment(assessment.id)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     hasHRRejection ? 'bg-red-100' : hasEmployeeRejection ? 'bg-orange-100' : 'bg-yellow-100'
                   }`}>

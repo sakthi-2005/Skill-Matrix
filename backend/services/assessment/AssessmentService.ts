@@ -391,6 +391,47 @@ const AssessmentService = {
     }
   },
 
+  // HR bulk final review
+  hrBulkFinalReview: async (
+    hrId: string,
+    assessmentIds: number[],
+    approved: boolean,
+    comments: string = ""
+  ): Promise<{ successful: number; failed: number; results: Array<{ assessmentId: number; success: boolean; error?: string }> }> => {
+    try {
+      // Validate HR user
+      await ValidationHelpers.validateHRUser(hrId);
+
+      if (!assessmentIds || assessmentIds.length === 0) {
+        throw new Error("No assessment IDs provided");
+      }
+
+      const results: Array<{ assessmentId: number; success: boolean; error?: string }> = [];
+      let successful = 0;
+      let failed = 0;
+
+      // Process each assessment
+      for (const assessmentId of assessmentIds) {
+        try {
+          await AssessmentService.hrFinalReview(hrId, assessmentId, approved, comments);
+          results.push({ assessmentId, success: true });
+          successful++;
+        } catch (error: any) {
+          results.push({ assessmentId, success: false, error: error.message });
+          failed++;
+        }
+      }
+
+      return {
+        successful,
+        failed,
+        results
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to perform bulk HR final review: ${error.message}`);
+    }
+  },
+
   // Get assessment with full history
   getAssessmentWithHistory: async (assessmentId: number): Promise<AssessmentWithHistory> => {
     try {

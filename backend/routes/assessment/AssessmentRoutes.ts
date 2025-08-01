@@ -54,6 +54,18 @@ const assessmentRoutes = {
         }
       },
       
+      // HR bulk final review
+      {
+        method: "POST",
+        path: "/hr-bulk-final-review",
+        handler: AssessmentController.hrBulkFinalReview,
+        options: {
+          auth: 'jwt',
+          description: 'HR performs bulk final review of multiple assessments',
+          tags: ['api', 'assessment', 'hr', 'bulk'],
+        }
+      },
+      
       // Get assessment with full history
       {
         method: "GET",
