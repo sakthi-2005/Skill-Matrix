@@ -213,7 +213,7 @@ export const DatabaseHelpers = {
     scheduleType: AssessmentScheduleType = AssessmentScheduleType.QUARTERLY,
     deadlineDays: number = 1,
     deadlineDate?: Date,
-    cycleId?:number
+    cycleId?: number
   ) => {
     const finalScheduledDate = scheduledDate || UtilityHelpers.getCurrentTime();
     const finalDeadlineDate = deadlineDate || UtilityHelpers.calculateDeadlineDate(finalScheduledDate, deadlineDays);
@@ -228,7 +228,7 @@ export const DatabaseHelpers = {
       deadlineDays: deadlineDays,
       deadlineDate: finalDeadlineDate,
       currentCycle: 1,
-      cycleId:cycleId,
+      cycleId: cycleId,
       nextScheduledDate: UtilityHelpers.calculateNextScheduledDate(finalScheduledDate, scheduleType),
       requestedAt: UtilityHelpers.getCurrentTime()
     }));

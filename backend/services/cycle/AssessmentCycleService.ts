@@ -76,11 +76,11 @@ const AssessmentCycleService = {
       console.log('DEBUG: targetUsers before exclusion:', targetUsers.length);
       
       // Filter out excluded users
-      let eligibleUsers = excludeUsers.length > 0
+      let eligibleUsers = excludeUsers.length > 0 
         ? targetUsers.filter(user => !excludeUsers.includes(user.id))
         : targetUsers;
- 
-      eligibleUsers = eligibleUsers.filter((user)=>user.leadId !== null);
+
+        eligibleUsers = eligibleUsers.filter((user)=>user.leadId !== null);
       
       console.log('DEBUG: eligibleUsers final count:', eligibleUsers.length);
 
@@ -88,7 +88,7 @@ const AssessmentCycleService = {
       const assessments = await DatabaseHelpers.bulkCreateAssessments(
         eligibleUsers, 
         hrId, 
-        finalScheduledDate, 
+        finalScheduledDate,
         scheduleType, 
         deadlineDays, 
         deadlineDate,

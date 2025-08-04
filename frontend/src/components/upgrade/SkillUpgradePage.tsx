@@ -66,6 +66,7 @@ const SkillUpgradePage = () => {
   useEffect(()=>{
     const path  = learningPaths.find((val)=>val.id === selectedPath);
     if(path === null)return;
+    console.log(path,selectedPath);
     fetchUpgradeGuide(path?.skillId,path?.fromLevel,path?.toLevel);
   },[selectedPath])
 
@@ -145,9 +146,11 @@ const SkillUpgradePage = () => {
 
   const fetchUpgradeGuide = async(id: number, from: number, to: number) => {
 
+    console.log("here");
     try{
         const guide = await skillUpgradeService.getGuide(id, from, to);
-        if(!guide) toast.info("No Upgrade Guide Found For the User");
+        // if(!guide) toast.info("No Upgrade Guide Found For the User");
+        console.log("guide:",guide);
         setUpgradeGuide(guide);
     }
     catch(err){
@@ -195,6 +198,7 @@ const SkillUpgradePage = () => {
     setUpgradeGuide(null);
     setAddPathError(null);
     setShowAddPath(false);
+    setSelectedPath(null);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -298,7 +302,7 @@ const SkillUpgradePage = () => {
               <div className="space-y-2">
                 <Label htmlFor="skill">Skill</Label>
                 <Select
-                  value={selectedSkillId?.toString()}
+                  // value={selectedSkillId?.toString()}
                   onValueChange={(value)=>{
                     setSelectedSkillId(parseInt(value));
                     const skill = skills.filter((val)=>val.id === value);
@@ -306,7 +310,7 @@ const SkillUpgradePage = () => {
                   }}
                   disabled={addPathLoading}
                 >
-                  <SelectTrigger id="skill">
+                  <SelectTrigger id="skill">q
                     <SelectValue placeholder="Select a skill" />
                   </SelectTrigger>
                   <SelectContent>
@@ -385,7 +389,7 @@ const SkillUpgradePage = () => {
                     : "hover:shadow-md"
                 }`}
               >
-                <div onClick={() => fetchUpgradeGuide(path.skillId,path.fromLevel,path.toLevel) }>
+                <div onClick={() =>setSelectedPath(path.id)}>
                 <CardContent className="p-4">
                   {isDeleteModelOpen && 
                     < DeleteModel
@@ -471,18 +475,11 @@ const SkillUpgradePage = () => {
 
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Learning Path Details</h2>
-          {selectedPath ? (
-            (() => {
-              // const path = learningPaths.find((p) => p.id === selectedPath);
-              if (!upgradeGuide) {
-                return (
+          {selectedPath ? upgradeGuide === null ? (
                   <p className="text-gray-600">
                     No details available for this path.
                   </p>
-                );
-              }
-
-              return (
+                ) : (
                 <div className="space-y-4">
                   {/* Guidance Card */}
                   {upgradeGuide.guidance && (
@@ -538,13 +535,11 @@ const SkillUpgradePage = () => {
                     )}
                   </div>
                 </div>
-              );
-            })()
-          ) : (
+              ) : (
             <p className="text-gray-600">
               Select a learning path to view details.
             </p>
-          )}
+          )} 
         </div>
       </div>
     </div>
