@@ -7,7 +7,10 @@ import {
   Edit,
   AlertCircle,
 } from "lucide-react";
-import { AssessmentWithHistory, AssessmentStatus } from "../../../../types/assessmentTypes";
+import {
+  AssessmentWithHistory,
+  AssessmentStatus,
+} from "../../../../types/assessmentTypes";
 
 interface Props {
   pendingAssessments: AssessmentWithHistory[];
@@ -28,7 +31,6 @@ const PendingActionsTab: React.FC<Props> = ({
   getStatusIcon,
   formatDate,
 }) => {
-  console.log(pendingAssessments);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -50,7 +52,13 @@ const PendingActionsTab: React.FC<Props> = ({
     (a) => !a.wasRecentlyRejected
   );
 
-  console.log(leadWritingAssessments,rejectedAssessments,newAssessments);
+  // Group new assessments by user ID
+  const groupedByUser: Record<string, AssessmentWithHistory[]> = {};
+  newAssessments.forEach((assessment) => {
+    const userId = assessment.user?.id || "unknown";
+    if (!groupedByUser[userId]) groupedByUser[userId] = [];
+    groupedByUser[userId].push(assessment);
+  });
 
   return (
     <div className="space-y-6">
@@ -171,72 +179,95 @@ const PendingActionsTab: React.FC<Props> = ({
                 </div>
               )}
 
-              {newAssessments.map((assessment) => (
-                <div
-                  key={assessment.id}
-                  className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <AlertCircle className="h-5 w-5 text-yellow-600" />
+              {/* Grouped rendering per user */}
+              {Object.entries(groupedByUser).map(([userId, userAssessments]) => {
+                const sortedAssessments = userAssessments.sort((a, b) =>
+                  new Date(a.requestedAt || a.scheduledDate || "").getTime() -
+                  new Date(b.requestedAt || b.scheduledDate || "").getTime()
+                );
+
+                return sortedAssessments.map((assessment, index) => {
+                  const isFirst = index === 0;
+
+                  return (
+                    <div
+                      key={assessment.id}
+                      className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <AlertCircle className="h-5 w-5 text-yellow-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{assessment.user?.name}</h4>
+                            <p className="text-sm text-gray-500">
+                              Assessment #{assessment.id}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                          ACTION REQUIRED
+                        </span>
                       </div>
-                      <div>
-                        <h4 className="font-medium">{assessment.user?.name}</h4>
-                        <p className="text-sm text-gray-500">
-                          Assessment #{assessment.id}
+
+                      <div className="mb-4 p-3 bg-white rounded-md border">
+                        <p className="text-sm text-gray-700 mb-2">
+                          <strong>Next Action:</strong>{" "}
+                          {assessment.status === AssessmentStatus.INITIATED
+                            ? "Assessment ready to start"
+                            : "Write assessment for team member"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Scheduled:{" "}
+                          {formatDate(
+                            assessment.scheduledDate || assessment.requestedAt
+                          )}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Skills to assess: {assessment.detailedScores?.length || 0}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Status:{" "}
+                          <span className="font-medium">
+                            {assessment.status.replace("_", " ")}
+                          </span>
                         </p>
                       </div>
+
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleViewHistory(assessment)}
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
+                        >
+                          <Eye className="h-4 w-4" />
+                          View Details
+                        </button>
+
+                        {isFirst ? (
+                          <button
+                            onClick={() => handleWriteAssessment(assessment)}
+                            className="px-3 py-1.5 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700 flex items-center gap-1"
+                          >
+                            <Edit className="h-4 w-4" />
+                            {assessment.status === AssessmentStatus.INITIATED
+                              ? "Start Assessment"
+                              : "Write Assessment"}
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            className="px-3 py-1.5 text-sm bg-gray-300 text-gray-700 rounded-md flex items-center gap-1 cursor-not-allowed"
+                          >
+                            <AlertCircle className="h-4 w-4" />
+                            Complete previous assessment
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                      ACTION REQUIRED
-                    </span>
-                  </div>
-
-                  <div className="mb-4 p-3 bg-white rounded-md border">
-                    <p className="text-sm text-gray-700 mb-2">
-                      <strong>Next Action:</strong>{" "}
-                      {assessment.status === AssessmentStatus.INITIATED
-                        ? "Assessment ready to start"
-                        : "Write assessment for team member"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Scheduled:{" "}
-                      {formatDate(
-                        assessment.scheduledDate || assessment.requestedAt
-                      )}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Skills to assess: {assessment.detailedScores?.length || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Status:{" "}
-                      <span className="font-medium">
-                        {assessment.status.replace("_", " ")}
-                      </span>
-                    </p>
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => handleViewHistory(assessment)}
-                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
-                    >
-                      <Eye className="h-4 w-4" />
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => handleWriteAssessment(assessment)}
-                      className="px-3 py-1.5 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700 flex items-center gap-1"
-                    >
-                      <Edit className="h-4 w-4" />
-                      {assessment.status === AssessmentStatus.INITIATED
-                        ? "Complete Now"
-                        : "Complete Now"}
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  );
+                });
+              })}
             </div>
           )}
         </div>

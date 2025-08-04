@@ -97,6 +97,13 @@ const AssessmentService = {
         throw new Error("Assessment not found");
       }
 
+      let assessments = await assessmentRequestRepo.find({
+        where:{userId: assessment.userId}
+      });
+      assessments = assessments.filter((assessment)=>assessment.status === 'COMPLETED');
+ 
+      if(assessments.length > 1)throw new Error("Complete New Assessment to Start New Assessment");
+      
       // Validate lead authorization
       if (assessment.user?.leadId !== leadId) {
         throw new Error("You are not authorized to write this assessment");

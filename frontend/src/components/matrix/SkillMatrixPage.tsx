@@ -346,6 +346,7 @@ const SkillMatrixPage = () => {
                     }}
                     multiSelect
                     widthClass="min-w-[200px]"
+                    disabled={selectedPosition === "all"}  // ✅ add this line
                   />
                 </>
               )}
@@ -404,8 +405,10 @@ const SkillMatrixPage = () => {
                 </thead>
                 <tbody>
                   {filteredData.map((employee) => {
-                    const avgSkill = getAverageSkillLevel(employee);
-
+                    const selectedSkillIds = matrixSkills.map(s => s.id);
+                    const avgSkill = selectedSkillIds.length > 0
+                      ? selectedSkillIds.reduce((acc, id) => acc + getSkillScore(employee, id), 0) / selectedSkillIds.length
+                      : 0;
                     return (
                       <tr
                         key={employee.id}

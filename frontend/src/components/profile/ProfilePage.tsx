@@ -232,7 +232,7 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-
+        {profileData.role?.name?.toLowerCase() !== "hr" && (
         <div className="space-y-6">
           {/* Skills Overview Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -321,8 +321,9 @@ const ProfilePage = () => {
             )}
           </div>
         </div>
+        )}
       </div>
-    </div>
+      </div>
   );
 };
 

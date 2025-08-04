@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AssessmentWithHistory, DetailedScore } from "../../../types/assessmentTypes";
-import { SkillModalData } from "../../../types/teamTypes";
-import { toast } from "@/hooks/use-toast";
 
 interface Skill {
   id: number;
@@ -25,7 +23,7 @@ interface Props {
   setComments: (comments: string) => void;
   isSubmitting: boolean;
   onSubmit: () => void;
-  data: { [skillId: number]: number };
+  data: { [skillId: number]: number }; // previously submitted scores
   onClose: () => void;
 }
 
@@ -44,29 +42,15 @@ const WriteAssessmentPanel: React.FC<Props> = ({
 }) => {
   const [openSkillId, setOpenSkillId] = useState<number | null>(null);
 
- const handleScoreChange = (skillId: number, newScore: number) => {
-  const previousScore = previousApprovedScores[skillId] || 0;
-  
-  if (previousScore > 0 && newScore < previousScore) {
-    // Find skill name for better user feedback
-    const skill = skills.find(s => s.id === skillId) || 
-                  assessment.detailedScores?.find(s => s.skillId === skillId)?.Skill;
-    const skillName = skill?.name || `Skill ${skillId}`;
-    
-    toast({
-      title: "Score Reduction Not Allowed",
-      description: `Cannot reduce ${skillName} score below the previous approved score of ${previousScore}. You can only maintain or improve scores.`,
-      variant: "destructive"
-    });
-    return; // Prevent lowering score
-  }
-  
-  setSkillScores({ ...skillScores, [skillId]: newScore });
-};
+  const handleScoreChange = (skillId: number, newScore: number, prevScore: number) => {
+    if (prevScore > 0 && newScore < prevScore) return; // Prevent lowering score
+    setSkillScores({ ...skillScores, [skillId]: newScore });
+  };
 
   const toggleTable = (skillId: number) => {
     setOpenSkillId((prev) => (prev === skillId ? null : skillId));
   };
+
   return (
     <div className="bg-white w-full p-6 space-y-6">
       {/* Header */}
@@ -84,6 +68,9 @@ const WriteAssessmentPanel: React.FC<Props> = ({
           {assessment.detailedScores?.map((score: DetailedScore) => {
             const skill = skills.find((s) => s.id === score.skillId);
             const currentScore = skillScores[score.skillId] || 0;
+            const previousScore = data?.[score.skillId] ?? 0;
+            const minAllowed = previousScore > 0 ? previousScore : 1;
+
             const levelDescriptions = [
               score.Skill?.basic || "Beginner",
               score.Skill?.low || "Intermediate",
@@ -93,10 +80,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
             ];
 
             return (
-              <div
-                key={score.skillId}
-                className="border border-gray-200 rounded-lg p-4"
-              >
+              <div key={score.skillId} className="border border-gray-200 rounded-lg p-4">
                 <div className="grid grid-cols-[1fr_5fr_auto] items-center gap-4">
                   {/* Skill name */}
                   <div className="text-lg font-medium">
@@ -111,34 +95,34 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                   {/* Stars */}
                   <div className="flex items-center justify-center">
                     {[1, 2, 3, 4, 5].map((rating) => {
-                      const previousApprovedScore = previousApprovedScores[score.skillId] || 0;
-                      console.log("Previous Approved Score for skill", score.skillId, ":", previousApprovedScore);
-                      const isLowerThanPrevious = previousApprovedScore > 0 && rating < previousApprovedScore;
+                      const isLocked = rating < minAllowed;
                       return (
                         <button
                           key={rating}
                           onClick={() => {
-                            if (!isLowerThanPrevious) handleScoreChange(score.skillId, rating);
+                            if (!isLocked)
+                              handleScoreChange(score.skillId, rating, previousScore);
                           }}
-                          className={`p-0 ${isLowerThanPrevious ? "cursor-not-allowed" : ""}`}
+                          className={`p-0 ${isLocked ? "cursor-not-allowed" : ""}`}
                           title={
-                            isLowerThanPrevious
-                              ? `You cannot reduce below previous approved score (${previousApprovedScore})`
+                            isLocked
+                              ? `Cannot reduce below latest approved score (${minAllowed})`
                               : `Rate ${rating}`
                           }
-                          disabled={isLowerThanPrevious}
+                          disabled={isLocked}
                         >
                           <svg
                             className={`w-6 h-6 transition-colors duration-200 ${
-                              rating <= currentScore ? "text-yellow-400" : "text-gray-300"
-                            } ${isLowerThanPrevious ? "opacity-100 cursor-not-allowed" : "cursor-pointer"}`}
+                              rating <= currentScore
+                                ? "text-yellow-400"
+                                : "text-gray-300"
+                            } ${isLocked ? "opacity-100 cursor-not-allowed" : "cursor-pointer"}`}
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                           </svg>
                         </button>
-
                       );
                     })}
                   </div>
@@ -172,7 +156,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                               (level, idx) => (
                                 <th
                                   key={level}
-                                  className="w-1/5 text-center px-2 py-2 font-medium border-r bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-blue-50 hover:to-blue-100 transition-colors"
+                                  className="w-1/5 text-center px-2 py-2 font-medium border-r bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700"
                                   title={`Level ${idx + 1}`}
                                 >
                                   {level}
@@ -184,24 +168,26 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                         <tbody>
                           <tr>
                             {levelDescriptions.map((desc, idx) => {
-                              const previousApprovedScore = previousApprovedScores[score.skillId] || 0;
-                              const isLowerThanPrevious = previousApprovedScore > 0 && idx + 1 < previousApprovedScore;
-                              const isSelected = currentScore === idx + 1;
+                              const rating = idx + 1;
+                              const isLocked = rating < minAllowed;
+                              const isSelected = currentScore === rating;
 
                               return (
                                 <motion.td
                                   key={idx}
                                   onClick={() => {
-                                    if (!isLowerThanPrevious) handleScoreChange(score.skillId, idx + 1);
+                                    if (!isLocked)
+                                      handleScoreChange(score.skillId, rating, previousScore);
                                   }}
-                                  whileTap={!isLowerThanPrevious ? { scale: 0.95 } : undefined}
-                                  whileHover={!isLowerThanPrevious ? { scale: 1.05 } : undefined}
+                                  whileTap={!isLocked ? { scale: 0.95 } : undefined}
+                                  whileHover={!isLocked ? { scale: 1.05 } : undefined}
                                   className={`
-                                    w-1/5 px-2 py-3 text-xs text-center cursor-pointer border-r transition
-                                    ${isLowerThanPrevious ? "cursor-not-allowed text-gray-400" :
-                                      isSelected ? "bg-yellow-100 font-medium shadow-inner" : "hover:bg-gray-100"}
+                                    w-1/5 px-2 py-3 text-xs text-center border-r transition-all duration-200
+                                    ${isLocked ? "cursor-not-allowed bg-gray-100 text-gray-400" :
+                                      isSelected ? "bg-yellow-100 font-semibold shadow-inner" :
+                                      "hover:bg-gray-100 cursor-pointer"}
                                   `}
-                                  title={isLowerThanPrevious ? `Cannot reduce below previous approved score (${previousApprovedScore})` : desc}
+                                  title={isLocked ? "Cannot reduce score once given" : desc}
                                 >
                                   <div className="flex flex-col items-center gap-1">
                                     <span>{desc}</span>
@@ -212,7 +198,6 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                                 </motion.td>
                               );
                             })}
-
                           </tr>
                         </tbody>
                       </table>

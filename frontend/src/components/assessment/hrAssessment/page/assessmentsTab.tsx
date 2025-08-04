@@ -215,10 +215,6 @@ export const AssessmentsTab: React.FC<{
                   <span className="text-gray-500">Assessment ID:</span>
                   <span className="ml-2 font-medium">{assessment?.id}</span>
                 </div>
-                <div>
-                  <span className="text-gray-500">Status:</span>
-                  <span className="ml-2">{assessment?.status}</span>
-                </div>
               </div>
             </div>
           ))
