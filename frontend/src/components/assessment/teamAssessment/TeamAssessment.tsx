@@ -45,7 +45,7 @@ const TeamAssessment = () => {
     const [skills, setSkills] = useState<Skill[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTab, setSelectedTab] = useState("pending");
-    const [curLeadScore,setCurLeadScore]=useState();
+    const [curLeadScore,setCurLeadScore]=useState<{ [skillId: number]: number }>({});
     const [openDropdowns, setOpenDropdowns] = useState<{
         [key: string]: boolean;
     }>({});
@@ -262,9 +262,22 @@ const TeamAssessment = () => {
     };
 
 
+
     const handleSubmitAssessment = async () => {
         if (!selectedAssessment) return;
 
+        const unscoredSkills = selectedAssessment.detailedScores.filter(
+            (score) => !(skillScores[score.skillId] && skillScores[score.skillId] > 0)
+        );
+
+        if (unscoredSkills.length > 0) {
+            toast({
+            title: "Incomplete Scores",
+            description: "Please provide scores for all skills before submitting.",
+            variant: "destructive",
+            });
+            return;
+        }
         setIsSubmitting(true);
         try {
             const skillAssessments: LeadSkillAssessment[] = selectedAssessment.detailedScores.map((score: DetailedScore) => ({
@@ -492,7 +505,6 @@ const TeamAssessment = () => {
 
                     {selectedTab === "writeAssessment" && selectedAssessment && (
                         <WriteAssessmentModal
-                            data={curLeadScore}
                             assessment={selectedAssessment}
                             skills={skills}
                             skillScores={skillScores}
@@ -502,6 +514,7 @@ const TeamAssessment = () => {
                             setComments={setComments}
                             isSubmitting={isSubmitting}
                             onSubmit={handleSubmitAssessment}
+                            data={curLeadScore}
                             onClose={() => setSelectedTab("pending")} // go back when done
                         />
                     )}

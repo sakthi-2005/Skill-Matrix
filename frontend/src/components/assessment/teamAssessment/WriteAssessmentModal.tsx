@@ -25,7 +25,7 @@ interface Props {
   setComments: (comments: string) => void;
   isSubmitting: boolean;
   onSubmit: () => void;
-  data: SkillModalData;
+  data: { [skillId: number]: number };
   onClose: () => void;
 }
 
@@ -39,6 +39,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
   setComments,
   isSubmitting,
   onSubmit,
+  data,
   onClose,
 }) => {
   const [openSkillId, setOpenSkillId] = useState<number | null>(null);
@@ -129,14 +130,15 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                         >
                           <svg
                             className={`w-6 h-6 transition-colors duration-200 ${
-                              currentScore >= rating ? "text-yellow-400" : "text-gray-300"
-                            }`}
+                              rating <= currentScore ? "text-yellow-400" : "text-gray-300"
+                            } ${isLowerThanPrevious ? "opacity-100 cursor-not-allowed" : "cursor-pointer"}`}
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                           </svg>
                         </button>
+
                       );
                     })}
                   </div>
