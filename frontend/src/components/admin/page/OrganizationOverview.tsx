@@ -82,9 +82,6 @@ const OrganizationOverview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.teams.active}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.teams.deleted} deleted, {stats.teams.total} total
-            </p>
           </CardContent>
         </Card>
 
@@ -95,9 +92,6 @@ const OrganizationOverview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.subTeams.active}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.subTeams.deleted} deleted, {stats.subTeams.total} total
-            </p>
           </CardContent>
         </Card>
 
@@ -108,9 +102,6 @@ const OrganizationOverview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.positions.active}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.positions.deleted} deleted, {stats.positions.total} total
-            </p>
           </CardContent>
         </Card>
       </div>

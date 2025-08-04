@@ -13,6 +13,7 @@
     "start:ts": "node scripts/start-ts.js",
     "reset": "ts-node resetDB.ts",
     "seed": "ts-node seeder.ts",
+    "seed:deadline-test": "ts-node seeder/deadlineTestSeeder.ts",
     "push": "git add . && git commit -m \"update\" && git push",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d config/dataSource.ts",
     "migration:create": "typeorm-ts-node-commonjs migration:create",

@@ -47,7 +47,7 @@ const DashboardStats = ({
             <CardContent>
               <div className="text-2xl font-bold">{skill.count}</div>
               <p className="text-xs text-muted-foreground">
-                skills at123 {skill.level.toLowerCase()} level
+                skills at {skill.level.toLowerCase()} level
               </p>
             </CardContent>
           </Card>

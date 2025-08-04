@@ -231,8 +231,8 @@ const PendingActionsTab: React.FC<Props> = ({
                     >
                       <Edit className="h-4 w-4" />
                       {assessment.status === AssessmentStatus.INITIATED
-                        ? "Start Assessment"
-                        : "Write Assessment"}
+                        ? "Complete Now"
+                        : "Complete Now"}
                     </button>
                   </div>
                 </div>
