@@ -10,6 +10,7 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
   const { user } = useAuth();
   const [stats, setStats] = useState({ basic:0, low: 0, medium: 0, high: 0, expert:0 });
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [overdueAssessments, setOverdueAssessments] = useState(0);
   const [organizationStats, setOrganizationStats] = useState({
     totalEmployees: 0,
     teams: 0,
@@ -31,6 +32,7 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
       const matrix = await userService.getFullMatrix();
       const skillDetails = matrix.find((hr: any) => hr.userId === user.id)
       const pendingRequests = await assessmentService.getAssessmentsRequiringAction();
+      const userSummaries = await assessmentService.getUserAssessmentSummaries();
       const teamsData = await teamService.getAllTeams();
       const criteria = await skillService.getAllSkills();
       
@@ -55,9 +57,20 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
                     ).toFixed(1))
                   : 0;
 
+      // Calculate overdue assessments
+      const summariesData = Array.isArray(userSummaries) ? userSummaries : userSummaries?.data || [];
+      const now = new Date();
+      const overdueCount = summariesData.filter((summary: any) => {
+        const assessment = summary.latestAssessment;
+        if (!assessment?.deadlineDate) return false;
+        const deadline = new Date(assessment.deadlineDate);
+        return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
+      }).length;
+
       setStats(skillStats);
       setPendingRequests(Array.isArray(pendingRequests) ? pendingRequests.length : 
                        (pendingRequests?.data ? pendingRequests.data.length : 0));
+      setOverdueAssessments(overdueCount);
       setOrganizationStats({
         totalEmployees: matrix?.length || 0,
         teams: teamsData?.length || 0,
@@ -131,21 +144,54 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow border-orange-200 bg-orange-50">
+        <Card className={`hover:shadow-lg transition-shadow ${
+          overdueAssessments > 0 
+            ? 'border-red-300 bg-red-50' 
+            : 'border-orange-200 bg-orange-50'
+        }`}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-800">
+            <CardTitle className={`flex items-center gap-2 ${
+              overdueAssessments > 0 ? 'text-red-800' : 'text-orange-800'
+            }`}>
               <AlertCircle className="h-5 w-5" />
               Priority Actions
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div>
-                <div className="text-2xl font-bold text-orange-900">{pendingRequests}</div>
-                <p className="text-sm text-orange-700">Final Approvals</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className={`text-xl font-bold ${
+                    overdueAssessments > 0 ? 'text-red-900' : 'text-orange-900'
+                  }`}>
+                    {pendingRequests}
+                  </div>
+                  <p className={`text-xs ${
+                    overdueAssessments > 0 ? 'text-red-700' : 'text-orange-700'
+                  }`}>
+                    Final Approvals
+                  </p>
+                </div>
+                {overdueAssessments > 0 && (
+                  <div>
+                    <div className="text-xl font-bold text-red-900">
+                      {overdueAssessments}
+                    </div>
+                    <p className="text-xs text-red-700">
+                      Overdue
+                    </p>
+                  </div>
+                )}
               </div>
-              <button onClick={() => onNavigate('hr-assessment-management') } className="w-full text-primary-foreground h-9 rounded-md px-3 bg-orange-600 hover:bg-orange-700">
-                Review Now
+              <button 
+                onClick={() => onNavigate('hr-assessment-management')} 
+                className={`w-full text-primary-foreground h-9 rounded-md px-3 ${
+                  overdueAssessments > 0 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-orange-600 hover:bg-orange-700'
+                }`}
+              >
+                {overdueAssessments > 0 ? 'Urgent Review' : 'Review Now'}
               </button>
             </div>
           </CardContent>

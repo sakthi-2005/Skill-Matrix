@@ -1,5 +1,24 @@
+import React from "react";
 import {XCircle} from "lucide-react";
-import { useState } from "react";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role?: {
+    id: number;
+    name: string;
+  };
+  Team?: {
+    id: number;
+    name: string;
+  };
+}
+
+interface Team {
+  id: number;
+  name: string;
+}
 
 export const BulkAssessmentModal: React.FC<{
   teams: Team[];
@@ -94,6 +113,24 @@ export const BulkAssessmentModal: React.FC<{
               placeholder="e.g., Q1 2024 Skills Assessment"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+
+          {/* Deadline Days */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Deadline (Days to Complete)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="30"
+              value={deadlineDays}
+              onChange={(e) => setDeadlineDays(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Number of days from initiation to complete the assessment (1-30 days)
+            </p>
           </div>
 
           {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -213,24 +250,6 @@ export const BulkAssessmentModal: React.FC<{
             </select>
             <p className="text-sm text-gray-500 mt-1">
               Determines when the next assessment will be automatically scheduled
-            </p>
-          </div> */}
-
-          {/* Deadline Days */}
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Deadline (Days to Complete)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={deadlineDays}
-              onChange={(e) => setDeadlineDays(parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Number of days from initiation to complete the assessment (1-30 days)
             </p>
           </div> */}
 

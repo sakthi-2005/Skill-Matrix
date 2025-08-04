@@ -18,6 +18,7 @@ interface Props {
   skills: Skill[];
   skillScores: { [skillId: number]: number };
   setSkillScores: (scores: { [skillId: number]: number }) => void;
+  previousApprovedScores: { [skillId: number]: number };
   comments: string;
   setComments: (comments: string) => void;
   isSubmitting: boolean;
@@ -31,6 +32,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
   skills,
   skillScores,
   setSkillScores,
+  previousApprovedScores,
   comments,
   setComments,
   isSubmitting,
@@ -83,6 +85,11 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                   {/* Skill name */}
                   <div className="text-lg font-medium">
                     {skill?.name || score.Skill?.name}
+                    {previousApprovedScores[score.skillId] > 0 && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        {/* Min: {previousApprovedScores[score.skillId]} (previous approved) */}
+                      </div>
+                    )}
                   </div>
 
                   {/* Stars */}

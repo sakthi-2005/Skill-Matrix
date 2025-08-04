@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import DashboardStats from "./DashboardStats";
-import { Users, FileText, BarChart3 } from "lucide-react";
+import { Users, FileText, BarChart3, AlertCircle } from "lucide-react";
 import { TeamMember } from "@/types/teamTypes";
 import { userService,assessmentService } from "@/services/api";
 import {toast} from "../../hooks/use-toast";
@@ -18,6 +18,7 @@ const TeamLeadDashboard = ({
   const { user, token } = useAuth();
   const [stats, setStats] = useState({ basic:0, low: 0, medium: 0, high: 0, expert: 0 });
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [overdueAssessments, setOverdueAssessments] = useState(0);
   const [teamStats, setTeamStats] = useState({
     totalMembers: 0,
     avgSkillLevel: 0,
@@ -110,8 +111,19 @@ const TeamLeadDashboard = ({
       const pendingRes = await assessmentService.getPendingTeamAssessments();
       if (pendingRes.success) {
         setPendingRequests(pendingRes.data.length);
+        
+        // Calculate overdue assessments from pending requests
+        const now = new Date();
+        const overdueCount = pendingRes.data.filter((assessment: any) => {
+          if (!assessment?.deadlineDate) return false;
+          const deadline = new Date(assessment.deadlineDate);
+          return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
+        }).length;
+        
+        setOverdueAssessments(overdueCount);
       } else {
         setPendingRequests(0);
+        setOverdueAssessments(0);
       }
 
       setTeamStats({
@@ -121,6 +133,8 @@ const TeamLeadDashboard = ({
       });
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
+      setPendingRequests(0);
+      setOverdueAssessments(0);
     }
   };
 
@@ -305,33 +319,58 @@ const TeamLeadDashboard = ({
           </CardContent>
         </Card>
 
-        {/* <Card className="hover:shadow-lg transition-shadow">
+        <Card className={`hover:shadow-lg transition-shadow ${
+          overdueAssessments > 0 
+            ? 'border-red-300 bg-red-50' 
+            : 'border-orange-200 bg-orange-50'
+        }`}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Pending Reviews
+            <CardTitle className={`flex items-center gap-2 ${
+              overdueAssessments > 0 ? 'text-red-800' : 'text-orange-800'
+            }`}>
+              <AlertCircle className="h-5 w-5" />
+              Priority Actions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="text-2xl font-bold text-orange-600">
-                  {pendingRequests}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className={`text-xl font-bold ${
+                    overdueAssessments > 0 ? 'text-red-900' : 'text-orange-900'
+                  }`}>
+                    {pendingRequests}
+                  </div>
+                  <p className={`text-xs ${
+                    overdueAssessments > 0 ? 'text-red-700' : 'text-orange-700'
+                  }`}>
+                    Pending Reviews
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600">Skill Updates to Review</p>
+                {overdueAssessments > 0 && (
+                  <div>
+                    <div className="text-xl font-bold text-red-900">
+                      {overdueAssessments}
+                    </div>
+                    <p className="text-xs text-red-700">
+                      Overdue
+                    </p>
+                  </div>
+                )}
               </div>
-              <div className="space-y-2">
-                <Badge variant="outline" className="w-full justify-center">
-                  High Priority: 3
-                </Badge>
-                <Badge variant="outline" className="w-full justify-center">
-                  Regular: 5
-                </Badge>
-              </div>
-              <Button className="w-full">Review Requests</Button>
+              <Button 
+                onClick={() => onNavigate('team-assessment')} 
+                className={`w-full text-primary-foreground h-9 rounded-md px-3 ${
+                  overdueAssessments > 0 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-orange-600 hover:bg-orange-700'
+                }`}
+              >
+                {overdueAssessments > 0 ? 'Urgent Review' : 'Review Assessments'}
+              </Button>
             </div>
           </CardContent>
-        </Card> */}
+        </Card>
 
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
