@@ -76,9 +76,11 @@ const AssessmentCycleService = {
       console.log('DEBUG: targetUsers before exclusion:', targetUsers.length);
       
       // Filter out excluded users
-      const eligibleUsers = excludeUsers.length > 0 
+      let eligibleUsers = excludeUsers.length > 0
         ? targetUsers.filter(user => !excludeUsers.includes(user.id))
         : targetUsers;
+ 
+      eligibleUsers = eligibleUsers.filter((user)=>user.leadId !== null);
       
       console.log('DEBUG: eligibleUsers final count:', eligibleUsers.length);
 
@@ -89,7 +91,8 @@ const AssessmentCycleService = {
         finalScheduledDate, 
         scheduleType, 
         deadlineDays, 
-        deadlineDate
+        deadlineDate,
+        savedCycle.id
       );
 
       console.log(`DEBUG: Created ${assessments.length} assessments in bulk`);

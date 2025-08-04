@@ -1,5 +1,5 @@
 import {XCircle} from "lucide-react";
-import SearchableCheckboxList from "../../custom/SearchableCheckboxList";
+import { useState } from "react";
 
 export const BulkAssessmentModal: React.FC<{
   teams: Team[];
@@ -53,7 +53,6 @@ export const BulkAssessmentModal: React.FC<{
         : [...selectedTeams, teamId]
     );
   };
-
   const handleSkillToggle = (skillId: number) => {
     setSelectedSkills(
       selectedSkills.includes(skillId)
@@ -267,7 +266,7 @@ export const BulkAssessmentModal: React.FC<{
             {isSubmitting && (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             )}
-            {isSubmitting ? "Initiating..." : "Initiate Bulk Assessment"}
+            {isSubmitting ? "Initiating..." : "Initiate Assessment"}
           </button>
         </div> 
       </div>

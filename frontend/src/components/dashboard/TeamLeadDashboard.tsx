@@ -248,7 +248,7 @@ const TeamLeadDashboard = ({
     
     const userLevel = getUserHierarchyLevel(user);
     const teamType = getTeamTypeLabel(userLevel);
-    return `${teamType} Team Overview`;
+    return `${teamType} Overview`;
   };
 
   // Get member type label
@@ -342,13 +342,6 @@ const TeamLeadDashboard = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="text-2xl font-bold text-red-600">
-                  {teamStats.skillGaps}
-                </div>
-                <p className="text-sm text-gray-600">Skill Gaps Identified</p>
-              </div>
-              
               <Button
                 onClick={() => onNavigate("skill-matrix")}
                 className="w-full"

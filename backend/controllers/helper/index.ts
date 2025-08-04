@@ -52,7 +52,7 @@ export const ResponseHelpers = {
   error: (h: ResponseToolkit, error: string, code: number = HTTP_STATUS.INTERNAL_SERVER_ERROR) => {
     return h.response({
       success: false,
-      error
+      message:error,
     }).code(code);
   },
 
