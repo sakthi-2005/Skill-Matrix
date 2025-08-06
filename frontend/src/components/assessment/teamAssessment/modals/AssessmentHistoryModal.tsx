@@ -1,6 +1,6 @@
 import React from "react";
 import { X, Check } from "lucide-react";
-import { AssessmentWithHistory, DetailedScore } from "../../../types/assessmentTypes";
+import { AssessmentWithHistory, DetailedScore } from "@/types/assessmentTypes";
 import { motion } from "framer-motion";
 
 interface Props {

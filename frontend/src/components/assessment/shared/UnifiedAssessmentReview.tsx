@@ -209,6 +209,8 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
   const handleViewHistory = (assessment: AssessmentWithHistory) => {
     setSelectedAssessment(assessment);
     setShowHistoryModal(true);
+    setReviewComments("");
+    setShowReviewModal(true);
   };
 
   const formatDate = (date: string | Date) => {
@@ -314,7 +316,7 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                       <AlertCircle className="h-5 w-5 text-yellow-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium">{assessment.cycle?.title}</h4>
+                      <h4 className="font-medium">Assessment #{assessment.id}</h4>
                       <p className="text-sm text-gray-500">Cycle {assessment.currentCycle}</p>
                     </div>
                   </div>
@@ -339,13 +341,6 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                   <button
                     onClick={() => handleViewHistory(assessment)}
                     className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
-                  >
-                    <Eye className="h-4 w-4" />
-                    View Details
-                  </button>
-                  <button
-                    onClick={() => handleReviewAssessment(assessment)}
-                    className="px-3 py-1.5 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700 flex items-center gap-1"
                   >
                     <Eye className="h-4 w-4" />
                     Review Assessment
@@ -383,8 +378,8 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                         {assessmentContext === 'lead' ? <Users className="h-5 w-5 text-blue-600" /> : <User className="h-5 w-5 text-blue-600" />}
                       </div>
                       <div>
-                        <h4 className="font-medium">{assessment.cycle?.title}</h4>
-                        {/* <p className="text-sm text-gray-500">Cycle {assessment.currentCycle}</p> */}
+                        <h4 className="font-medium">Assessment #{assessment.id}</h4>
+                        <p className="text-sm text-gray-500">Cycle {assessment.currentCycle}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -411,63 +406,47 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      {assessment.status === AssessmentStatus.EMPLOYEE_REVIEW && (
-                        <span className="text-yellow-600 font-medium">⏳ Awaiting your review</span>
-                      )}
-                      {assessment.status === AssessmentStatus.COMPLETED && (
-                        <span className="text-green-600 font-medium">✅ Assessment completed</span>
-                      )}
-                      {assessment.status === AssessmentStatus.EMPLOYEE_REJECTED && (
-                        <span className="text-red-600 font-medium">🔄 Sent back for revision</span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleViewHistory(assessment)}
-                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
-                      >
-                        <Eye className="h-4 w-4" />
-                        View History
-                      </button>
-                      {assessment.status === AssessmentStatus.EMPLOYEE_REVIEW && 
-                       assessment.userId === user?.id?.toString() && (
-                        <button
-                          onClick={() => handleReviewAssessment(assessment)}
-                          className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-1"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Review Now
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                <div className="text-sm text-gray-600">
+                  {assessment.status === AssessmentStatus.EMPLOYEE_REVIEW && (
+                    <span className="text-yellow-600 font-medium">⏳ Awaiting your review</span>
+                  )}
+                  {assessment.status === AssessmentStatus.COMPLETED && (
+                    <span className="text-green-600 font-medium">✅ Assessment completed</span>
+                  )}
+                  {assessment.status === AssessmentStatus.EMPLOYEE_REJECTED && (
+                    <span className="text-red-600 font-medium">🔄 Sent back for revision</span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleViewHistory(assessment)}
+                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
+                  >
+                    <Eye className="h-4 w-4" />
+                    {assessment.status === AssessmentStatus.EMPLOYEE_REVIEW
+                      ? "Review Assessment"
+                      : "View History"}
+                  </button>
+                </div>
+              </div>
+
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
-
-      {/* Review Modal */}
-      {showReviewModal && selectedAssessment && (
-        <ReviewAssessmentModal
+      {/* History Modal */}
+      {showHistoryModal && selectedAssessment && (
+        <AssessmentHistoryModal
           assessment={selectedAssessment}
           comments={reviewComments}
           setComments={setReviewComments}
           isSubmitting={isSubmitting}
           onSubmit={handleSubmitReview}
-          onClose={() => setShowReviewModal(false)}
+          onClose={() => setShowHistoryModal(false)}
           context={assessmentContext}
           labels={labels}
-        />
-      )}
-
-      {/* History Modal */}
-      {showHistoryModal && selectedAssessment && (
-        <AssessmentHistoryModal
-          assessment={selectedAssessment}
-          onClose={() => setShowHistoryModal(false)}
           formatDate={formatDate}
         />
       )}
