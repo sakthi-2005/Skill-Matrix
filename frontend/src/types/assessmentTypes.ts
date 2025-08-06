@@ -112,6 +112,7 @@ export interface AssessmentWithHistory {
   isAccessible: boolean;
   wasRecentlyRejected?: boolean;
   rejectionReason?: string;
+  cycle?: AssessmentCycle;
 }
 
 export interface DetailedScore {

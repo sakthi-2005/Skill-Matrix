@@ -69,7 +69,8 @@ const WriteAssessmentPanel: React.FC<Props> = ({
             const skill = skills.find((s) => s.id === score.skillId);
             const currentScore = skillScores[score.skillId] || 0;
             const previousScore = data?.[score.skillId] ?? 0;
-            const minAllowed = previousScore > 0 ? previousScore : 1;
+            const minAllowed = currentScore > 0 ? currentScore : 1;
+            console.log(previousScore,minAllowed,currentScore);
 
             const levelDescriptions = [
               score.Skill?.basic || "Beginner",
@@ -95,13 +96,14 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                   {/* Stars */}
                   <div className="flex items-center justify-center">
                     {[1, 2, 3, 4, 5].map((rating) => {
+                      console.log(rating,minAllowed);
                       const isLocked = rating < minAllowed;
                       return (
                         <button
                           key={rating}
                           onClick={() => {
                             if (!isLocked)
-                              handleScoreChange(score.skillId, rating, previousScore);
+                              handleScoreChange(score.skillId, rating, currentScore);
                           }}
                           className={`p-0 ${isLocked ? "cursor-not-allowed" : ""}`}
                           title={
@@ -177,7 +179,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                                   key={idx}
                                   onClick={() => {
                                     if (!isLocked)
-                                      handleScoreChange(score.skillId, rating, previousScore);
+                                      handleScoreChange(score.skillId, rating, currentScore);
                                   }}
                                   whileTap={!isLocked ? { scale: 0.95 } : undefined}
                                   whileHover={!isLocked ? { scale: 1.05 } : undefined}

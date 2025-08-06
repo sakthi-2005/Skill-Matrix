@@ -1,5 +1,5 @@
 // Common types used across services
-import { UserType } from "./entities";
+import { AssessmentCycleType, UserType } from "./entities";
 import { AssessmentRequestType, ScoreType, AuditType } from "./entities";
 
 
@@ -11,6 +11,7 @@ export interface AssessmentWithHistory extends Omit<AssessmentRequestType, 'Scor
   isAccessible: boolean;
   wasRecentlyRejected?: boolean;
   rejectionReason?: string;
+  cycle?: AssessmentCycleType;
 }
 
 export interface AssessmentCycle {

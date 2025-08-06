@@ -297,7 +297,7 @@ const TeamAssessmentService = {
               AssessmentStatus.LEAD_WRITING
             ])
           },
-          relations: ["user", "user.role"],
+          relations: ["user", "user.role","cycle"],
           order: { scheduledDate: "ASC" }
         });
   
