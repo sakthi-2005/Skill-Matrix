@@ -81,32 +81,32 @@ const PendingActionsTab: React.FC<Props> = ({
           {rejectedAssessments.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-red-200">
-                <XCircle className="h-5 w-5 text-red-600" />
+                {/* <XCircle className="h-5 w-5 text-red-600" /> */}
                 <h4 className="text-base font-semibold text-red-700">
-                  Requires Immediate Attention ({rejectedAssessments.length})
+                  Rejected Assessments
                 </h4>
-                <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
+                {/* <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
                   REJECTED BY EMPLOYEE
-                </span>
+                </span> */}
               </div>
 
               {rejectedAssessments.map((assessment) => (
                 <div
                   key={assessment.id}
-                  className="bg-red-50 border-2 border-red-200 rounded-lg p-4 shadow-md"
+                  className="border-2 border-black-200 rounded-lg p-4 shadow-md"
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                        <XCircle className="h-6 w-6 text-red-600" />
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <XCircle className="h-5 w-5 text-red-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-red-800">
+                        <h4 className="font-semibold">
                           {assessment.user?.name}
                         </h4>
-                        <p className="text-sm text-red-600">
-                          Assessment #{assessment.id} • Cycle{" "}
-                          {assessment.currentCycle}
+                        <p className="text-sm">
+                          {assessment.cycle?.title} • rejected {" "}
+                          {assessment.currentCycle - 1} time
                         </p>
                       </div>
                     </div>
@@ -115,31 +115,31 @@ const PendingActionsTab: React.FC<Props> = ({
                     </span>
                   </div>
 
-                  <div className="mb-4 p-4 bg-white rounded-md border border-red-200">
+                  <div className="p-4 bg-white rounded-md">
                     <div className="flex items-start gap-2 mb-2">
-                      <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                      {/* <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" /> */}
                       <div>
-                        <p className="text-sm font-medium text-red-800 mb-1">
+                        <p className="text-sm font-medium mb-1">
                           Employee Rejection Reason:
                         </p>
-                        <p className="text-sm text-red-700 bg-red-50 p-2 rounded border">
+                        <p className="text-sm p-2 rounded border">
                           {assessment.rejectionReason ||
                             "Employee rejected the assessment scores"}
                         </p>
                       </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-red-200">
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm ">
                         <strong>Required Action:</strong> Review and revise the
                         assessment based on employee feedback
                       </p>
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm ">
                         Original Schedule:{" "}
                         {formatDate(
                           assessment.scheduledDate || assessment.requestedAt
                         )}
                       </p>
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm ">
                         Skills to reassess:{" "}
                         {assessment.detailedScores?.length || 0}
                       </p>
@@ -156,7 +156,7 @@ const PendingActionsTab: React.FC<Props> = ({
                     </button>
                     <button
                       onClick={() => handleWriteAssessment(assessment)}
-                      className="px-4 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1 font-medium"
+                      className="px-4 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-800 flex items-center gap-1 font-medium"
                     >
                       <Edit className="h-4 w-4" />
                       Revise Assessment
@@ -202,7 +202,7 @@ const PendingActionsTab: React.FC<Props> = ({
                           <div>
                             <h4 className="font-medium">{assessment.user?.name}</h4>
                             <p className="text-sm text-gray-500">
-                              Assessment #{assessment.id}
+                              {assessment.cycle?.title}
                             </p>
                           </div>
                         </div>

@@ -446,7 +446,7 @@ const AssessmentService = {
       const [assessment, { scores, history }, isAccessible] = await Promise.all([
         assessmentRequestRepo.findOne({
           where: { id: assessmentId },
-          relations: ["user"]
+          relations: ["user","cycle"]
         }),
         DatabaseHelpers.getAssessmentScoresAndHistory(assessmentId),
         AssessmentService.isAssessmentAccessible(assessmentId)
@@ -514,7 +514,7 @@ const AssessmentService = {
             AssessmentStatus.HR_FINAL_REVIEW
           ])
         },
-        relations: ["user"],
+        relations: ["user","cycle"],
         order: { requestedAt: "ASC" }
       });
 
@@ -525,6 +525,7 @@ const AssessmentService = {
       });
 
       const detailedAssessments = await Promise.all(detailedAssessmentPromises);
+      console.log(detailedAssessments);
       return detailedAssessments.filter(Boolean) as AssessmentWithHistory[];
     } catch (error: any) {
       throw new Error(`Failed to get assessments requiring action: ${error.message}`);
