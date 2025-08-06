@@ -1,4 +1,5 @@
-import {XCircle} from "lucide-react";
+import React, { useState } from "react";
+import {ThumbsDown, ThumbsUp, XCircle} from "lucide-react";
 import {
   AssessmentWithHistory,
   DetailedScore,
@@ -7,12 +8,47 @@ import {
 
 export const AssessmentHistoryModal: React.FC<{
   assessment: AssessmentWithHistory;
+  comments:string;
+  setComments:(commetns:string)=>void;
+  isSubmitting:boolean;
+  onSubmit:(approved:boolean)=>void;
   onClose: () => void;
+  context?:'employee' | 'lead';
+  labels?:{
+    assessorLabel:string;
+    reviewInstructions:string[];
+  };
   formatDate: (date: string | Date) => string;
-}> = ({ assessment, onClose, formatDate }) => {
+}> = ({ assessment,comments,setComments,isSubmitting,onSubmit, onClose,context,labels, formatDate }) => {
+  const [isApproved, setIsApproved] = useState(false);
+
+  const defaultLabels = {
+    assessorLabel: context === 'lead' ? 'Head Lead' : 'Team Lead',
+    reviewInstructions: context === 'lead' ? [
+      "• Review the skill ratings provided by your Head Lead",
+      "• If you agree with the assessment, click \"Approve\"",
+      "• If you disagree, click \"Request Changes\" with your feedback",
+      "• Your decision will be sent to HR for final review"
+    ] : [
+      "• Review the skill ratings provided by your team lead",
+      "• If you agree with the assessment, click \"Approve\"",
+      "• If you disagree, click \"Request Changes\" with your feedback",
+      "• Your decision will be sent to HR for final review"
+    ]
+  };
+  const status=assessment.status;
+  const sta="EMPLOYEE_REVIEW";
+  console.log("Assessment Status:",assessment.status);
+  const currentLabels = labels || defaultLabels;
+
+  const handleApprove = () => {
+    setIsApproved(true);
+    onSubmit(true);
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border border-gray-300 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Assessment Details</h2>
@@ -53,20 +89,19 @@ export const AssessmentHistoryModal: React.FC<{
           </div>
 
           {/* Skill Scores */}
-          {assessment.detailedScores && assessment.detailedScores.length > 0 && (
+          {assessment.detailedScores?.length > 0 && (
             <div>
               <h3 className="font-medium mb-3">Skill Assessment</h3>
               <div className="space-y-3">
-                {assessment.detailedScores.map((score: DetailedScore) => (
+                {assessment.detailedScores.map((score) => (
                   <div key={score.skillId} className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
                     <span className="font-medium">{score.Skill?.name}</span>
                     <div className="flex items-center gap-2">
-                      {score.score !== null && (
+                      {score.score !== null ? (
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
                           Lead: {score.score}/5
                         </span>
-                      )}
-                      {score.score === null && (
+                      ) : (
                         <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">
                           Not assessed
                         </span>
@@ -81,66 +116,39 @@ export const AssessmentHistoryModal: React.FC<{
           {/* History */}
           <h3 className="font-medium mb-3">Assessment History</h3>
           <div>
-            {assessment.history?.map((audit: AuditEntry, index: number) => {
+            {assessment.history?.map((audit, index) => {
               const isRejected = audit.auditType.toLowerCase().includes("rejected");
-              const isApproved =
+              const isApprovedStep =
                 audit.auditType.toLowerCase().includes("approved") ||
                 audit.auditType.toLowerCase().includes("completed");
 
-              const circleColor = isApproved
+              const circleColor = isApprovedStep
                 ? "bg-green-500"
                 : isRejected
                 ? "bg-red-500"
                 : "bg-blue-500";
 
-              // Count rejections before this step for indentation
               const rejectedCount = assessment.history
                 .slice(0, index)
                 .filter((h) => h.auditType.toLowerCase().includes("rejected")).length;
 
-              const indent = `ml-${rejectedCount * 8}`; // Tailwind spacing (ml-4, ml-8...)
-              const isLast=index===assessment.history.length-1;
+              const indent = `ml-${rejectedCount * 8}`;
+              const isLast = index === assessment.history.length - 1;
+
               return (
                 <div key={index} className={`relative py-4 ${indent}`}>
-                  {/* Line connector */}
-                  {!isRejected && !isLast &&(
+                  {!isRejected && !isLast && (
                     <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300 z-0"></div>
                   )}
-
-                  {/* Circle */}
                   <span
                     className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor} z-10`}
                   >
                     {isRejected ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-3 w-3 text-white"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 8.586L13.536 5.05a1 1 0 111.414 1.414L11.414 10l3.536 3.536a1 1 0 11-1.414 1.414L10 11.414l-3.536 3.536a1 1 0 01-1.414-1.414L8.586 10 5.05 6.464a1 1 0 111.414-1.414L10 8.586z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <XCircle className="h-3 w-3 text-white" />
                     ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-3 w-3 text-white"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <ThumbsUp className="h-3 w-3 text-white" />
                     )}
                   </span>
-
-                  {/* Text content */}
                   <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
                     <span className="font-semibold text-gray-800">
                       {audit.auditType.replace(/_/g, " ")}
@@ -156,15 +164,58 @@ export const AssessmentHistoryModal: React.FC<{
               );
             })}
           </div>
-        </div>
 
-        <div className="p-6 border-t border-gray-200 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            Close
-          </button>
+          {/* Comments and Buttons */}
+        {context !== "lead" && status === sta &&
+          !isApproved && (
+
+                  <>
+                {/* Comments Box */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Comments
+                  </label>
+                  <textarea
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Add any comments about this assessment..."
+                    required
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="pt-4 border-t border-gray-200 flex justify-end gap-3">
+                  <button
+                    onClick={onClose}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => onSubmit(false)}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    Request Changes
+                  </button>
+                  <button
+                    onClick={handleApprove}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isSubmitting && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    )}
+                    <ThumbsUp className="h-4 w-4" />
+                    Approve Assessment
+                  </button>
+                </div>
+              </>
+            )}
         </div>
       </div>
     </div>
