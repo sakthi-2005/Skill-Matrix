@@ -23,7 +23,7 @@ interface Props {
   setComments: (comments: string) => void;
   isSubmitting: boolean;
   onSubmit: () => void;
-  data: { [skillId: number]: number }; // previously submitted scores
+  data: { [skillId: number]: number };
   onClose: () => void;
 }
 
@@ -43,7 +43,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
   const [openSkillId, setOpenSkillId] = useState<number | null>(null);
 
   const handleScoreChange = (skillId: number, newScore: number, prevScore: number) => {
-    if (prevScore > 0 && newScore < prevScore) return; // Prevent lowering score
+    if (previousApprovedScores[skillId] && newScore < previousApprovedScores[skillId]) return;
     setSkillScores({ ...skillScores, [skillId]: newScore });
   };
 
@@ -53,7 +53,6 @@ const WriteAssessmentPanel: React.FC<Props> = ({
 
   return (
     <div className="bg-white w-full p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between border-b pb-2">
         <h2 className="text-xl font-semibold">Write Assessment</h2>
       </div>
@@ -61,16 +60,14 @@ const WriteAssessmentPanel: React.FC<Props> = ({
         Assessment for {assessment.user?.name} - #{assessment.id}
       </p>
 
-      {/* Skills */}
       <div>
         <h3 className="text-lg font-medium mb-4">Rate Skills (1-5 scale)</h3>
         <div className="space-y-4">
           {assessment.detailedScores?.map((score: DetailedScore) => {
             const skill = skills.find((s) => s.id === score.skillId);
             const currentScore = skillScores[score.skillId] || 0;
-            const previousScore = data?.[score.skillId] ?? 0;
-            const minAllowed = currentScore > 0 ? currentScore : 1;
-            console.log(previousScore,minAllowed,currentScore);
+            const previousScore = previousApprovedScores[score.skillId] || 0;
+            const minAllowed = previousScore;
 
             const levelDescriptions = [
               score.Skill?.basic || "Beginner",
@@ -82,40 +79,40 @@ const WriteAssessmentPanel: React.FC<Props> = ({
 
             return (
               <div key={score.skillId} className="border border-gray-200 rounded-lg p-4">
-                <div className="grid grid-cols-[1fr_5fr_auto] items-center gap-4">
-                  {/* Skill name */}
-                  <div className="text-lg font-medium">
+                <div className="grid grid-cols-[1fr_5fr_auto] items-center gap-4"
+                  onClick={() => toggleTable(score.skillId)}
+                >
+                  <div
+                    className="text-lg font-medium cursor-pointer"
+                  >
                     {skill?.name || score.Skill?.name}
-                    {previousApprovedScores[score.skillId] > 0 && (
-                      <div className="text-xs text-blue-600 mt-1">
-                        {/* Min: {previousApprovedScores[score.skillId]} (previous approved) */}
-                      </div>
-                    )}
                   </div>
 
                   {/* Stars */}
                   <div className="flex items-center justify-center">
                     {[1, 2, 3, 4, 5].map((rating) => {
-                      console.log(rating,minAllowed);
-                      const isLocked = rating < minAllowed;
+                      const isLocked = rating < minAllowed && minAllowed > 0;
+                      const isApproved = rating <= previousScore;
+
                       return (
                         <button
                           key={rating}
                           onClick={() => {
-                            if (!isLocked)
-                              handleScoreChange(score.skillId, rating, currentScore);
+                            if (!isLocked) handleScoreChange(score.skillId, rating, currentScore);
                           }}
                           className={`p-0 ${isLocked ? "cursor-not-allowed" : ""}`}
                           title={
                             isLocked
-                              ? `Cannot reduce below latest approved score (${minAllowed})`
+                              ? `Cannot reduce below approved score (${minAllowed})`
                               : `Rate ${rating}`
                           }
                           disabled={isLocked}
                         >
                           <svg
                             className={`w-6 h-6 transition-colors duration-200 ${
-                              rating <= currentScore
+                              isApproved
+                                ? "text-yellow-400"
+                                : rating <= currentScore
                                 ? "text-yellow-400"
                                 : "text-gray-300"
                             } ${isLocked ? "opacity-100 cursor-not-allowed" : "cursor-pointer"}`}
@@ -129,7 +126,6 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                     })}
                   </div>
 
-                  {/* Dropdown */}
                   <button
                     onClick={() => toggleTable(score.skillId)}
                     className="text-gray-600 hover:text-gray-800"
@@ -142,7 +138,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                   </button>
                 </div>
 
-                {/* Table */}
+                {/* Level Table */}
                 <AnimatePresence>
                   {openSkillId === score.skillId && (
                     <motion.div
@@ -171,8 +167,9 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                           <tr>
                             {levelDescriptions.map((desc, idx) => {
                               const rating = idx + 1;
-                              const isLocked = rating < minAllowed;
+                              const isLocked = rating < minAllowed && minAllowed > 0;
                               const isSelected = currentScore === rating;
+                              const isApproved = rating <= previousScore;
 
                               return (
                                 <motion.td
@@ -185,11 +182,19 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                                   whileHover={!isLocked ? { scale: 1.05 } : undefined}
                                   className={`
                                     w-1/5 px-2 py-3 text-xs text-center border-r transition-all duration-200
-                                    ${isLocked ? "cursor-not-allowed bg-gray-100 text-gray-400" :
-                                      isSelected ? "bg-yellow-100 font-semibold shadow-inner" :
-                                      "hover:bg-gray-100 cursor-pointer"}
+                                    ${
+                                      isLocked
+                                        ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                                        : isSelected
+                                        ? "bg-yellow-100 font-semibold shadow-inner"
+                                        : isApproved
+                                        ? "bg-yellow-50 text-yellow-600"
+                                        : "hover:bg-gray-100 cursor-pointer"
+                                    }
                                   `}
-                                  title={isLocked ? "Cannot reduce score once given" : desc}
+                                  title={
+                                    isLocked ? "Cannot reduce score once given" : desc
+                                  }
                                 >
                                   <div className="flex flex-col items-center gap-1">
                                     <span>{desc}</span>
