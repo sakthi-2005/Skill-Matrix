@@ -289,11 +289,11 @@ const SkillMatrixPage = () => {
             </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <div className="relative">
+              <div className="relative w-full sm:w-80 md:w-96">
                 <input
                   type="text"
                   placeholder="Search employees..."
-                  className="pl-8 pr-3 py-1.5 border border-gray-300 rounded w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-8 pr-3 py-1.5 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

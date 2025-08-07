@@ -264,7 +264,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                       </div>
                       <div className="mt-2">
                         <div className="flex items-center justify-between text-sm text-gray-500">
-                          <span>Level: {skill.level}/4</span>
+                          <span>Level: {skill.level}/5</span>
                           {skill.lastAssessed && (
                             <span>Last assessed: {new Date(skill.lastAssessed).toLocaleDateString()}</span>
                           )}
@@ -272,7 +272,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                         <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                           <div 
                             className="bg-blue-600 h-2 rounded-full" 
-                            style={{ width: `${(skill.level / 4) * 100}%` }}
+                            style={{ width: `${(skill.level / 5) * 100}%` }}
                           ></div>
                         </div>
                       </div>

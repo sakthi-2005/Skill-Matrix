@@ -20,6 +20,7 @@ import { userService, assessmentService } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import UserManagementModal from "./UserManagementModal";
 import DeleteModal from "../../lib/DeleteModal";
+import { UserDetailModal } from "../admin/modals/UserDetailModal";
 import {
   BarChart,
   Bar,
@@ -30,6 +31,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import{TeamMember,SkillScore,SkillModalData} from "../../types/teamTypes";
+import { UserData } from "../../types/admin";
 import { verifyLead } from "@/utils/helper";
 
 const TeamOverviewPage = () => {
@@ -42,7 +44,9 @@ const TeamOverviewPage = () => {
   );
   const [showSkillModal, setShowSkillModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
   const [editingUser, setEditingUser] = useState<TeamMember | null>(null);
+  const [selectedUserForDetail, setSelectedUserForDetail] = useState<TeamMember | null>(null);
   const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<TeamMember | null>(null);
@@ -59,7 +63,7 @@ const TeamOverviewPage = () => {
 
   // Prevent body scroll when any modal is open
   useEffect(() => {
-    const isAnyModalOpen = showSkillModal || showUserModal || showDeleteModal;
+    const isAnyModalOpen = showSkillModal || showUserModal || showDeleteModal || showUserDetailModal;
 
     if (isAnyModalOpen) {
       document.body.style.overflow = "hidden";
@@ -67,7 +71,7 @@ const TeamOverviewPage = () => {
         document.body.style.overflow = "unset";
       };
     }
-  }, [showSkillModal, showUserModal, showDeleteModal]);
+  }, [showSkillModal, showUserModal, showDeleteModal, showUserDetailModal]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -257,6 +261,62 @@ const TeamOverviewPage = () => {
 
   const handleUserModalSuccess = () => {
     fetchTeamData();
+  };
+
+  const handleViewUserDetail = (member: TeamMember) => {
+    setSelectedUserForDetail(member);
+    setShowUserDetailModal(true);
+  };
+
+  const handleCloseUserDetailModal = () => {
+    setShowUserDetailModal(false);
+    setSelectedUserForDetail(null);
+  };
+
+  // Convert TeamMember to UserData format for the modal
+  const convertTeamMemberToUserData = (member: TeamMember): UserData => {
+    if (!member) {
+      throw new Error("Member data is required");
+    }
+    
+    return {
+      id: member.id || "",
+      userId: member.userId || "",
+      name: member.name || "",
+      email: member.email,
+      phone: undefined, // TeamMember doesn't have phone field
+      profilePhoto: undefined, // TeamMember doesn't have profilePhoto field
+      isActive: true, // Default to active since we're showing team members
+      createdAt: new Date().toISOString(), // Default date
+      updatedAt: new Date().toISOString(),
+      deletedAt: undefined,
+      role: member.role || undefined,
+      position: member.position || undefined,
+      Team: member.Team || undefined,
+      subTeam: member.subTeam || undefined,
+      lead: member.lead ? {
+        id: parseInt(member.lead.id),
+        name: member.lead.name,
+        userId: member.lead.userId,
+      } : undefined,
+      hr: member.hr ? {
+        id: parseInt(member.hr.id),
+        name: member.hr.name,
+        userId: member.hr.userId,
+      } : undefined,
+      leadId: member.lead ? parseInt(member.lead.id) : undefined,
+      hrId: member.hr ? parseInt(member.hr.id) : undefined,
+      roleId: member.role?.id || 0,
+      positionId: member.position?.id || 0,
+      teamId: member.Team?.id || 0,
+      subTeamId: member.subTeam?.id,
+      skills: member.mostRecentAssessmentScores?.map(score => ({
+        id: score.skillId || 0,
+        name: score.skillName || "",
+        level: score.Score || 0,
+        lastAssessed: new Date().toISOString(),
+      })) || [],
+    };
   };
 
   const fetchTeamData = async () => {
@@ -494,7 +554,8 @@ const TeamOverviewPage = () => {
           {filteredMembers.map((member) => (
             <div
               key={member.id}
-              className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow"
+              className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleViewUserDetail(member)}
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -587,17 +648,18 @@ const TeamOverviewPage = () => {
                       {member.mostRecentAssessmentScores?.length || 0}
                     </span>
                   </div>
-                  <button
-                    className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
-                      member.hasRecentAssessment
-                        ? "border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        : "border-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
-                    onClick={() => handleViewScores(member)}
-                    disabled={!member.hasRecentAssessment}
-                  >
-                    View Scores
-                  </button>
+                  {/* Only show View Scores button if member has recent assessments */}
+                  {member.hasRecentAssessment && (
+                    <button
+                      className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewScores(member);
+                      }}
+                    >
+                      View Scores
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -674,6 +736,13 @@ const TeamOverviewPage = () => {
         isOpen={showDeleteModal}
         onClose={handleCloseDeleteModal}
         onConfirm={confirmDeleteUser}
+      />
+
+      {/* User Detail Modal */}
+      <UserDetailModal
+        user={selectedUserForDetail && selectedUserForDetail.id ? convertTeamMemberToUserData(selectedUserForDetail) : null}
+        isOpen={showUserDetailModal}
+        onClose={handleCloseUserDetailModal}
       />
     </div>
   );

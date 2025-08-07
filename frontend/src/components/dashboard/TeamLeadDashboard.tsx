@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/custom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import DashboardStats from "./DashboardStats";
-import { Users, FileText, BarChart3, AlertCircle } from "lucide-react";
+import SkillDetailsModal from "./SkillDetailsModal";
+import { Users, BarChart3, AlertCircle, Target, FileText, BookOpen, Award, ArrowRight } from "lucide-react";
 import { TeamMember } from "@/types/teamTypes";
 import { userService,assessmentService } from "@/services/api";
 import {toast} from "../../hooks/use-toast";
 import { verifyLead } from "@/utils/helper";
 import { getUserHierarchyLevel, isUserInLeadRole } from "@/utils/assessmentUtils";
+import { Assessment } from './../../types/assessmentTypes';
+import { DetailedSkillStats, EmployeeSkill } from "@/types/dashboardTypes";
 const TeamLeadDashboard = ({
   onNavigate,
 }: {
@@ -17,6 +19,17 @@ const TeamLeadDashboard = ({
 }) => {
   const { user, token } = useAuth();
   const [stats, setStats] = useState({ basic:0, low: 0, medium: 0, high: 0, expert: 0 });
+  const [detailedStats, setDetailedStats] = useState<DetailedSkillStats>({
+    basic: { count: 0, employees: [] },
+    low: { count: 0, employees: [] },
+    medium: { count: 0, employees: [] },
+    high: { count: 0, employees: [] },
+    expert: { count: 0, employees: [] }
+  });
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    skillLevel: 'basic' | 'low' | 'medium' | 'high' | 'expert' | null;
+  }>({ isOpen: false, skillLevel: null });
   const [pendingRequests, setPendingRequests] = useState(0);
   const [overdueAssessments, setOverdueAssessments] = useState(0);
   const [teamStats, setTeamStats] = useState({
@@ -25,7 +38,6 @@ const TeamLeadDashboard = ({
     skillGaps: 0,
   });
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [searchTerm,setSearchTerm]=useState("");
   useEffect(()=>{
     if(user){
       console.log('Current user:', user);
@@ -42,38 +54,55 @@ const TeamLeadDashboard = ({
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchScoreData = async(teamMembers: TeamMember[])=>{
-    console.log('fetchScoreData called with:', teamMembers);
     
     // Reset stats before calculating
     let newStats = { basic:0, low: 0, medium: 0, high: 0, expert:0 };
+    let newDetailedStats: DetailedSkillStats = {
+      basic: { count: 0, employees: [] },
+      low: { count: 0, employees: [] },
+      medium: { count: 0, employees: [] },
+      high: { count: 0, employees: [] },
+      expert: { count: 0, employees: [] }
+    };
     
     for(const teamMember of teamMembers){
       try {
-        console.log(`Fetching skills for team member: ${teamMember.id} (${teamMember.name || 'Unknown'})`);
-        
         const skillDetails = await assessmentService.getUserLatestApprovedScoresByUserId(teamMember.id);
-        
-        console.log(`Skill details for ${teamMember.id}:`, skillDetails);
         
         if (skillDetails.success && skillDetails.data && Array.isArray(skillDetails.data)) {
           const userSkills = skillDetails.data;
-          console.log(`User skills for ${teamMember.id}:`, userSkills);
-
-          // Calculate skill stats for this team member
-          // Try both lead_score and other possible field names
-          const basicSkills =userSkills.filter((skill:any)=>{
-            const score=skill.lead_score || skill.score || skill.Score || 0;
-            return score==1;
+          
+          // Helper function to create skill details
+          const createSkillDetails = (skills: any[], level: 'basic' | 'low' | 'medium' | 'high' | 'expert') => {
+            if (skills.length > 0) {
+              const employeeSkill: EmployeeSkill = {
+                id: teamMember.id.toString(),
+                name: teamMember.name || 'Unknown',
+                email: teamMember.email,
+                skills: skills.map(skill => ({
+                  skillName: skill.skill_name || skill.skillName || skill.name || 'Unknown Skill',
+                  skillCategory: skill.skillCategory || skill.category,
+                  score: skill.lead_score || skill.score || skill.Score || 0
+                }))
+              };
+              newDetailedStats[level].employees.push(employeeSkill);
+              newDetailedStats[level].count += skills.length;
+            }
+          };
+          
+          const basicSkills = userSkills.filter((skill:any)=>{
+            const score = skill.lead_score || skill.score || skill.Score || 0;
+            return score == 1;
           });
 
           const lowSkills = userSkills.filter((skill: any) => {
             const score = skill.lead_score || skill.score || skill.Score || 0;
-            return score ==2;
+            return score == 2;
           });
           
           const mediumSkills = userSkills.filter((skill: any) => {
             const score = skill.lead_score || skill.score || skill.Score || 0;
-            return score > 1 && score == 3;
+            return score == 3;
           });
           
           const highSkills = userSkills.filter((skill: any) => {
@@ -85,11 +114,20 @@ const TeamLeadDashboard = ({
             const score = skill.lead_score || skill.score || skill.Score || 0;
             return score == 5;
           });
-          newStats.basic+=basicSkills.length;
+          
+          // Update counts
+          newStats.basic += basicSkills.length;
           newStats.low += lowSkills.length;
           newStats.medium += mediumSkills.length;
           newStats.high += highSkills.length;
           newStats.expert += expertSkills.length;
+          
+          // Update detailed stats
+          createSkillDetails(basicSkills, 'basic');
+          createSkillDetails(lowSkills, 'low');
+          createSkillDetails(mediumSkills, 'medium');
+          createSkillDetails(highSkills, 'high');
+          createSkillDetails(expertSkills, 'expert');
           
           console.log(`Stats for ${teamMember.id}: basic=${basicSkills.length} ,low=${lowSkills.length}, medium=${mediumSkills.length}, high=${highSkills.length}, expert=${expertSkills.length}`);
         } else {
@@ -102,7 +140,9 @@ const TeamLeadDashboard = ({
     
     // Set the final stats
     console.log('Final calculated stats:', newStats);
+    console.log('Final detailed stats:', newDetailedStats);
     setStats(newStats);
+    setDetailedStats(newDetailedStats);
   }
   
   const fetchDashboardData = async () => {
@@ -219,11 +259,25 @@ const TeamLeadDashboard = ({
         } else {
           // Reset stats if no team members
           setStats({ basic:0, low: 0, medium: 0, high: 0, expert:0 });
+          setDetailedStats({
+            basic: { count: 0, employees: [] },
+            low: { count: 0, employees: [] },
+            medium: { count: 0, employees: [] },
+            high: { count: 0, employees: [] },
+            expert: { count: 0, employees: [] }
+          });
         }
       } catch (err) {
         console.error('Error fetching team data:', err);
         toast({ title: "Failed to load team members", variant: "destructive" });
         setStats({ basic:0, low: 0, medium: 0, high: 0, expert:0 });
+        setDetailedStats({
+          basic: { count: 0, employees: [] },
+          low: { count: 0, employees: [] },
+          medium: { count: 0, employees: [] },
+          high: { count: 0, employees: [] },
+          expert: { count: 0, employees: [] }
+        });
       } finally {
         setIsLoading(false);
       }
@@ -277,13 +331,102 @@ const TeamLeadDashboard = ({
     }
   };
 
+  // Modal handlers
+  const handleSkillLevelClick = (level: 'basic' | 'low' | 'medium' | 'high' | 'expert') => {
+    setModalState({ isOpen: true, skillLevel: level });
+  };
+
+  const handleModalClose = () => {
+    setModalState({ isOpen: false, skillLevel: null });
+  };
+
+  // Get skill level color
+  const getSkillLevelColor = (level: string) => {
+    const colors = {
+      basic: 'bg-gray-100 text-gray-800',
+      low: 'bg-red-100 text-red-800',
+      medium: 'bg-yellow-100 text-yellow-800',
+      high: 'bg-blue-100 text-blue-800',
+      expert: 'bg-green-100 text-green-800'
+    };
+    return colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
+  const quickActions = [
+    {
+      title: 'Team Assessments',
+      description: 'Review and manage team assessments',
+      icon: FileText,
+      color: 'bg-blue-500',
+      action: () => onNavigate('team-assessment')
+    },
+    {
+      title: 'Team Overview',
+      description: 'View detailed team member information',
+      icon: Users,
+      color: 'bg-green-500',
+      action: () => onNavigate('team-overview')
+    },
+    {
+      title: 'Skill Matrix',
+      description: 'View comprehensive team skill matrix',
+      icon: BarChart3,
+      color: 'bg-purple-500',
+      action: () => onNavigate('skill-matrix')
+    },
+    {
+      title: 'Skill Criteria',
+      description: 'Review skill criteria and requirements',
+      icon: Target,
+      color: 'bg-orange-500',
+      action: () => onNavigate('skill-criteria')
+    },
+    {
+      title: 'Upgrade Guide',
+      description: 'Access skill development guidelines',
+      icon: BookOpen,
+      color: 'bg-red-500',
+      action: () => onNavigate('upgrade-guide')
+    }
+  ];
+
   return (
     <div className="space-y-8">
       <DashboardStats
         stats={stats}
+        detailedStats={detailedStats}
         pendingRequests={pendingRequests}
         title={getDashboardTitle()}
+        onSkillLevelClick={handleSkillLevelClick}
       />
+
+      {/* Quick Actions Section */}
+      <div>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <Card 
+                key={index} 
+                className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-0 shadow-md"
+                onClick={action.action}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`${action.color} p-3 rounded-lg`}>
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{action.title}</h3>
+                  <p className="text-sm text-gray-600 mb-3">{action.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="hover:shadow-lg transition-shadow">
@@ -314,6 +457,20 @@ const TeamLeadDashboard = ({
                 variant="outline"
               >
                 View Team Details
+              </Button>
+              <Button
+                onClick={() => onNavigate("team-overview")}
+                className="w-full"
+                variant="outline"
+              >
+                Team Overview
+              </Button>
+              <Button
+                onClick={() => onNavigate("team-assessment")}
+                className="w-full"
+                variant="outline"
+              >
+                Team Assessments
               </Button>
             </div>
           </CardContent>
@@ -372,26 +529,17 @@ const TeamLeadDashboard = ({
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Skill Matrix
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Button
-                onClick={() => onNavigate("skill-matrix")}
-                className="w-full"
-                variant="outline"
-              >
-                View Matrix
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
+
+      {/* Skill Details Modal */}
+      <SkillDetailsModal
+        isOpen={modalState.isOpen}
+        onClose={handleModalClose}
+        skillLevel={modalState.skillLevel ? modalState.skillLevel.charAt(0).toUpperCase() + modalState.skillLevel.slice(1) : ''}
+        employees={modalState.skillLevel ? detailedStats[modalState.skillLevel].employees : []}
+        skillLevelColor={modalState.skillLevel ? getSkillLevelColor(modalState.skillLevel) : ''}
+      />
     </div>
   );
 };
