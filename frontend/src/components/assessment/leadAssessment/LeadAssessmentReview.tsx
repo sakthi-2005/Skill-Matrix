@@ -22,6 +22,7 @@ import {
 
 import { ReviewAssessmentModal } from "../employeeAssessment/modals/reviewAssessmentModel";
 import { AssessmentHistoryModal } from "../employeeAssessment/modals/assessmentHistoryModel";
+import { getAssessmentContextLabels,} from "@/utils/assessmentUtils";
 
 const LeadAssessmentReview: React.FC = () => {
   const { user } = useAuth();
@@ -33,7 +34,8 @@ const LeadAssessmentReview: React.FC = () => {
   const [reviewComments, setReviewComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-
+  const [assessmentContext, setAssessmentContext] = useState<'employee' | 'lead'>('employee');
+  const [userHierarchyLevel, setUserHierarchyLevel] = useState<number>(0);
   useEffect(() => {
     loadEmployeeAssessments();
   }, [user]);
@@ -111,7 +113,7 @@ const LeadAssessmentReview: React.FC = () => {
     setReviewComments("");
     setShowReviewModal(true);
   };
-
+   const labels = getAssessmentContextLabels(assessmentContext, userHierarchyLevel);
   const handleSubmitReview = async (approved: boolean) => {
     if (!selectedAssessment) return;
 
@@ -389,9 +391,15 @@ const LeadAssessmentReview: React.FC = () => {
       {/* History Modal */}
       {showHistoryModal && selectedAssessment && (
         <AssessmentHistoryModal
-          assessment={selectedAssessment}
-          onClose={() => setShowHistoryModal(false)}
-          formatDate={formatDate}
+                  assessment={selectedAssessment}
+                  comments={reviewComments}
+                  setComments={setReviewComments}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleSubmitReview}
+                  onClose={() => setShowHistoryModal(false)}
+                  context={assessmentContext}
+                  labels={labels}
+                  formatDate={formatDate}
         />
       )}
     </div>
