@@ -97,124 +97,202 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
 
 
   return (
-    <nav className="border-b bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo and Desktop Navigation */}
-          <div className="flex items-center">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Skill Matrix
-            </h1>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:block ml-8">
-              <nav className="flex space-x-1">
-                {useNavigation.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Button
-                      key={item.id}
-                      variant={activeTab === item.id ? "default" : "ghost"}
-                      className={cn(
-                        "flex items-center whitespace-nowrap",
-                        activeTab === item.id &&
-                          "bg-blue-50 text-blue-700 hover:bg-blue-100"
-                      )}
-                      onClick={() => onTabChange(item.id)}
-                    >
-                      <Icon className="mr-2 h-4 w-4" />
-                      {item.label}
-                    </Button>
-                  );
-                })}
-              </nav>
+    <nav className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur-md shadow-sm transition-all duration-200">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Left side - Brand */}
+          <div className="flex items-center min-w-0">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                  <Grid3X3 className="h-4 w-4 text-white" />
+                </div>
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Skill Matrix
+                </h1>
+              </div>
             </div>
           </div>
 
-          {/* Right side - User menu and mobile hamburger */}
-          <div className="flex items-center space-x-4">
+          {/* Center - Desktop Navigation */}
+          <div className="hidden xl:flex items-center justify-center flex-1 max-w-2xl mx-8">
+            <nav className="flex items-center space-x-1 bg-gray-50/80 rounded-full p-1 backdrop-blur-sm">
+              {useNavigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <Button
+                    key={item.id}
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "relative flex items-center whitespace-nowrap text-sm px-4 py-2 rounded-full transition-all duration-200 font-medium",
+                      isActive
+                        ? "bg-white text-blue-700 shadow-md shadow-blue-100/50 hover:bg-white hover:shadow-lg"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-white/60"
+                    )}
+                    onClick={() => onTabChange(item.id)}
+                  >
+                    <Icon className={cn("mr-2 transition-all duration-200", 
+                      isActive ? "h-4 w-4" : "h-3.5 w-3.5"
+                    )} />
+                    <span>{item.label}</span>
+                    {isActive && (
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 -z-10" />
+                    )}
+                  </Button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Right side - User Profile and Mobile Menu */}
+          <div className="flex items-center justify-end space-x-3">
+            {/* Welcome text for medium screens */}
+            <div className="hidden md:block xl:hidden">
+              <p className="text-sm text-gray-600 font-medium">
+                Hi, {user?.name?.split(' ')[0] || "User"}
+              </p>
+            </div>
+
             {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
+                  className="relative h-10 w-10 rounded-full ring-2 ring-transparent hover:ring-blue-200 transition-all duration-200"
                 >
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
+                  <Avatar className="h-9 w-9 transition-transform duration-200 hover:scale-105">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
                       {userProfile?.profilePhoto ? (
-                        <img src={userProfile.profilePhoto} alt="Profile" />
+                        <img 
+                          src={userProfile.profilePhoto} 
+                          alt="Profile" 
+                          className="rounded-full object-cover"
+                        />
                       ) : (
                         user?.name?.charAt(0) || "U"
                       )}
                     </AvatarFallback>
                   </Avatar>
+                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 rounded-full border-2 border-white" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user?.name || "User"}
-                    </p>
+              <DropdownMenuContent className="w-64 mt-2 shadow-xl border-0 bg-white/95 backdrop-blur-md" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal p-4">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold text-lg">
+                        {userProfile?.profilePhoto ? (
+                          <img 
+                            src={userProfile.profilePhoto} 
+                            alt="Profile" 
+                            className="rounded-full object-cover"
+                          />
+                        ) : (
+                          user?.name?.charAt(0) || "U"
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-semibold text-gray-900 leading-none">
+                        {user?.name || "User"}
+                      </p>
+                      <p className="text-xs text-gray-500 leading-none">
+                        {user?.role?.name || "Employee"}
+                      </p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onTabChange("profile")}>
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
+                <DropdownMenuItem 
+                  onClick={() => onTabChange("profile")}
+                  className="p-3 cursor-pointer hover:bg-blue-50 transition-colors duration-150"
+                >
+                  <User className="mr-3 h-4 w-4 text-blue-600" />
+                  <span className="font-medium">Profile Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={logout}
+                  className="p-3 cursor-pointer hover:bg-red-50 text-red-600 transition-colors duration-150"
+                >
+                  <span className="font-medium">Sign Out</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             {/* Mobile Hamburger Menu */}
-            <div className="md:hidden">
+            <div className="xl:hidden">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
+                className={cn(
+                  "relative h-10 w-10 rounded-full transition-all duration-200",
+                  isMobileMenuOpen 
+                    ? "bg-blue-50 text-blue-600 rotate-90" 
+                    : "hover:bg-gray-100"
                 )}
+              >
+                <div className="relative">
+                  {isMobileMenuOpen ? (
+                    <X className="h-5 w-5 transition-transform duration-200" />
+                  ) : (
+                    <Menu className="h-5 w-5 transition-transform duration-200" />
+                  )}
+                </div>
               </Button>
             </div>
           </div>
         </div>
                         
         {/* Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t bg-white">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {useNavigation.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={activeTab === item.id ? "default" : "ghost"}
-                    className={cn(
-                      "w-full justify-start flex items-center",
-                      activeTab === item.id &&
-                        "bg-blue-50 text-blue-700 hover:bg-blue-100"
-                    )}
-                    onClick={() => {
-                      onTabChange(item.id);
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <Icon className="mr-3 h-4 w-4" />
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </div>
+        <div className={cn(
+          "xl:hidden transition-all duration-300 ease-in-out overflow-hidden",
+          isMobileMenuOpen 
+            ? "max-h-96 opacity-100 border-t bg-gradient-to-b from-white to-gray-50/50" 
+            : "max-h-0 opacity-0"
+        )}>
+          <div className="px-3 py-4 space-y-2">
+            {useNavigation.map((item, index) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start flex items-center p-4 rounded-xl transition-all duration-200 font-medium",
+                    "transform hover:scale-[1.02] active:scale-[0.98]",
+                    isActive
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-md border border-blue-200/50"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white hover:shadow-sm"
+                  )}
+                  onClick={() => {
+                    onTabChange(item.id);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  style={{
+                    animationDelay: `${index * 50}ms`
+                  }}
+                >
+                  <Icon className={cn("mr-4 transition-all duration-200", 
+                    isActive ? "h-5 w-5 text-blue-600" : "h-4 w-4"
+                  )} />
+                  <span className="text-base">{item.label}</span>
+                  {isActive && (
+                    <div className="ml-auto">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    </div>
+                  )}
+                </Button>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );

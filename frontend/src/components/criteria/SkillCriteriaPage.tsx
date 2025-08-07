@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Target,
@@ -36,6 +36,8 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
   const [positions, setPositions] = useState<{ id: number; name: string }[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTerm, setFilterTerm] = useState(0);
+  const [isPositionDropdownOpen, setIsPositionDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Role-based permissions
   const canEdit = user?.role?.name === "hr" || user?.role?.name === "admin";
@@ -89,9 +91,32 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
     fetchSkillCriteria();
   }, [user]);
 
+  // Handle click outside dropdown and ESC key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsPositionDropdownOpen(false);
+      }
+    };
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsPositionDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, []);
+
   const refreshData = () => {
     setSearchTerm("");
     setFilterTerm(0);
+    setIsPositionDropdownOpen(false);
   };
 
   const handleModalSuccess = async () => {
@@ -223,17 +248,68 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
         </>
       )}
 
-      <div className="space-y-4">
-        {/* Filter and Action Section */}
+      <div className="space-y-6">
+        {/* Page Header Section */}
+        {/* <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-100 shadow-sm">
+          <div className="px-6 py-8 sm:px-8">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Target className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-700 bg-clip-text text-transparent mb-3">
+                  Skill Criteria Management
+                </h1>
+                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-4">
+                  {canEdit 
+                    ? "Define and manage skill criteria for different positions. Set proficiency levels, create assessments, and track skill development across your organization."
+                    : "View skill criteria and proficiency requirements for your position. Track your progress and identify areas for professional development."
+                  }
+                </p>
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="font-medium">
+                      {criteria.length} {criteria.length === 1 ? 'Skill' : 'Skills'} Available
+                    </span>
+                  </div>
+                  {canEdit && (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="font-medium">Management Access</span>
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="font-medium">
+                      {positions.length} {positions.length === 1 ? 'Position' : 'Positions'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> */}
+        {/* Search, Filter and Action Section */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">
+              Search & Filter Skills
+            </h2>
+            <p className="text-sm text-gray-600">
+              Find specific skills by name or filter by position to narrow down your search
+            </p>
+          </div>
           <div className="px-6 py-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex gap-4 sm:flex-row flex-col sm:items-center">
-                <div className="relative">
+                <div className="relative w-full sm:w-80 md:w-96">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     placeholder="Search skills..."
-                    className="pl-10 pr-10 w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 pr-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -250,24 +326,57 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
                 </div>
                 
                 {canEdit && (
-                  <div className="relative">
+                  <div className="relative" ref={dropdownRef}>
                     <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-                    <select
-                      className="appearance-none pl-10 pr-8 py-2 w-48 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-all duration-200 cursor-pointer scrollbar-hide"
-                      value={filterTerm}
-                      onChange={(e) => {
-                        setFilterTerm(parseInt(e.target.value));
-                      }}
+                    <button
+                      type="button"
+                      className="flex items-center justify-between pl-10 pr-3 py-2 w-48 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-all duration-200 cursor-pointer"
+                      onClick={() => setIsPositionDropdownOpen(!isPositionDropdownOpen)}
                     >
-                      <option value="0" className="py-2">All Positions</option>
-                      {positions.map((position) => (
-                        <option key={position.id} value={position.id} className="py-2">
-                          {position.name}
-                        </option>
-                      ))}
-                    </select>
-                    {/* Custom dropdown arrow */}
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                      <span className="truncate">
+                        {filterTerm === 0 ? "All Positions" : positions.find(p => p.id === filterTerm)?.name || "All Positions"}
+                      </span>
+                      <ChevronDown 
+                        className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
+                          isPositionDropdownOpen ? "rotate-180" : ""
+                        }`} 
+                      />
+                    </button>
+                    
+                    {/* Custom dropdown menu with height restrictions */}
+                    {isPositionDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-white border border-gray-300 rounded-lg shadow-lg">
+                        <div className="max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                          <button
+                            type="button"
+                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 ${
+                              filterTerm === 0 ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700"
+                            }`}
+                            onClick={() => {
+                              setFilterTerm(0);
+                              setIsPositionDropdownOpen(false);
+                            }}
+                          >
+                            All Positions
+                          </button>
+                          {positions.map((position) => (
+                            <button
+                              key={position.id}
+                              type="button"
+                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 ${
+                                filterTerm === position.id ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700"
+                              }`}
+                              onClick={() => {
+                                setFilterTerm(position.id);
+                                setIsPositionDropdownOpen(false);
+                              }}
+                            >
+                              {position.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -329,7 +438,33 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
                   </p>
                 </div>
             ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Skills List Header */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">
+                      Available Skills ({filteredCriteria.length})
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Click on any skill to view detailed criteria, proficiency levels, and requirements
+                    </p>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {searchTerm && (
+                      <span>Filtered by: <span className="font-medium text-blue-600">"{searchTerm}"</span></span>
+                    )}
+                    {filterTerm !== 0 && (
+                      <span className="ml-2">Position: <span className="font-medium text-blue-600">{getPositionNames(filterTerm)}</span></span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Skills List */}
+            <div className="space-y-3">
             {filteredCriteria.map((criterion) => (
               <div
                 key={criterion.id}
@@ -477,6 +612,7 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
                 )}
               </div>
             ))}
+            </div>
           </div>
         ))}
       </div>

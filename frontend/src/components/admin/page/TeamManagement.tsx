@@ -14,7 +14,10 @@ import {
   EyeOff,
   Building2,
   Power,
-  PowerOff
+  PowerOff,
+  ChevronDown,
+  ChevronRight,
+  Users
 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import { Team, CreateTeamRequest, UpdateTeamRequest } from '../../../types/admin';
@@ -59,6 +62,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
   const [formData, setFormData] = useState<CreateTeamRequest>({
     name: ''
   });
+  const [expandedTeams, setExpandedTeams] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     loadTeams();
@@ -212,13 +216,37 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
     setIsDetailModalOpen(true);
   };
 
+  const toggleTeamExpansion = (teamId: number) => {
+    setExpandedTeams(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(teamId)) {
+        newSet.delete(teamId);
+      } else {
+        newSet.add(teamId);
+      }
+      return newSet;
+    });
+  };
+
+  const expandAllTeams = () => {
+    setExpandedTeams(new Set(filteredTeams.map(team => team.id)));
+  };
+
+  const collapseAllTeams = () => {
+    setExpandedTeams(new Set());
+  };
+
   const filteredTeams = teams.filter(team => {
-    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const teamMatches = team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (team.description && team.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // const matchesActiveFilter = showInactive ? true : team.isActive;
+    // Also search within subteams
+    const subteamMatches = team.subteam?.some(subteam => 
+      subteam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (subteam.description && subteam.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
     
-    return matchesSearch;
+    return teamMatches || subteamMatches;
   });
 
   return (
@@ -226,6 +254,26 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       <div className="flex items-center justify-between">
         <div></div>
         <div className="flex items-center space-x-2">
+          {filteredTeams.length > 0 && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={expandAllTeams}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                Expand All
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={collapseAllTeams}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                Collapse All
+              </Button>
+            </>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -280,7 +328,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
-          placeholder="Search teams..."
+          placeholder="Search teams and sub-teams..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -292,19 +340,30 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-4">
           {filteredTeams.map((team) => (
             <Card 
               key={team.id} 
-              className={`cursor-pointer hover:shadow-md transition-shadow ${!team.isActive ? 'opacity-60' : ''} compact-card`}
-              onClick={() => openDetailModal(team)}
+              className={`transition-all duration-200 ${!team.isActive ? 'opacity-60' : ''}`}
             >
-              <CardHeader className="pb-3 px-4 pt-4">
+              {/* Team Header - Accordion Trigger */}
+              <CardHeader 
+                className="pb-3 px-4 pt-4 cursor-pointer hover:bg-gray-50"
+                onClick={() => toggleTeamExpansion(team.id)}
+              >
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center space-x-2 flex-1 min-w-0">
-                    <Building2 className="h-5 w-5 flex-shrink-0" />
+                  <CardTitle className="text-lg flex items-center space-x-3 flex-1 min-w-0">
+                    {/* Expansion Icon */}
+                    {expandedTeams.has(team.id) ? (
+                      <ChevronDown className="h-5 w-5 flex-shrink-0 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5 flex-shrink-0 text-gray-500" />
+                    )}
+                    
+                    <Building2 className="h-5 w-5 flex-shrink-0 text-blue-600" />
+                    
                     <div className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">{team.name}</span>
+                      <span className="block truncate font-medium text-gray-900">{team.name}</span>
                       <span className="text-sm text-gray-500 font-normal truncate">
                         {team.subteam?.length || 0} sub-teams • {team.user?.length || 0} users
                       </span>
@@ -313,6 +372,19 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                   
                   {/* Action buttons beside the name */}
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDetailModal(team);
+                      }}
+                      className="h-8 w-8 p-0 text-gray-600 hover:text-blue-600"
+                      title="View Details"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    
                     <Button
                       variant="ghost"
                       size="sm"
@@ -341,13 +413,76 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ onStatsUpdate })
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-4 pb-4">
-                <div className="space-y-3">
-                  {team.description && (
-                    <p className="text-sm text-gray-600">{team.description}</p>
-                  )}
+
+              {/* Team Description (if exists) */}
+              {team.description && (
+                <div className="px-4 pb-2">
+                  <p className="text-sm text-gray-600">{team.description}</p>
                 </div>
-              </CardContent>
+              )}
+
+              {/* Collapsible SubTeams Content */}
+              {expandedTeams.has(team.id) && (
+                <CardContent className="px-4 pb-4 pt-0">
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Sub-Teams ({team.subteam?.length || 0})
+                    </h4>
+                    
+                    {team.subteam && team.subteam.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {team.subteam.map((subteam) => (
+                          <Card 
+                            key={subteam.id}
+                            className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer border-gray-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // You can add subteam detail modal here if needed
+                            }}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="font-medium text-sm text-gray-900 truncate">
+                                    {subteam.name}
+                                  </h5>
+                                  {subteam.description && (
+                                    <p className="text-xs text-gray-600 mt-1" style={{ 
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: 'vertical',
+                                      overflow: 'hidden'
+                                    }}>
+                                      {subteam.description}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      {subteam.user?.length || 0} members
+                                    </span>
+                                    {!subteam.isActive && (
+                                      <span className="px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded">
+                                        Inactive
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-gray-500">
+                        <Users className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                        <p className="text-sm">No sub-teams found</p>
+                        <p className="text-xs text-gray-400 mt-1">Sub-teams will appear here when created</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              )}
             </Card>
           ))}
         </div>

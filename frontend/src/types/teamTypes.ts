@@ -17,6 +17,20 @@ export interface TeamMember {
     id: number;
     name: string;
   };
+  subTeam?: {
+    id: number;
+    name: string;
+  };
+  lead?: {
+    id: string;
+    name: string;
+    userId: string;
+  };
+  hr?: {
+    id: string;
+    name: string;
+    userId: string;
+  };
   mostRecentAssessmentScores: Array<{
     skillId: number;
     skillName: string;

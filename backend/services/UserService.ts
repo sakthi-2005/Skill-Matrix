@@ -177,8 +177,8 @@ const UserService = {
         where: {
           teamId: team.id,
         },
-        select: ["id", "userId","name"],
-        relations: ["role", "position", "Team"],
+        select: ["id", "userId","name", "email"],
+        relations: ["role", "position", "Team", "subTeam", "lead", "hr"],
       });
 
       // Get the most recent approved assessment scores for each user
@@ -204,8 +204,8 @@ const UserService = {
   getFullSkillMatrix: async (): Promise<UserWithScores[]> => {
     try {
       const users = await userRepo.find({
-        select:["id","name","userId"],
-        relations: ["role", "position", "Team"],
+        select:["id","name","userId", "email"],
+        relations: ["role", "position", "Team", "subTeam", "lead", "hr"],
       });
       
       // Get the most recent approved assessment scores for each user
