@@ -170,7 +170,7 @@ const AllAssessmentsTab: React.FC<Props> = ({
                     </div>
                     <div>
                       <h4 className="font-medium">{assessment.user?.name}</h4>
-                      <p className="text-sm text-gray-500">Assessment #{assessment.id}</p>
+                      <p className="text-sm text-gray-500">{assessment.cycle?.title}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

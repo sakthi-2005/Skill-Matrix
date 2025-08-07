@@ -17,7 +17,7 @@ export const OverviewTab: React.FC<{
               <div key={assessment.id} className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{assessment.user?.name}</p>
-                  <p className="text-sm text-gray-500">Assessment #{assessment.id}</p>
+                  <p className="text-sm text-gray-500">{assessment.cycle?.title}</p>
                 </div>
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                   {assessment.status.replace('_', ' ')}

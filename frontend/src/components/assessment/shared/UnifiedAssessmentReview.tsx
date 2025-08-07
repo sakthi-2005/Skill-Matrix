@@ -316,7 +316,7 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                       <AlertCircle className="h-5 w-5 text-yellow-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium">Assessment #{assessment.id}</h4>
+                      <h4 className="font-medium">{assessment.cycle?.title}</h4>
                       <p className="text-sm text-gray-500">Cycle {assessment.currentCycle}</p>
                     </div>
                   </div>
@@ -378,8 +378,8 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                         {assessmentContext === 'lead' ? <Users className="h-5 w-5 text-blue-600" /> : <User className="h-5 w-5 text-blue-600" />}
                       </div>
                       <div>
-                        <h4 className="font-medium">Assessment #{assessment.id}</h4>
-                        <p className="text-sm text-gray-500">Cycle {assessment.currentCycle}</p>
+                        <h4 className="font-medium">{assessment.cycle?.title}</h4>
+                        {/* <p className="text-sm text-gray-500">Cycle {assessment.currentCycle}</p> */}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

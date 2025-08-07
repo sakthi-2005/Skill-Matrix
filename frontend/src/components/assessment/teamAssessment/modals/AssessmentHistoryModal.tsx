@@ -2,6 +2,7 @@ import React from "react";
 import { X, Check } from "lucide-react";
 import { AssessmentWithHistory, DetailedScore } from "@/types/assessmentTypes";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 interface Props {
   assessment: AssessmentWithHistory;
@@ -16,6 +17,8 @@ const AssessmentHistoryModal: React.FC<Props> = ({
 }) => {
   const history = assessment.history || [];
   let rejectionCount = 0;
+  let scoreUpdated = [];
+  const [showSkills,setShowSkills] = useState<number | null>(null);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -107,91 +110,166 @@ const AssessmentHistoryModal: React.FC<Props> = ({
             <div className="relative pl-12 md:pl-14">
               {history.map((audit, index) => {
                 const isRejected = audit.auditType.toLowerCase().includes("rejected");
-                const isApproved =
-                  audit.auditType.toLowerCase().includes("approved") ||
-                  audit.auditType.toLowerCase().includes("completed");
+              const isApproved =
+                audit.auditType.toLowerCase().includes("approved") ||
+                audit.auditType.toLowerCase().includes("completed");
+              const circleColor = isApproved
+                ? "bg-green-500"
+                : isRejected
+                ? "bg-red-500"
+                : "bg-blue-500";
 
-                const circleColor = isApproved
-                  ? "bg-green-500"
-                  : isRejected
-                  ? "bg-red-500"
-                  : "bg-blue-500";
+              // Count rejections before this step for indentation
+              const rejectedCount = assessment.history
+                .slice(0, index)
+                .filter((h) => h.auditType.toLowerCase().includes("rejected")).length;
 
-                const icon =
-                  isApproved || !isRejected ? (
-                    <Check className="h-3 w-3 text-white" />
-                  ) : (
-                    <X className="h-3 w-3 text-white" />
-                  );
+              const indent = `ml-${rejectedCount * 8}`; // Tailwind spacing (ml-4, ml-8...)
+              const isLast=index===assessment.history.length-1;
 
-                const indent = rejectionCount * 18;
-
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    className={`relative py-4 transition transform hover:scale-[1.02] hover:bg-gray-50 rounded-lg`}
-                    style={{ marginLeft: `${indent}px`, paddingLeft: "48px" }}
-                  >
-                    {/* Gradient line */}
-                    {index !== history.length - 1 && !isRejected && (
-                      <div
-                        className="absolute top-6 bottom-0 w-px"
-                        style={{
-                          marginLeft: `${indent - 24}px`,
-                          top: "24px",
-                          height: "calc(100% - 2px)",
-                          background: "linear-gradient(to bottom, #3b82f6, #9333ea)"
-                        }}
-                      ></div>
+              if(audit.auditType.toLowerCase().includes("score")){
+                scoreUpdated.push(audit);
+                return;
+              }
+              if(scoreUpdated.length !== 0){
+                let temp_count = scoreUpdated.length;
+                let print_scoreUpdated = scoreUpdated;
+                scoreUpdated = [];
+                return(
+                  <div key={index} className={`relative py-4 ${indent}`}>
+                    {/* Line connector */}
+                    {!isRejected && !isLast &&(
+                      <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300 z-0"></div>
                     )}
-
-                    {/* Circle with tooltip */}
                     <span
-                      className={`absolute z-10 rounded-full h-6 w-6 flex items-center justify-center ${circleColor} group`}
-                      style={{ top: "16px", left: `${13 + indent}px` }}
+                      className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor} z-10`}
+                      onClick={()=>setShowSkills((e)=>{return e === audit.id ? null : audit.id})}
                     >
-                      {icon}
-                      <span className="absolute hidden group-hover:block -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                        {audit.auditType.replace(/_/g, " ")}
-                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3 text-white"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </span>
-
-                    {/* Content */}
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between ml-5">
-                      <span className="font-semibold text-sm md:text-base capitalize text-gray-800">
-                        {audit.auditType.replace(/_/g, " ")}
+                    <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
+                      <span className="font-semibold text-gray-800">
+                        SCORE UPDATED
                       </span>
-                      <span className="text-xs text-gray-400 mt-1 md:mt-0">
-                        {formatDate(audit.auditedAt || audit.createdAt)}
+                      <span className="text-sm text-gray-500 mt-1 md:mt-0">
+                        {formatDate(print_scoreUpdated[0]?.auditedAt || print_scoreUpdated[0]?.createdAt)}
                       </span>
                     </div>
+                    {showSkills !== audit.id ? (
+                      <p className="ml-16 text-sm text-gray-600 mt-1 italic">“Score Updated for {temp_count} Skills”</p>
+                    ) : 
+                    <>
+                      <div className="space-y-3 w-[70%] ml-10 pl-10 mt-2">
+                        {print_scoreUpdated.map((score) => (
+                          <div key={score.skillId} className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
+                            <span className="font-medium">{score.skillName}</span>
+                            <div className="flex items-center gap-2">
+                              {score.score !== null && (
+                                <div className="px-2 py-1 rounded text-sm">
+                                  <span className="bg-red-200 text-black-800 px-2 py-1 rounded text-sm">
+                                    {Number(score.previousScore) || 0}
+                                  </span>
+                                  &nbsp;
+                                  &rarr;
+                                  &nbsp;
+                                  <span className="bg-green-200 text-black-800 px-2 py-1 rounded text-sm">
+                                    {Number(score.currentScore)}
+                                  </span>
+                                </div>
+                              )}
+                              {score.score === null && (
+                                <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm">
+                                  Not assessed
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                    }
+                    
+                  </div>
+                )
+              }
 
-                    {audit.comments && (
-                      <p className="text-sm text-gray-600 mt-1 ml-4 border-l-2 border-gray-200 pl-2 italic">
-                        “{audit.comments}”
-                      </p>
+              return (
+                <div key={index} className={`relative py-4 ${indent}`}>
+                  {/* Line connector */}
+                  {!isRejected && !isLast &&(
+                    <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300 z-0"></div>
+                  )}
+
+                  {/* Circle */}
+                  <span
+                    className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor} z-10`}
+                  >
+                    {isRejected ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3 text-white"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 8.586L13.536 5.05a1 1 0 111.414 1.414L11.414 10l3.536 3.536a1 1 0 11-1.414 1.414L10 11.414l-3.536 3.536a1 1 0 01-1.414-1.414L8.586 10 5.05 6.464a1 1 0 111.414-1.414L10 8.586z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3 text-white"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     )}
+                  </span>
 
-                    {/* Increment rejection count silently */}
-                    {isRejected && (rejectionCount++, null)}
-                  </motion.div>
-                );
-              })}
-            </div>
+                  {/* Text content */}
+                  <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
+                    <span className="font-semibold text-gray-800">
+                      {audit.auditType.replace(/_/g, " ")}
+                    </span>
+                    <span className="text-sm text-gray-500 mt-1 md:mt-0">
+                      {formatDate(audit.auditedAt || audit.createdAt)}
+                    </span>
+                  </div>
+                  {audit.comments && (
+                    <p className="ml-16 text-sm text-gray-600 mt-1 italic">“{audit.comments}”</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-200 flex justify-end">
+        <div className="p-6 border-t border-gray-200 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
             Close
           </button>
+        </div>
         </div>
       </div>
     </div>

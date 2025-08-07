@@ -582,7 +582,7 @@ const AssessmentService = {
 
       const assessments = await assessmentRequestRepo.find({
         where: whereConditions,
-        relations: ["user"],
+        relations: ["user","cycle"],
         order: { requestedAt: "DESC" }
       });
 
