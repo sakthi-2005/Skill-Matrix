@@ -148,7 +148,7 @@ export const PendingReviewsTab: React.FC<{
                   </div>
                   <div>
                     <h4 className="font-medium">{assessment.user?.name}</h4>
-                    <p className="text-sm text-gray-500">Assessment #{assessment.id}</p>
+                    <p className="text-sm text-gray-500">{assessment.cycle?.title}</p>
                     {(hasEmployeeRejection || hasHRRejection) && (
                       <p className="text-xs text-red-600 font-medium">
                         {hasHRRejection ? 'Previous HR Rejection' : 'Previous Employee Rejection'}

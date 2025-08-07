@@ -32,7 +32,7 @@ const TeamAssessmentService = {
         where: {
           userId: In(teamMemberIds)
         },
-        relations: ["user", "user.role"],
+        relations: ["user", "user.role", "cycle"],
         order: { requestedAt: "DESC" }
       });
 
@@ -184,7 +184,7 @@ const TeamAssessmentService = {
         // Get assessments for this team member
         const assessments = await assessmentRequestRepo.find({
           where: { userId: targetUserId },
-          relations: ["user", "user.role"],
+          relations: ["user", "user.role","cycle"],
           order: { requestedAt: "DESC" }
         });
   

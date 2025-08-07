@@ -51,7 +51,7 @@ export const UserHistoryModal: React.FC<{
                         <span className="text-sm font-medium text-blue-600">#{index + 1}</span>
                       </div>
                       <div>
-                        <h4 className="font-medium">Assessment #{assessment.id}</h4>
+                        <h4 className="font-medium">{assessment.cycle?.title}</h4>
                         <p className="text-sm text-gray-500">
                           Created: {formatDate(assessment.requestedAt)}
                         </p>
