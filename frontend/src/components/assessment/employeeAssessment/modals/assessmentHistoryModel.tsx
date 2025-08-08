@@ -86,8 +86,8 @@ export const AssessmentHistoryModal: React.FC<{
                 <span className="ml-2">{formatDate(assessment.requestedAt)}</span>
               </div>
               <div>
-                <span className="text-gray-500">Scheduled:</span>
-                <span className="ml-2">{formatDate(assessment.scheduledDate || assessment.requestedAt)}</span>
+                <span className="text-gray-500">Dead Line:</span>
+                <span className="ml-2">{formatDate(assessment.deadlineDate)}</span>
               </div>
             </div>
           </div>
@@ -241,8 +241,8 @@ export const AssessmentHistoryModal: React.FC<{
                             <div className="space-y-3 w-[70%] ml-10 pl-10 mt-2">
                               {print_scoreUpdated.map((score) => (
                                 <div key={score.skillId} className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
-                                  <span className="font-medium">{score.skillName}</span>
-                                  <div className="flex items-center gap-2">
+                                  <span className="font-medium">Score Updated for "{score.skillName}"</span>
+                                  {/* <div className="flex items-center gap-2">
                                     {score.currentScore !== null && (
                                       <>
                                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
@@ -261,7 +261,7 @@ export const AssessmentHistoryModal: React.FC<{
                                         Not assessed
                                       </span>
                                     )}
-                                  </div>
+                                  </div> */}
                                 </div>
                               ))}
                             </div>
@@ -308,7 +308,10 @@ export const AssessmentHistoryModal: React.FC<{
                     Cancel
                   </button>
                   <button
-                    onClick={() => onSubmit(false)}
+                    onClick={async () => {
+                      await onSubmit(false);
+                      onClose();
+                    }}
                     disabled={isSubmitting}
                     className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
                   >

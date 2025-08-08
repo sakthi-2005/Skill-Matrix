@@ -310,7 +310,7 @@ const SkillUpgradePage = () => {
                   }}
                   disabled={addPathLoading}
                 >
-                  <SelectTrigger id="skill">q
+                  <SelectTrigger id="skill">
                     <SelectValue placeholder="Select a skill" />
                   </SelectTrigger>
                   <SelectContent>
