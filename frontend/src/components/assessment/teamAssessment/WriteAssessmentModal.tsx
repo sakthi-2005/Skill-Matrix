@@ -68,7 +68,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
             const currentScore = skillScores[score.skillId] || 0;
             const previousScore = previousApprovedScores[score.skillId] || 0;
             const minAllowed = previousScore;
-
+            console.log("previousApprovedSccore:",console.log("previousApprovedScores[score.skillId]123:",previousApprovedScores[score.skillId]))
             const levelDescriptions = [
               score.Skill?.basic || "Beginner",
               score.Skill?.low || "Intermediate",
@@ -198,9 +198,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                                 >
                                   <div className="flex flex-col items-center gap-1">
                                     <span>{desc}</span>
-                                    {isSelected && (
-                                      <span className="text-green-500 font-bold text-lg">✓</span>
-                                    )}
+                                    {isSelected }
                                   </div>
                                 </motion.td>
                               );

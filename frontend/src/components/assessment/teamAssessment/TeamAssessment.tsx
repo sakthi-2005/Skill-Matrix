@@ -323,6 +323,7 @@ const TeamAssessment = () => {
     const handleViewHistory = (assessment: AssessmentWithHistory) => {
         setSelectedAssessmentHistory(assessment);
         setShowHistoryModal(true);
+        setSelectedTab("viewDetails")
     };
 
     // Handler for showing overdue details modal
@@ -385,6 +386,8 @@ const TeamAssessment = () => {
         { id: "pending", label: "Pending Actions", icon: Clock },
         { id: "myAssessment", label: "My Assessment", icon: User },
         { id: "writeAssessment", label: "Write Assessment", hidden:true},
+        { id: "viewDetails", label: "View Detals", hidden:true},
+        { id: "viewHistory", label: "View History", hidden:true},
     ];
 
     return (
@@ -522,7 +525,7 @@ const TeamAssessment = () => {
             </div>
 
             {/* Assessment History Modal */}
-            {showHistoryModal && selectedAssessmentHistory && (
+            {selectedTab==="viewDetails" &&  selectedAssessmentHistory && (
                 <AssessmentHistoryModal 
                     assessment={selectedAssessmentHistory}
                     onClose={() => setShowHistoryModal(false)}
