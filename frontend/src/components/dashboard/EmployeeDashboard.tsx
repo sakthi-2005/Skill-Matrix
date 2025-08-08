@@ -150,13 +150,6 @@ const EmployeeDashboard = ({
       icon: User,
       color: 'bg-orange-500',
       action: () => onNavigate('profile')
-    },
-    {
-      title: 'Skill Matrix',
-      description: 'View your personal skill matrix',
-      icon: Target,
-      color: 'bg-red-500',
-      action: () => onNavigate('skill-matrix')
     }
   ];
 
@@ -171,11 +164,10 @@ const EmployeeDashboard = ({
   return (
     <div className="space-y-8">
       <DashboardStats stats={stats} title="My Skills Overview" />
-
       {/* Quick Actions Section - Team Lead UI Style */}
       <div>
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (

@@ -25,7 +25,7 @@ import {
 import AllAssessmentsTab from "./page/AllAssessmentsTab";
 import PendingActionsTab from "./page/PendingActionsTab";
 import WriteAssessmentModal from "./WriteAssessmentModal";
-import AssessmentHistoryModal from "./modals/AssessmentHistoryModal";
+import AssessmentHistoryPage from "./modals/AssessmentHistoryModal";
 import SkillScoresModal from "./modals/SkillScoresModal";
 import OverdueDetailsModal from "./modals/OverdueDetailsModal";
 
@@ -322,7 +322,6 @@ const TeamAssessment = () => {
 
     const handleViewHistory = (assessment: AssessmentWithHistory) => {
         setSelectedAssessmentHistory(assessment);
-        setShowHistoryModal(true);
         setSelectedTab("viewDetails")
     };
 
@@ -386,7 +385,7 @@ const TeamAssessment = () => {
         { id: "pending", label: "Pending Actions", icon: Clock },
         { id: "myAssessment", label: "My Assessment", icon: User },
         { id: "writeAssessment", label: "Write Assessment", hidden:true},
-        { id: "viewDetails", label: "View Detals", hidden:true},
+        { id: "viewDetails", label: "View Details", hidden:true},
         { id: "viewHistory", label: "View History", hidden:true},
     ];
 
@@ -521,40 +520,37 @@ const TeamAssessment = () => {
                             onClose={() => setSelectedTab("pending")} // go back when done
                         />
                     )}
+                    {/* Assessment History Modal */}
+                    {selectedTab === "viewDetails" &&  selectedAssessmentHistory && (
+                        <AssessmentHistoryPage 
+                            assessment={selectedAssessmentHistory}
+                            onBack={() => setShowHistoryModal(false)}
+                            formatDate={formatDate}
+                        />
+                    )}
+                    {/* Skill Scores Modal */}
+                    {showSkillModal && skillModalData && (
+                        <SkillScoresModal 
+                            data={skillModalData}
+                            onClose={() => setShowSkillModal(false)}
+                        />
+                    )}
+                    {/* Overdue Details Modal */}
+                    <OverdueDetailsModal
+                        isOpen={showOverdueModal}
+                        onClose={() => setShowOverdueModal(false)}
+                        overdueAssessments={assessments.filter(assessment => {
+                            if (!assessment?.deadlineDate) return false;
+                            const deadline = new Date(assessment.deadlineDate);
+                            const now = new Date();
+                            return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
+                        })}
+                        formatDate={formatDate}
+                        onViewAssessment={handleWriteAssessment}
+                    />
+                    
                 </div>
             </div>
-
-            {/* Assessment History Modal */}
-            {selectedTab==="viewDetails" &&  selectedAssessmentHistory && (
-                <AssessmentHistoryModal 
-                    assessment={selectedAssessmentHistory}
-                    onClose={() => setShowHistoryModal(false)}
-                    formatDate={formatDate}
-                />
-            )}
-            {/* Skill Scores Modal */}
-            {showSkillModal && skillModalData && (
-                <SkillScoresModal 
-                    data={skillModalData}
-                    onClose={() => setShowSkillModal(false)}
-                />
-            )}
-
-            {/* Overdue Details Modal */}
-            <OverdueDetailsModal
-                isOpen={showOverdueModal}
-                onClose={() => setShowOverdueModal(false)}
-                overdueAssessments={assessments.filter(assessment => {
-                    if (!assessment?.deadlineDate) return false;
-                    const deadline = new Date(assessment.deadlineDate);
-                    const now = new Date();
-                    return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
-                })}
-                formatDate={formatDate}
-                onViewAssessment={handleWriteAssessment}
-            />
-
-
         </div>
     );
 }
