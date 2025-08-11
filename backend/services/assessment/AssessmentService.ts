@@ -456,11 +456,6 @@ const AssessmentService = {
         throw new Error("Assessment not found");
       }
 
-      console.log(`DEBUG: getAssessmentWithHistory - Assessment ${assessmentId} has ${scores.length} scores`);
-      scores.forEach(score => {
-        console.log(`DEBUG: Score ${score.id} - Skill ${score.skillId} (${score.Skill?.name}) - Lead Score: ${score.score}`);
-      });
-
       // Enhance history entries using utility helper
       const enhancedHistory = UtilityHelpers.enhanceHistoryEntries(history);
 
