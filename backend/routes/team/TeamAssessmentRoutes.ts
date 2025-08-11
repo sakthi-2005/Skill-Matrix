@@ -64,6 +64,30 @@ const TeamAssessmentRoutes = {
         }
       },
       
+      // Check access to specific assessment (Team Lead/HR only)
+      {
+        method: "GET",
+        path: "/team/assessment/{assessmentId}/access",
+        handler: TeamAssessmentController.checkAssessmentAccess,
+        options: {
+          auth: 'jwt',
+          description: 'Check if current user can access specific assessment',
+          tags: ['api', 'assessment', 'lead', 'team', 'access'],
+        }
+      },
+      
+      // Check access to user assessment history (Team Lead/HR only)
+      {
+        method: "GET",
+        path: "/team/user/{userId}/access",
+        handler: TeamAssessmentController.checkUserAssessmentAccess,
+        options: {
+          auth: 'jwt',
+          description: 'Check if current user can access specific user assessment history',
+          tags: ['api', 'assessment', 'lead', 'team', 'access'],
+        }
+      },
+      
       // Get team summary (HR only)
       {
         method: "GET",
