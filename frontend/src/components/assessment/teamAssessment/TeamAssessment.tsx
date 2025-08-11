@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   TrendingUp,
@@ -37,6 +38,7 @@ interface Skill {
 }
 const TeamAssessment = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [assessments, setAssessments] = useState<AssessmentWithHistory[]>([]);
@@ -321,8 +323,13 @@ const TeamAssessment = () => {
     };
 
     const handleViewHistory = (assessment: AssessmentWithHistory) => {
-        setSelectedAssessmentHistory(assessment);
-        setSelectedTab("viewDetails")
+        // Navigate to dedicated assessment details page
+        navigate(`/assessment-details/${assessment.id}`);
+    };
+
+    const handleViewUserHistory = (userId: string, userName: string) => {
+        // Navigate to dedicated user assessment history page
+        navigate(`/assessment-history/${userId}/${encodeURIComponent(userName)}`);
     };
 
     // Handler for showing overdue details modal
@@ -385,8 +392,6 @@ const TeamAssessment = () => {
         { id: "pending", label: "Pending Actions", icon: Clock },
         { id: "myAssessment", label: "My Assessment", icon: User },
         { id: "writeAssessment", label: "Write Assessment", hidden:true},
-        { id: "viewDetails", label: "View Details", hidden:true},
-        { id: "viewHistory", label: "View History", hidden:true},
     ];
 
     return (
@@ -518,14 +523,6 @@ const TeamAssessment = () => {
                             onSubmit={handleSubmitAssessment}
                             data={curLeadScore}
                             onClose={() => setSelectedTab("pending")} // go back when done
-                        />
-                    )}
-                    {/* Assessment History Modal */}
-                    {selectedTab === "viewDetails" &&  selectedAssessmentHistory && (
-                        <AssessmentHistoryPage 
-                            assessment={selectedAssessmentHistory}
-                            onBack={() => setShowHistoryModal(false)}
-                            formatDate={formatDate}
                         />
                     )}
                     {/* Skill Scores Modal */}

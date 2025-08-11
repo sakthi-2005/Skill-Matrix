@@ -234,6 +234,13 @@ export const assessmentService = {
   getTeamAssessmentStatistics: () =>
     apiRequest("/assess/team/statistics"),
 
+  // Access control methods
+  checkAssessmentAccess: (assessmentId: number) =>
+    apiRequest(`/assess/team/assessment/${assessmentId}/access`),
+
+  checkUserAssessmentAccess: (userId: string) =>
+    apiRequest(`/assess/team/user/${userId}/access`),
+
   // Bulk assessment for HR
   initiateBulkAssessment: (data: {
     assessmentTitle: string;

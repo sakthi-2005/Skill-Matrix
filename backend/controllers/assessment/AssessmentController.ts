@@ -1,4 +1,5 @@
 import AssessmentService from "../../services/assessment/AssessmentService";
+import TeamAssessmentService from "../../services/team/TeamAssessmentService";
 import { Request, ResponseToolkit } from '@hapi/hapi';
 import { Controller, AuthRequest } from '../../types/hapi';
 import { LeadSkillAssessmentData } from '../../types/services';
@@ -218,14 +219,36 @@ const AssessmentController: Controller = {
   },
 
     // Get assessment with full history
-  getAssessmentWithHistory: async (req: Request, h: ResponseToolkit) => {
+  getAssessmentWithHistory: async (req: AuthRequest, h: ResponseToolkit) => {
     try {
       const { assessmentId } = req.params;
       const parsedId = ValidationHelpers.validateAssessmentId(assessmentId);
       
+      // Get current user details for access control
+      const currentUserId = req.auth.credentials.user.id;
+      const currentUserRole = req.auth.credentials.user.role?.name;
+      
+      // Check if user has access to this assessment
       const assessment = await AssessmentService.getAssessmentWithHistory(parsedId);
+      
+      if (!assessment) {
+        return ResponseHelpers.error(h, "Assessment not found", 404);
+      }
+      
+      // Check access control using TeamAssessmentService
+      const hasAccess = await TeamAssessmentService.checkAssessmentAccess(
+        currentUserId, 
+        currentUserRole, 
+        parsedId
+      );
 
+      if (!hasAccess) {
+        return ResponseHelpers.error(h, "You don't have permission to access this assessment", 403);
+      }
+
+      // User has access, return the assessment
       return ResponseHelpers.success(h, assessment);
+
     } catch (error: any) {
       console.error("Error getting assessment with history:", error);
       const errorCode = ResponseHelpers.determineErrorCode(error.message);

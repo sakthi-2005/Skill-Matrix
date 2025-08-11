@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import {
   CheckCircle,
@@ -27,9 +28,6 @@ import {
   getWorkflowTransitions
 } from "@/utils/assessmentUtils";
 
-import { ReviewAssessmentModal } from "../employeeAssessment/modals/reviewAssessmentModel";
-import { AssessmentHistoryModal } from "../employeeAssessment/modals/assessmentHistoryModel";
-
 interface UnifiedAssessmentReviewProps {
   context?: 'employee' | 'lead' | 'auto'; // auto will determine based on user role and assessment data
 }
@@ -38,14 +36,10 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
   context = 'auto' 
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [assessments, setAssessments] = useState<AssessmentWithHistory[]>([]);
   const [pendingReviews, setPendingReviews] = useState<AssessmentWithHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedAssessment, setSelectedAssessment] = useState<AssessmentWithHistory | null>(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewComments, setReviewComments] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [assessmentContext, setAssessmentContext] = useState<'employee' | 'lead'>('employee');
   const [userHierarchyLevel, setUserHierarchyLevel] = useState<number>(0);
 
@@ -160,57 +154,15 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
     }
   };
 
-  const handleReviewAssessment = (assessment: AssessmentWithHistory) => {
-    setSelectedAssessment(assessment);
-    setReviewComments("");
-    setShowReviewModal(true);
-  };
-
-  const handleSubmitReview = async (approved: boolean) => {
-    if (!selectedAssessment) return;
-
-    setIsSubmitting(true);
-    try {
-      // Use the same endpoint but the backend should handle the context
-      const response = await assessmentService.employeeReviewAssessment(
-        selectedAssessment.id,
-        { 
-          approved, 
-          comments: reviewComments,
-          reviewerContext: assessmentContext // Add context for backend processing
-        }
-      );
-
-      if (response.success) {
-        const workflowTransitions = getWorkflowTransitions(assessmentContext);
-        const actionText = assessmentContext === 'lead' 
-          ? (approved ? "approved" : "sent back for revision") 
-          : (approved ? "approved" : "rejected");
-          
-        toast({
-          title: "Success",
-          description: `Assessment ${actionText} successfully`,
-        });
-        setShowReviewModal(false);
-        loadAssessments();
-      }
-    } catch (error) {
-      console.error("Error submitting review:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit review",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleViewHistory = (assessment: AssessmentWithHistory) => {
-    setSelectedAssessment(assessment);
-    setShowHistoryModal(true);
-    setReviewComments("");
-    setShowReviewModal(true);
+    // For employee assessments, navigate to the employee assessment details page
+    if (assessment.status === AssessmentStatus.EMPLOYEE_REVIEW) {
+      // If it's pending employee review, go to details page for review
+      navigate(`/employee-assessment-details/${assessment.id}`);
+    } else {
+      // For completed or other statuses, go to details page for viewing
+      navigate(`/employee-assessment-details/${assessment.id}`);
+    }
   };
 
   const formatDate = (date: string | Date) => {
@@ -436,20 +388,6 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
           )}
         </div>
       </div>
-      {/* History Modal */}
-      {showHistoryModal && selectedAssessment && (
-        <AssessmentHistoryModal
-          assessment={selectedAssessment}
-          comments={reviewComments}
-          setComments={setReviewComments}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmitReview}
-          onClose={() => setShowHistoryModal(false)}
-          context={assessmentContext}
-          labels={labels}
-          formatDate={formatDate}
-        />
-      )}
     </div>
   );
 };
