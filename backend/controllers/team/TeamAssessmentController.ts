@@ -81,6 +81,48 @@ const TeamAssessmentController: Controller = {
     }
   },
 
+  // Check access to specific assessment
+  checkAssessmentAccess: async (req: AuthRequest, h: ResponseToolkit) => {
+    try {
+      const userId = req.auth.credentials.user.id;
+      const userRole = req.auth.credentials.user.role?.name;
+      const { assessmentId } = req.params;
+      
+      const hasAccess = await TeamAssessmentService.checkAssessmentAccess(
+        userId, 
+        userRole, 
+        parseInt(assessmentId)
+      );
+
+      return ResponseHelpers.success(h, { hasAccess }, "Access check completed");
+    } catch (error: any) {
+      console.error("Error checking assessment access:", error);
+      const errorCode = ResponseHelpers.determineErrorCode(error.message);
+      return ResponseHelpers.error(h, error.message, errorCode);
+    }
+  },
+
+  // Check access to user assessment history
+  checkUserAssessmentAccess: async (req: AuthRequest, h: ResponseToolkit) => {
+    try {
+      const currentUserId = req.auth.credentials.user.id;
+      const currentUserRole = req.auth.credentials.user.role?.name;
+      const { userId } = req.params;
+      
+      const hasAccess = await TeamAssessmentService.checkUserAssessmentAccess(
+        currentUserId, 
+        currentUserRole, 
+        userId
+      );
+
+      return ResponseHelpers.success(h, { hasAccess }, "Access check completed");
+    } catch (error: any) {
+      console.error("Error checking user assessment access:", error);
+      const errorCode = ResponseHelpers.determineErrorCode(error.message);
+      return ResponseHelpers.error(h, error.message, errorCode);
+    }
+  },
+
   // Get team summary (for HR)
   getTeamSummary: async (req: AuthRequest, h: ResponseToolkit) => {
     try {

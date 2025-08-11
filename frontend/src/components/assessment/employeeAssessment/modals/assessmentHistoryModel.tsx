@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {ThumbsDown, ThumbsUp, XCircle} from "lucide-react";
 import {
   AssessmentWithHistory,
@@ -45,7 +45,9 @@ export const AssessmentHistoryModal: React.FC<{
     setIsApproved(true);
     onSubmit(true);
   };
- 
+ useEffect(()=>{
+  window.scrollTo({top:0,behavior:"smooth"});
+ },[]);
  
   let scoreUpdated = [];
   const [showSkills,setShowSkills] = useState(null);

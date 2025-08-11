@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   TrendingUp,
@@ -25,7 +26,7 @@ import {
 import AllAssessmentsTab from "./page/AllAssessmentsTab";
 import PendingActionsTab from "./page/PendingActionsTab";
 import WriteAssessmentModal from "./WriteAssessmentModal";
-import AssessmentHistoryModal from "./modals/AssessmentHistoryModal";
+import AssessmentHistoryPage from "./modals/AssessmentHistoryModal";
 import SkillScoresModal from "./modals/SkillScoresModal";
 import OverdueDetailsModal from "./modals/OverdueDetailsModal";
 
@@ -37,6 +38,7 @@ interface Skill {
 }
 const TeamAssessment = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [assessments, setAssessments] = useState<AssessmentWithHistory[]>([]);
@@ -321,9 +323,13 @@ const TeamAssessment = () => {
     };
 
     const handleViewHistory = (assessment: AssessmentWithHistory) => {
-        setSelectedAssessmentHistory(assessment);
-        setShowHistoryModal(true);
-        setSelectedTab("viewDetails")
+        // Navigate to dedicated assessment details page
+        navigate(`/assessment-details/${assessment.id}`);
+    };
+
+    const handleViewUserHistory = (userId: string, userName: string) => {
+        // Navigate to dedicated user assessment history page
+        navigate(`/assessment-history/${userId}/${encodeURIComponent(userName)}`);
     };
 
     // Handler for showing overdue details modal
@@ -386,8 +392,6 @@ const TeamAssessment = () => {
         { id: "pending", label: "Pending Actions", icon: Clock },
         { id: "myAssessment", label: "My Assessment", icon: User },
         { id: "writeAssessment", label: "Write Assessment", hidden:true},
-        { id: "viewDetails", label: "View Detals", hidden:true},
-        { id: "viewHistory", label: "View History", hidden:true},
     ];
 
     return (
@@ -521,40 +525,29 @@ const TeamAssessment = () => {
                             onClose={() => setSelectedTab("pending")} // go back when done
                         />
                     )}
+                    {/* Skill Scores Modal */}
+                    {showSkillModal && skillModalData && (
+                        <SkillScoresModal 
+                            data={skillModalData}
+                            onClose={() => setShowSkillModal(false)}
+                        />
+                    )}
+                    {/* Overdue Details Modal */}
+                    <OverdueDetailsModal
+                        isOpen={showOverdueModal}
+                        onClose={() => setShowOverdueModal(false)}
+                        overdueAssessments={assessments.filter(assessment => {
+                            if (!assessment?.deadlineDate) return false;
+                            const deadline = new Date(assessment.deadlineDate);
+                            const now = new Date();
+                            return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
+                        })}
+                        formatDate={formatDate}
+                        onViewAssessment={handleWriteAssessment}
+                    />
+                    
                 </div>
             </div>
-
-            {/* Assessment History Modal */}
-            {selectedTab==="viewDetails" &&  selectedAssessmentHistory && (
-                <AssessmentHistoryModal 
-                    assessment={selectedAssessmentHistory}
-                    onClose={() => setShowHistoryModal(false)}
-                    formatDate={formatDate}
-                />
-            )}
-            {/* Skill Scores Modal */}
-            {showSkillModal && skillModalData && (
-                <SkillScoresModal 
-                    data={skillModalData}
-                    onClose={() => setShowSkillModal(false)}
-                />
-            )}
-
-            {/* Overdue Details Modal */}
-            <OverdueDetailsModal
-                isOpen={showOverdueModal}
-                onClose={() => setShowOverdueModal(false)}
-                overdueAssessments={assessments.filter(assessment => {
-                    if (!assessment?.deadlineDate) return false;
-                    const deadline = new Date(assessment.deadlineDate);
-                    const now = new Date();
-                    return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
-                })}
-                formatDate={formatDate}
-                onViewAssessment={handleWriteAssessment}
-            />
-
-
         </div>
     );
 }
