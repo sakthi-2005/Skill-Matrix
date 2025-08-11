@@ -158,10 +158,10 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
     // For employee assessments, navigate to the employee assessment details page
     if (assessment.status === AssessmentStatus.EMPLOYEE_REVIEW) {
       // If it's pending employee review, go to details page for review
-      navigate(`/employee-assessment-details/${assessment.id}`);
+      navigate(`/assessment-details/${assessment.id}`);
     } else {
       // For completed or other statuses, go to details page for viewing
-      navigate(`/employee-assessment-details/${assessment.id}`);
+      navigate(`/assessment-details/${assessment.id}`);
     }
   };
 

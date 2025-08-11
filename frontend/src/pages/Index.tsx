@@ -23,9 +23,6 @@ import AdminSubTeamsPage from "@/components/admin/AdminSubTeamsPage";
 import AdminPositionsPage from "@/components/admin/AdminPositionsPage";
 import AdminSkillsPage from "@/components/admin/AdminSkillsPage";
 import AssessmentDetailsPage from "./AssessmentDetailsPage";
-import AssessmentHistoryPage from "./AssessmentHistoryPage";
-import EmployeeAssessmentDetailsPage from "./employee/EmployeeAssessmentDetailsPage";
-import EmployeeAssessmentHistoryPage from "./employee/EmployeeAssessmentHistoryPage";
 import { verifyLead } from "@/utils/helper";
 
 
@@ -201,9 +198,6 @@ const Index = () => {
           <Route path="/admin-positions" element={<AdminPositionsPage/>}/>
           <Route path="/admin-skills" element={<AdminSkillsPage/>}/>
           <Route path="/assessment-details/:assessmentId" element={<AssessmentDetailsPage/>}/>
-          <Route path="/assessment-history/:userId/:userName" element={<AssessmentHistoryPage/>}/>
-          <Route path="/employee-assessment-details/:assessmentId" element={<EmployeeAssessmentDetailsPage/>}/>
-          <Route path="/employee-assessment-history/:userId/:userName" element={<EmployeeAssessmentHistoryPage/>}/>
           <Route path="/login" element={<OAuthLoginForm />} />
           <Route path="/legacy-login" element={<LoginForm />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
