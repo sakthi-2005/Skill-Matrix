@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, XCircle, ThumbsUp } from "lucide-react";
 import { AssessmentWithHistory, DetailedScore } from "@/types/assessmentTypes";
 
@@ -17,6 +17,10 @@ const AssessmentHistoryPage: React.FC<Props> = ({
   let scoreUpdated: any[] = [];
   const [showSkills, setShowSkills] = useState<number | null>(null);
 
+ useEffect(()=>{
+  window.scrollTo({top:0,behavior:"smooth"});
+ },[]);
+ 
   return (
     <div className="bg-white w-full p-6 space-y-6">
       {/* Page Header */}

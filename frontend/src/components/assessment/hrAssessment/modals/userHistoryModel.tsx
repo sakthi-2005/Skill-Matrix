@@ -27,7 +27,7 @@ export const UserHistoryTab: React.FC<{
           onClick={onBack}
           className="text-gray-500 hover:text-gray-700 flex items-center gap-1 text-sm"
         >
-          <XCircle className="h-4 w-4" /> Back
+          
         </button>
       </div>
 
