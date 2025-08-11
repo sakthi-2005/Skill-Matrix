@@ -54,13 +54,13 @@ export interface Lead {
 }
 
 export interface UserInfo {
-  id: number;
+  id: string;
   name: string;
   email: string;
-  position: Position;
-  Team?: Team;
-  role?: Role;
-  leadId?: Lead;
+  positionId: number;
+  TeamId?: number;
+  roleId?: number;
+  leadId?: string;
 }
 
 export interface Assessment {
@@ -71,6 +71,8 @@ export interface Assessment {
   nextApprover: number;
   user: UserInfo;
   detailedScores: Score[];
+  deadlineDate: Date;
+  scheduledDate: Date;
 }
 
 
@@ -226,6 +228,7 @@ export interface AssessmentCycle {
     id: number;
     name: string;
   }>;
+  assessments?: Assessment[];
 }
 
 

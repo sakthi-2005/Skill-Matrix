@@ -683,7 +683,7 @@ const HRAssessmentManagement: React.FC = () => {
           )}
 
           {selectedTab === "cycles" && (
-            <CyclesTab cycles={cycles} formatDate={formatDate} />
+            <CyclesTab cycles={cycles} formatDate={formatDate} userSummaries={userSummaries}/>
           )}
 
           {selectedTab === "pending-reviews" && (
