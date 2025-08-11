@@ -11,6 +11,7 @@ import {
   Search,
   Filter,
   X,
+  ChevronUp,
 } from "lucide-react";
 import { positionService, skillService } from "@/services/api";
 import { adminService } from "@/services/adminService";
@@ -478,9 +479,9 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       {expandedItems.has(criterion.id) ? (
-                        <ChevronDown className="h-5 w-5 text-gray-500" />
+                        <ChevronUp className="h-5 w-5 text-gray-500" />
                       ) : (
-                        <ChevronRight className="h-5 w-5 text-gray-500" />
+                        <ChevronDown className="h-5 w-5 text-gray-500" />
                       )}
                       <h3 className="text-lg font-semibold text-gray-800">
                         {criterion.name}

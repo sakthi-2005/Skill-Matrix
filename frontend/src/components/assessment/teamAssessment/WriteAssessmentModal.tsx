@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AssessmentWithHistory, DetailedScore } from "../../../types/assessmentTypes";
@@ -42,6 +42,10 @@ const WriteAssessmentPanel: React.FC<Props> = ({
 }) => {
   const [openSkillId, setOpenSkillId] = useState<number | null>(null);
 
+  useEffect(()=>{
+    window.scrollTo({top:0,behavior:"smooth"});
+  },[]);
+  
   const handleScoreChange = (skillId: number, newScore: number, prevScore: number) => {
     if (previousApprovedScores[skillId] && newScore < previousApprovedScores[skillId]) return;
     setSkillScores({ ...skillScores, [skillId]: newScore });
