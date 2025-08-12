@@ -27,6 +27,8 @@ import PendingActionsTab from "./page/PendingActionsTab";
 import WriteAssessmentModal from "./WriteAssessmentModal";
 import AssessmentHistoryModal from "./modals/AssessmentHistoryModal";
 import SkillScoresModal from "./modals/SkillScoresModal";
+import OverdueDetailsModal from "./modals/OverdueDetailsModal";
+
 import UnifiedAssessmentReview from "../shared/UnifiedAssessmentReview";
 
 interface Skill {
@@ -58,6 +60,7 @@ const TeamAssessment = () => {
     // Assessment workflow states
     const [selectedAssessment, setSelectedAssessment] = useState<AssessmentWithHistory | null>(null);
     const [skillScores, setSkillScores] = useState<{ [skillId: number]: number }>({});
+    const [previousApprovedScores, setPreviousApprovedScores] = useState<{ [skillId: number]: number }>({});
     const [comments, setComments] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -66,6 +69,9 @@ const TeamAssessment = () => {
     //Skill description
     const [showSkillDescriptionModal, setShowSkillDescriptionModal] = useState(false);
     const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+    
+    // Overdue assessment modal
+    const [showOverdueModal, setShowOverdueModal] = useState(false);
 
     useEffect(() => {
         loadTeamData();
@@ -132,6 +138,10 @@ const TeamAssessment = () => {
     useEffect(() => {
         if (selectedTab !== "writeAssessment") {
             setSelectedAssessment(null);
+            // Refresh data when returning from assessment writing to ensure latest scores are available
+            if (selectedTab === "pending" || selectedTab === "assessments") {
+                loadTeamData();
+            }
         }
     }, [selectedTab]);
 
@@ -182,36 +192,72 @@ const TeamAssessment = () => {
     };
 
     const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
+        const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
+        
+        // Check if user has older pending assessments that should be completed first
+        const canProceed = checkForOlderPendingAssessments(userId, assessment.user?.name || 'Unknown User', assessment);
+        
+        if (!canProceed) {
+            return;
+        }
+
         setSelectedAssessment(assessment);
         setSelectedTab("writeAssessment");
         console.log("current detailedScores", assessment.detailedScores);
 
         const initialScores: { [skillId: number]: number } = {};
+        const previousScores: { [skillId: number]: number } = {};
 
-        // Use current assessment if it has leadScores
+        // First, use current assessment scores if they exist (for assessments already in progress)
         assessment.detailedScores?.forEach((score) => {
             if (score.score != null) {
                 initialScores[score.skillId] = score.score;
+                console.log(`Using existing score for skill ${score.skillId}: ${score.score}`);
             }
         });
 
-        // additionally fetch latest approved scores and merge
-        const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
+        // Then, fetch latest approved scores from previous completed assessments
+        try {
+            const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
 
-    const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
-
-        if (latestRes.success) {
-            latestRes.data.forEach((latest) => {
-                // Only set if no score yet
-                if (!initialScores[latest.skill_id]) {
-                    initialScores[latest.skill_id] = latest.lead_score ?? 0;
-                }
+            if (latestRes.success && latestRes.data) {
+                console.log("Latest approved scores from previous assessments:", latestRes.data);
+                
+                latestRes.data.forEach((latest) => {
+                    const previousScore = latest.score ?? latest.lead_score ?? latest.self_score ?? 0;
+                    previousScores[latest.skill_id] = previousScore;
+                    
+                    // Only use previous scores if current assessment doesn't have a score for this skill
+                    if (initialScores[latest.skill_id] === undefined) {
+                        initialScores[latest.skill_id] = previousScore;
+                        console.log(`Using previous approved score for skill ${latest.skill_id}: ${previousScore}`);
+                    }
+                });
+            } else {
+                console.log("No previous approved scores found or API call failed");
+            }
+        } catch (error) {
+            console.error("Error fetching previous approved scores:", error);
+            toast({
+                title: "Warning",
+                description: "Could not load previous assessment scores. Starting with blank scores.",
+                variant: "default"
             });
         }
 
-        console.log("final initialScores", initialScores);
+        // Ensure all skills in current assessment have a score (default to 0 if no previous score)
+        assessment.detailedScores?.forEach((score) => {
+            if (initialScores[score.skillId] === undefined) {
+                initialScores[score.skillId] = 0;
+                console.log(`No previous score found for skill ${score.skillId}, defaulting to 0`);
+            }
+        });
+
+        console.log("Final initial scores:", initialScores);
+        console.log("Previous approved scores:", previousScores);
 
         setSkillScores(initialScores);
+        setPreviousApprovedScores(previousScores);
         setComments("");
     };
 
@@ -241,10 +287,11 @@ const TeamAssessment = () => {
             if (response.success) {
                 toast({
                     title: "Success",
-                    description: "Assessment submitted successfully",
+                    description: "Assessment submitted successfully. You can now access newer assessments.",
                 });
-                loadTeamData(); // Refresh data
-
+                
+                // Refresh data and return to pending tab
+                await loadTeamData(); // Refresh data
                 setSelectedTab("pending");
                 setSelectedAssessment(null);
             }
@@ -264,6 +311,51 @@ const TeamAssessment = () => {
         setSelectedAssessmentHistory(assessment);
         setShowHistoryModal(true);
     };
+
+    // Handler for showing overdue details modal
+    const handleShowOverdueDetails = (overdueAssessments: AssessmentWithHistory[]) => {
+        setShowOverdueModal(true);
+    };
+
+    // Check if user has older pending assessments that should be completed first
+    const checkForOlderPendingAssessments = (userId: string, userName: string, currentAssessment: AssessmentWithHistory) => {
+        try {
+            // Get all pending assessments for this user
+            const userPendingAssessments = assessments.filter(assessment => 
+                assessment.userId === userId && 
+                !['COMPLETED', 'CANCELLED'].includes(assessment.status)
+            );
+
+            // Find assessments that are older than the current one (lower ID = older)
+            const olderPendingAssessments = userPendingAssessments.filter(assessment => 
+                assessment.id < currentAssessment.id
+            );
+
+            if (olderPendingAssessments.length > 0) {
+                // Sort by ID to get the oldest first
+                const oldestAssessment = olderPendingAssessments.sort((a, b) => a.id - b.id)[0];
+                
+                toast({
+                    title: "Complete Previous Assessments First",
+                    description: `Please complete Assessment #${oldestAssessment.id} before accessing Assessment #${currentAssessment.id}. Complete assessments in chronological order.`,
+                    variant: "destructive"
+                });
+                return false;
+            }
+            
+            return true; // Allow access to this assessment
+        } catch (error) {
+            console.error('Error checking for older pending assessments:', error);
+            toast({
+                title: "Error",
+                description: "Failed to check assessment order",
+                variant: "destructive"
+            });
+            return false;
+        }
+    };
+
+
 
     const formatDate = (date: string | Date) => {
         return new Date(date).toLocaleDateString("en-US", {
@@ -378,6 +470,7 @@ const TeamAssessment = () => {
                             userRole={user?.role?.name}
                             searchTerm={searchTerm}
                             setSearchTerm={setSearchTerm}
+                            onShowOverdueDetails={handleShowOverdueDetails}
                         />
                     )}
 
@@ -404,6 +497,7 @@ const TeamAssessment = () => {
                             skills={skills}
                             skillScores={skillScores}
                             setSkillScores={setSkillScores}
+                            previousApprovedScores={previousApprovedScores}
                             comments={comments}
                             setComments={setComments}
                             isSubmitting={isSubmitting}
@@ -430,66 +524,21 @@ const TeamAssessment = () => {
                 />
             )}
 
-            {/* Skill Description Modal */}
-            {/* {showSkillDescriptionModal && selectedSkill && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-[700px] w-full">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h2 className="text-lg font-semibold">
-                                {selectedSkill.name} - Description
-                            </h2>
-                            <button
-                                onClick={closeSkillDescriptionModal}
-                                className="p-1 hover:bg-gray-100 rounded-full"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
+            {/* Overdue Details Modal */}
+            <OverdueDetailsModal
+                isOpen={showOverdueModal}
+                onClose={() => setShowOverdueModal(false)}
+                overdueAssessments={assessments.filter(assessment => {
+                    if (!assessment?.deadlineDate) return false;
+                    const deadline = new Date(assessment.deadlineDate);
+                    const now = new Date();
+                    return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
+                })}
+                formatDate={formatDate}
+                onViewAssessment={handleWriteAssessment}
+            />
 
-                        <div className="p-4 text-sm max-h-[472px] overflow-y-auto space-y-4">
-                    {[
-                        { stars: 1, title: "Beginner", text: selectedSkill?.low || "Beginner" },
-                        { stars: 2, title: "Intermediate", text: selectedSkill?.medium || "Intermediate" },
-                        { stars: 3, title: "Advanced", text: selectedSkill?.average || "Advanced" },
-                        { stars: 4, title: "Expert", text: selectedSkill?.high || "Expert"},
-                        { stars: 5, title: "Master", text: "Mastery" }
-                    ].map(({ stars, title, text }, idx) => (
-                        <div
-                        key={idx}
-                        className="flex flex-col md:flex-row md:items-center gap-4 p-4 border rounded-lg shadow-sm hover:shadow transition"
-                        >
-                        {/* Left: Stars */}
-                        {/* <div className="flex gap-1 text-yellow-400 text-xl min-w-[110px]">
-                            {[1,2,3,4,5].map(i => (
-                            <span key={i} className={`${i <= stars ? 'text-yellow-400' : 'text-gray-300'}`}>
-                                ★
-                            </span>
-                            ))}
-                        </div> */}
 
-                        {/* Middle: Info */}
-                        {/* <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="text-lg font-semibold text-gray-800">{title}</h4>
-                            </div>
-                            <p className="text-gray-600">{text}</p> */}
-
-                            {/* Progress Bar */}
-                            {/* <div className="mt-2 w-full bg-gray-200 rounded-full h-1">
-                            <div
-                                className="h-1 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
-                                style={{ width: `${(stars/5)*100}%` }}
-                            />
-                            </div>
-                        </div>
-                        </div>
-                    ))} 
-                    </div>
-
-                        
-                    </div>
-                </div>
-            )} */}
         </div>
     );
 }

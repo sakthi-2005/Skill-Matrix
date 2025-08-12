@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  AlertTriangle,
   FileText,
   BarChart3,
   UserPlus,
@@ -22,12 +23,36 @@ import { UserHistoryModal } from "./modals/userHistoryModel";
 import { ScoreHistoryModal } from "./modals/scoreHistoryModel";
 import { HRReviewModal } from "./modals/hrReviewModel";
 import { BulkAssessmentModal } from "./modals/bulkAssessmentModel";
+import { OverdueDetailsModal } from "./modals/overdueDetailsModal";
 //import { InitiateAssessmentModal } from "./initiateAssessmentModel";
 import { PendingReviewsTab } from "./page/pendingReviewsTab";
 import { AssessmentsTab } from "./page/assessmentsTab";
 import { CyclesTab } from "./page/cyclesTab";
 import { OverviewTab } from "./page/overviewTab";
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role?: {
+    id: number;
+    name: string;
+  };
+  Team?: {
+    id: number;
+    name: string;
+  };
+}
+
+interface Team {
+  id: number;
+  name: string;
+}
+
+interface Skill {
+  id: number;
+  name: string;
+}
 
 const HRAssessmentManagement: React.FC = () => {
   const { user } = useAuth();
@@ -52,6 +77,8 @@ const HRAssessmentManagement: React.FC = () => {
   const [selectedUserName, setSelectedUserName] = useState("");
   const [scoreHistory, setScoreHistory] = useState<any[]>([]);
   const [showScoreHistoryModal, setShowScoreHistoryModal] = useState(false);
+  const [showOverdueDetailsModal, setShowOverdueDetailsModal] = useState(false);
+  const [overdueAssessments, setOverdueAssessments] = useState<any[]>([]);
   const [reviewComments, setReviewComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -369,6 +396,16 @@ const HRAssessmentManagement: React.FC = () => {
     }
   };
 
+  const handleShowOverdueDetails = (assessments: any[]) => {
+    // Convert assessments to the format expected by the modal
+    const overdueData = assessments.map(assessment => ({
+      user: assessment.user,
+      latestAssessment: assessment
+    }));
+    setOverdueAssessments(overdueData);
+    setShowOverdueDetailsModal(true);
+  };
+
   const handleShowUserHistory = async (userId: string, userName: string) => {
     try {
       setSelectedUserName(userName);
@@ -432,11 +469,22 @@ const HRAssessmentManagement: React.FC = () => {
     a.status === AssessmentStatus.HR_FINAL_REVIEW
   );
 
+  // Helper function to check if assessment is overdue
+  const isOverdue = (assessment: AssessmentWithHistory) => {
+    if (!assessment?.deadlineDate) return false;
+    const deadline = new Date(assessment.deadlineDate);
+    const now = new Date();
+    return deadline < now && !['COMPLETED', 'CANCELLED'].includes(assessment.status);
+  };
+
+  const currentOverdueAssessments = assessments.filter(assessment => isOverdue(assessment));
+
   const statistics = {
     total: assessments.length,
     pending: assessments.filter(a => a.status !== AssessmentStatus.COMPLETED && a.status !== AssessmentStatus.CANCELLED).length,
     completed: assessments.filter(a => a.status === AssessmentStatus.COMPLETED).length,
     hrReviews: pendingHRReviews.length,
+    overdue: currentOverdueAssessments.length,
   };
 
   const tabs = [
@@ -490,7 +538,7 @@ const HRAssessmentManagement: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="p-4 flex items-center gap-3">
             <FileText className="h-8 w-8 text-blue-600" />
@@ -527,6 +575,16 @@ const HRAssessmentManagement: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">Pending HR Review</p>
               <p className="text-2xl font-bold text-red-600">{statistics.hrReviews}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => statistics.overdue > 0 && handleShowOverdueDetails(currentOverdueAssessments)}>
+          <div className="p-4 flex items-center gap-3">
+            <AlertTriangle className="h-8 w-8 text-red-700" />
+            <div>
+              <p className="text-sm text-gray-600">Overdue Assessments</p>
+              <p className="text-2xl font-bold text-red-700">{statistics.overdue}</p>
             </div>
           </div>
         </div>
@@ -577,6 +635,7 @@ const HRAssessmentManagement: React.FC = () => {
               getStatusColor={getStatusColor}
               formatDate={formatDate}
               onShowHistory={handleShowUserHistory}
+              onShowOverdueDetails={() => handleShowOverdueDetails(currentOverdueAssessments)}
             />
           )}
 
@@ -705,6 +764,17 @@ const HRAssessmentManagement: React.FC = () => {
             setScoreHistory([]);
           }}
           formatDate={formatDate}
+        />
+      )}
+
+      {showOverdueDetailsModal && (
+        <OverdueDetailsModal
+          overdueAssessments={overdueAssessments}
+          formatDate={formatDate}
+          onClose={() => {
+            setShowOverdueDetailsModal(false);
+            setOverdueAssessments([]);
+          }}
         />
       )}
     </div>

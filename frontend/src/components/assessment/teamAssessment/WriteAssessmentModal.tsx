@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AssessmentWithHistory, DetailedScore } from "../../../types/assessmentTypes";
 import { SkillModalData } from "../../../types/teamTypes";
+import { toast } from "@/hooks/use-toast";
 
 interface Skill {
   id: number;
@@ -19,6 +20,7 @@ interface Props {
   skills: Skill[];
   skillScores: { [skillId: number]: number };
   setSkillScores: (scores: { [skillId: number]: number }) => void;
+  previousApprovedScores: { [skillId: number]: number };
   comments: string;
   setComments: (comments: string) => void;
   isSubmitting: boolean;
@@ -32,6 +34,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
   skills,
   skillScores,
   setSkillScores,
+  previousApprovedScores,
   comments,
   setComments,
   isSubmitting,
@@ -40,8 +43,23 @@ const WriteAssessmentPanel: React.FC<Props> = ({
 }) => {
   const [openSkillId, setOpenSkillId] = useState<number | null>(null);
 
- const handleScoreChange = (skillId: number, newScore: number, prevScore: number) => {
-  if (prevScore > 0 && newScore < prevScore) return; // Prevent lowering score
+ const handleScoreChange = (skillId: number, newScore: number) => {
+  const previousScore = previousApprovedScores[skillId] || 0;
+  
+  if (previousScore > 0 && newScore < previousScore) {
+    // Find skill name for better user feedback
+    const skill = skills.find(s => s.id === skillId) || 
+                  assessment.detailedScores?.find(s => s.skillId === skillId)?.Skill;
+    const skillName = skill?.name || `Skill ${skillId}`;
+    
+    toast({
+      title: "Score Reduction Not Allowed",
+      description: `Cannot reduce ${skillName} score below the previous approved score of ${previousScore}. You can only maintain or improve scores.`,
+      variant: "destructive"
+    });
+    return; // Prevent lowering score
+  }
+  
   setSkillScores({ ...skillScores, [skillId]: newScore });
 };
 
@@ -82,24 +100,29 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                   {/* Skill name */}
                   <div className="text-lg font-medium">
                     {skill?.name || score.Skill?.name}
+                    {previousApprovedScores[score.skillId] > 0 && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        {/* Min: {previousApprovedScores[score.skillId]} (previous approved) */}
+                      </div>
+                    )}
                   </div>
 
                   {/* Stars */}
                   <div className="flex items-center justify-center">
                     {[1, 2, 3, 4, 5].map((rating) => {
-                      const previousScore = score.score; // from last assessment
-                      console.log("Previous Score",previousScore);
-                      const isLowerThanPrevious = previousScore && rating < previousScore;
+                      const previousApprovedScore = previousApprovedScores[score.skillId] || 0;
+                      console.log("Previous Approved Score for skill", score.skillId, ":", previousApprovedScore);
+                      const isLowerThanPrevious = previousApprovedScore > 0 && rating < previousApprovedScore;
                       return (
                         <button
                           key={rating}
                           onClick={() => {
-                            if (!isLowerThanPrevious) handleScoreChange(score.skillId, rating, previousScore);
+                            if (!isLowerThanPrevious) handleScoreChange(score.skillId, rating);
                           }}
                           className={`p-0 ${isLowerThanPrevious ? "cursor-not-allowed" : ""}`}
                           title={
                             isLowerThanPrevious
-                              ? `You cannot reduce below previous score (${previousScore})`
+                              ? `You cannot reduce below previous approved score (${previousApprovedScore})`
                               : `Rate ${rating}`
                           }
                           disabled={isLowerThanPrevious}
@@ -159,14 +182,15 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                         <tbody>
                           <tr>
                             {levelDescriptions.map((desc, idx) => {
-                              const isLowerThanPrevious = score.score > 0 && idx + 1 < score.score;
+                              const previousApprovedScore = previousApprovedScores[score.skillId] || 0;
+                              const isLowerThanPrevious = previousApprovedScore > 0 && idx + 1 < previousApprovedScore;
                               const isSelected = currentScore === idx + 1;
 
                               return (
                                 <motion.td
                                   key={idx}
                                   onClick={() => {
-                                    if (!isLowerThanPrevious) handleScoreChange(score.skillId, idx + 1, score.score);
+                                    if (!isLowerThanPrevious) handleScoreChange(score.skillId, idx + 1);
                                   }}
                                   whileTap={!isLowerThanPrevious ? { scale: 0.95 } : undefined}
                                   whileHover={!isLowerThanPrevious ? { scale: 1.05 } : undefined}
@@ -175,7 +199,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
                                     ${isLowerThanPrevious ? "cursor-not-allowed text-gray-400" :
                                       isSelected ? "bg-yellow-100 font-medium shadow-inner" : "hover:bg-gray-100"}
                                   `}
-                                  title={isLowerThanPrevious ? "Cannot reduce score once given" : desc}
+                                  title={isLowerThanPrevious ? `Cannot reduce below previous approved score (${previousApprovedScore})` : desc}
                                 >
                                   <div className="flex flex-col items-center gap-1">
                                     <span>{desc}</span>
