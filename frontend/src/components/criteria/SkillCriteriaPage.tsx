@@ -250,59 +250,8 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
       )}
 
       <div className="space-y-6">
-        {/* Page Header Section */}
-        {/* <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-100 shadow-sm">
-          <div className="px-6 py-8 sm:px-8">
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Target className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-700 bg-clip-text text-transparent mb-3">
-                  Skill Criteria Management
-                </h1>
-                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-4">
-                  {canEdit 
-                    ? "Define and manage skill criteria for different positions. Set proficiency levels, create assessments, and track skill development across your organization."
-                    : "View skill criteria and proficiency requirements for your position. Track your progress and identify areas for professional development."
-                  }
-                </p>
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="font-medium">
-                      {criteria.length} {criteria.length === 1 ? 'Skill' : 'Skills'} Available
-                    </span>
-                  </div>
-                  {canEdit && (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="font-medium">Management Access</span>
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="font-medium">
-                      {positions.length} {positions.length === 1 ? 'Position' : 'Positions'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
         {/* Search, Filter and Action Section */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">
-              Search & Filter Skills
-            </h2>
-            <p className="text-sm text-gray-600">
-              Find specific skills by name or filter by position to narrow down your search
-            </p>
-          </div>
           <div className="px-6 py-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex gap-4 sm:flex-row flex-col sm:items-center">
@@ -440,30 +389,6 @@ const SkillCriteriaPage: React.FC<SkillCriteriaPageProps> = ({ onStatsUpdate }) 
                 </div>
             ) : (
           <div className="space-y-4">
-            {/* Skills List Header */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                      Available Skills ({filteredCriteria.length})
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      Click on any skill to view detailed criteria, proficiency levels, and requirements
-                    </p>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {searchTerm && (
-                      <span>Filtered by: <span className="font-medium text-blue-600">"{searchTerm}"</span></span>
-                    )}
-                    {filterTerm !== 0 && (
-                      <span className="ml-2">Position: <span className="font-medium text-blue-600">{getPositionNames(filterTerm)}</span></span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
             {/* Skills List */}
             <div className="space-y-3">
             {filteredCriteria.map((criterion) => (

@@ -16,6 +16,7 @@ const EmployeeAssessmentDetailsPage: React.FC = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewComments, setReviewComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  let scoreUpdated = [];
 
   useEffect(() => {
     if (assessmentId) {
@@ -353,7 +354,7 @@ const EmployeeAssessmentDetailsPage: React.FC = () => {
       {/* Assessment History */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">Assessment Timeline</h2>
-        <div className="space-y-4">
+        <div>
           {assessment.history?.map((audit, index) => {
             const isRejected = audit.auditType.toLowerCase().includes("rejected");
             const isApproved = audit.auditType.toLowerCase().includes("approved") ||
@@ -365,44 +366,91 @@ const EmployeeAssessmentDetailsPage: React.FC = () => {
               ? "bg-red-500"
               : "bg-blue-500";
 
+            const rejectedCount = assessment.history
+              .slice(0, index)
+              .filter((h) => h.auditType.toLowerCase().includes("rejected")).length;
+
+            const indent = `ml-${rejectedCount * 8}`;
+
             const isLast = index === assessment.history.length - 1;
 
+            console.log(indent,audit.auditType);
+
+            if(audit.auditType.toLowerCase().includes("score")){
+              scoreUpdated.push(audit);
+              return;
+            }
+
             return (
-              <div key={index} className="relative flex items-start">
-                {/* Timeline connector */}
-                {!isLast && (
-                  <div className="absolute left-4 top-8 bottom-0 w-px bg-gray-300"></div>
-                )}
-                
-                {/* Timeline dot */}
-                <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center ${circleColor}`}>
-                  {isApproved ? (
-                    <CheckCircle className="w-4 h-4 text-white" />
-                  ) : isRejected ? (
-                    <XCircle className="w-4 h-4 text-white" />
-                  ) : (
-                    <Clock className="w-4 h-4 text-white" />
-                  )}
-                </div>
-                
-                {/* Timeline content */}
-                <div className="ml-4 flex-1">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">
-                      {audit.auditType.replace(/_/g, ' ')}
-                    </h4>
-                    <span className="text-sm text-gray-500">
-                      {formatDate(audit.auditedAt || audit.createdAt)}
+                <>
+                  <div key={index} className={`relative py-4 ${indent}`}>
+                    {((!isRejected && !isLast) || scoreUpdated.length != 0) && (
+                      <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300 z-0"></div>
+                    )}
+                    <span
+                      className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor} z-10`}
+                    >
+                      {isRejected ? (
+                        <XCircle className="h-3 w-3 text-white" />
+                      ) : (
+                        <ThumbsUp className="h-3 w-3 text-white" />
+                      )}
                     </span>
+                    <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
+                      <span className="font-semibold text-gray-800">
+                        {audit.auditType.replace(/_/g, " ")}
+                      </span>
+                      <span className="text-sm text-gray-500 mt-1 md:mt-0">
+                        {formatDate(audit.auditedAt || audit.createdAt)}
+                      </span>
+                    </div>
+                    {audit.comments && (
+                      <p className="ml-16 text-sm text-gray-600 mt-1 italic">“{audit.comments}”</p>
+                    )}
                   </div>
-                  {audit.comments && (
-                    <p className="text-sm text-gray-600 mt-1 italic">
-                      "{audit.comments}"
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
+                  {(()=>{
+                      if(scoreUpdated.length !== 0){
+                        let temp_count = scoreUpdated.length;
+                        const time = scoreUpdated[0].createdAt || scoreUpdated[0].auditedAt;
+                        scoreUpdated = [];
+                        return(
+                          <div key={index} className={`relative py-4 ${indent}`}>
+                            {/* Line connector */}
+                            {!isLast && (
+                              <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300 z-0"></div>
+                            )}
+                            <span
+                              className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor} z-10`}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3 text-white"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </span>
+                            <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
+                              <span className="font-semibold text-gray-800">
+                                SCORE UPDATED
+                              </span>
+                              <span className="text-sm text-gray-500 mt-1 md:mt-0">
+                                {formatDate(time)}
+                              </span>
+                            </div>
+                              <p className="ml-16 text-sm text-gray-600 mt-1 italic">“Score Updated for {temp_count} Skills”</p>
+                          </div>
+                        );
+                      }
+                    })()
+                  }
+                </>
+              );
           })}
         </div>
       </div>

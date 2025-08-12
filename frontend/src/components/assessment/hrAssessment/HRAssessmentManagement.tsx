@@ -529,7 +529,7 @@ const HRAssessmentManagement: React.FC = () => {
 
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart3 },
-    { id: "assessments", label: "All Assessments", icon: FileText },
+    // { id: "assessments", label: "All Assessments", icon: FileText },
     { id: "cycles", label: "Assessment Cycles", icon: Calendar },
     { id: "pending-reviews", label: "HR Reviews", icon: AlertCircle, count: pendingHRReviews.length },
     { id: "history", label: "History", hidden:true},
@@ -668,7 +668,7 @@ const HRAssessmentManagement: React.FC = () => {
             <OverviewTab assessments={assessments} cycles={cycles} statistics={statistics} />
           )}
           
-          {selectedTab === "assessments" && (
+          {/* {selectedTab === "assessments" && (
             <AssessmentsTab
               userSummaries={userSummaries}
               searchTerm={searchTerm}
@@ -680,7 +680,7 @@ const HRAssessmentManagement: React.FC = () => {
               onShowHistory={handleShowUserHistory}
               onShowOverdueDetails={() => handleShowOverdueDetails(currentOverdueAssessments)}
             />
-          )}
+          )} */}
 
           {selectedTab === "cycles" && (
             <CyclesTab cycles={cycles} formatDate={formatDate} userSummaries={userSummaries}/>
