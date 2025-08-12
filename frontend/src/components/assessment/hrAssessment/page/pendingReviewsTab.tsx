@@ -188,13 +188,6 @@ export const PendingReviewsTab: React.FC<{
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => navigate(`/assessment-details/${assessment.id}`)}
-                  className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center gap-1"
-                >
-                  <FileText className="h-4 w-4" />
-                  History
-                </button>
-                <button
-                  onClick={() => onReview(assessment)}
                   className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-1"
                 >
                   <Eye className="h-4 w-4" />

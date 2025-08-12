@@ -14,8 +14,7 @@ export const AssessmentsTab: React.FC<{
     setAssessmentId : (id: number | null) => void;
     assessments: Assessment[];
     formateDate: (date: Date)=>string;
-    userSummaries: any[]
-}> = ({setAssessmentId,assessments,formateDate,userSummaries}) => {
+}> = ({setAssessmentId,assessments,formateDate}) => {
 
     const [searchTerm,setSearchTerm] = useState("");
     const [statusFilter,setStatusFilter] = useState("all");
@@ -98,7 +97,7 @@ export const AssessmentsTab: React.FC<{
                                     </div>
                                     <div>
                                         <span className="text-gray-500">No.of.Skills:</span>
-                                        <span className="ml-2">{userSummaries.find(e=>e.latestAssessment.id === val.id).latestAssessment.detailedScores.length}</span>
+                                        <span className="ml-2">{val?.user?.position?.skill.length}</span>
                                     </div>
                                     <div className="flex justify-end">
                                         <button
