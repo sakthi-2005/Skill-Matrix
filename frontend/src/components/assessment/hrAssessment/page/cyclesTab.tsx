@@ -59,7 +59,6 @@ export const CyclesTab: React.FC<{ cycles: AssessmentCycle[]; formatDate: (date:
           setAssessmentId={setAssessmentId}
           assessments={cycles.find(e=>e.id===assessmentId).assessments}
           formateDate={formatDate}
-          userSummaries={userSummaries}
           />
         </>
       }

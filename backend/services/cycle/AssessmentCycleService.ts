@@ -171,7 +171,7 @@ const AssessmentCycleService = {
   getAssessmentCycles: async (): Promise<AssessmentCycleType[]> => {
       try {
         const cycles = await assessmentCycleRepo.find({
-          relations: ["assessments"],
+          relations: ["assessments","assessments.user","assessments.user.position.skill"],
           order: { createdAt: "DESC" }
         }) as AssessmentCycleType[];
   
