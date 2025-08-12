@@ -236,15 +236,24 @@ const PendingActionsTab: React.FC<Props> = ({
                       </div>
 
                       <div className="flex justify-end gap-2">
-                        <button
+                        {isFirst ?(<button
                           onClick={() => handleViewHistory(assessment)}
                           className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
                         >
                           <Eye className="h-4 w-4" />
-                          View Details
+                          Write Assessment
                         </button>
-
-                        {isFirst ? (
+                        ):(
+                          <button
+                            disabled
+                            className="px-3 py-1.5 text-sm bg-gray-300 text-gray-700 rounded-md flex items-center gap-1 cursor-not-allowed"
+                          >
+                            <AlertCircle className="h-4 w-4" />
+                            Complete previous assessment
+                          </button>
+                        )}
+                        
+                        {/* {isFirst ? (
                           <button
                             onClick={() => handleWriteAssessment(assessment)}
                             className="px-3 py-1.5 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700 flex items-center gap-1"
@@ -262,7 +271,7 @@ const PendingActionsTab: React.FC<Props> = ({
                             <AlertCircle className="h-4 w-4" />
                             Complete previous assessment
                           </button>
-                        )}
+                        )} */}
                       </div>
                     </div>
                   );

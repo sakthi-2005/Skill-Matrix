@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AssessmentWithHistory, DetailedScore } from "../../../types/assessmentTypes";
+import { userInfo } from "os";
 
 interface Skill {
   id: number;
@@ -60,6 +61,7 @@ const WriteAssessmentPanel: React.FC<Props> = ({
       <div className="flex items-center justify-between border-b pb-2">
         <h2 className="text-xl font-semibold">Write Assessment</h2>
       </div>
+      
       <p className="text-sm text-gray-600">
         Assessment for {assessment.user?.name} - #{assessment.id}
       </p>
@@ -72,7 +74,8 @@ const WriteAssessmentPanel: React.FC<Props> = ({
             const currentScore = skillScores[score.skillId] || 0;
             const previousScore = previousApprovedScores[score.skillId] || 0;
             const minAllowed = previousScore;
-            console.log("previousApprovedSccore:",console.log("previousApprovedScores[score.skillId]123:",previousApprovedScores[score.skillId]))
+            console.log("previousApprovedScores[score.skillId]123:",previousApprovedScores[score.skillId]);
+            console.log("Current Score:",currentScore);
             const levelDescriptions = [
               score.Skill?.basic || "Beginner",
               score.Skill?.low || "Intermediate",
@@ -80,7 +83,6 @@ const WriteAssessmentPanel: React.FC<Props> = ({
               score.Skill?.high || "Expert",
               score.Skill?.expert || "Master",
             ];
-
             return (
               <div key={score.skillId} className="border border-gray-200 rounded-lg p-4">
                 <div className="grid grid-cols-[1fr_5fr_auto] items-center gap-4"
