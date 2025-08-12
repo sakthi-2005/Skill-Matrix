@@ -194,7 +194,7 @@ const TeamAssessment = () => {
     };
 
     const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
-        const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
+        const userId = typeof assessment.user.id === "number" ? assessment.user.id : assessment.user.id;
         
         // Check if user has older pending assessments that should be completed first
         const canProceed = checkForOlderPendingAssessments(userId, assessment.user?.name || 'Unknown User', assessment);
@@ -255,16 +255,15 @@ const TeamAssessment = () => {
             }
         });
 
-        console.log("Final initial scores:", initialScores);
-        console.log("Previous approved scores:", previousScores);
+        console.log("Final initial scores in TA:", initialScores);
+        console.log("Previous approved scores in TA:", previousScores);
 
         setSkillScores(initialScores);
         setPreviousApprovedScores(previousScores);
         setComments("");
     };
 
-
-
+    
     const handleSubmitAssessment = async () => {
         if (!selectedAssessment) return;
 
