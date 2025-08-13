@@ -9,39 +9,50 @@ import {
   XCircle, Eye, ThumbsUp, ThumbsDown, Edit3
 } from 'lucide-react';
 import WriteAssessmentModal from '@/components/assessment/teamAssessment/WriteAssessmentModal';
-import TeamAssessment from '@/components/assessment/teamAssessment/TeamAssessment';
+
 const EmployeeAssessmentDetailsPage: React.FC = () => {
   const { assessmentId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [assessments, setAssessments] = useState<AssessmentWithHistory[]>([]);
   const [assessment, setAssessment] = useState<AssessmentWithHistory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [reviewComments, setReviewComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedAssessment, setSelectedAssessment] = useState<AssessmentWithHistory | null>(null);
   const [skillScores, setSkillScores] = useState<{ [skillId: number]: number }>({});
   const [previousApprovedScores, setPreviousApprovedScores] = useState<{ [skillId: number]: number }>({});
   const [comments, setComments] = useState("");
-  const [activeTab, setActiveTab] = useState<'skills' | 'comments' | 'timeline' | 'review-assessment' | 'write-assessment'>('skills');
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [selectedTab, setSelectedTab] = useState("comments");
-  const [curLeadScore,setCurLeadScore]=useState<{ [skillId: number]: number }>({});
-  const shouldShowReviewTab = assessment?.status === AssessmentStatus.EMPLOYEE_REVIEW;
-  const shouldShowWriteTab = assessment?.status === AssessmentStatus.LEAD_WRITING;
-  console.log("Should Review",assessment?.status);
-  useEffect(() => {
-    if (shouldShowReviewTab) {
-      setActiveTab('review-assessment');
-    }
-  }, [shouldShowReviewTab]);
+  const [activeTab, setActiveTab] = useState<'skills' | 'comments' | 'timeline' | 'review-assessment' | 'write-assessment'>('comments');
+  const [curLeadScore, setCurLeadScore] = useState<{ [skillId: number]: number }>({});
+  const [userType, setUserType] = useState("")
+  let scoreUpdated = [];
 
-  useEffect(()=>{
-    if(shouldShowWriteTab){
-      setActiveTab('write-assessment');
-      handleWriteAssessment(assessment);
+  useEffect(() => {
+    if (!assessment) return;
+    if (assessment.userId === user.id && assessment.nextApprover === parseInt(user.id)) {
+      // alert("you are the correct employee to review the assessment");
+      setUserType("employee");
     }
-  },[shouldShowWriteTab]);
+    else if (assessment.user?.leadId === user.id && assessment.nextApprover === parseInt(user.id)) {
+      // alert("You are the required lead write the assessment");
+      try{
+        handleWriteAssessment(assessment);
+        setUserType("lead");
+      }
+      catch(err){
+        toast({
+          title: "Error",
+          description: "user has pervious pending assessment review it first",
+          variant: "destructive",
+        });
+        setUserType("");
+      }
+    }
+    else if (user.role?.name === "hr" && assessment.nextApprover === parseInt(user.id)) {
+      // alert("take hr review")
+      setUserType("hr");
+    }
+
+  }, [assessment]);
 
   useEffect(() => {
     if (assessmentId) {
@@ -110,170 +121,175 @@ const EmployeeAssessmentDetailsPage: React.FC = () => {
     }
   };
 
- const checkForOlderPendingAssessments = (userId: string, userName: string, currentAssessment: AssessmentWithHistory) => {
-        try {
-            // Get all pending assessments for this user
-            const userPendingAssessments = assessments.filter(assessment => 
-                assessment.userId === userId && 
-                !['COMPLETED', 'CANCELLED'].includes(assessment.status)
-            );
+  const checkForOlderPendingAssessments = async (userId: string, currentAssessment: AssessmentWithHistory) => {
+    try {
+      // Get all pending assessments for this user
+      console.log('ready');
+      const assessments = await assessmentService.getUserAssessmentHistory(userId);
+      console.log(assessments);
+      const userPendingAssessments = assessments.data.filter(assessment =>
+        assessment.userId === userId &&
+        !['COMPLETED', 'CANCELLED'].includes(assessment.status)
+      );
 
-            // Find assessments that are older than the current one (lower ID = older)
-            const olderPendingAssessments = userPendingAssessments.filter(assessment => 
-                assessment.id < currentAssessment.id
-            );
+      // Find assessments that are older than the current one (lower ID = older)
+      const olderPendingAssessments = userPendingAssessments.filter(assessment =>
+        assessment.id < currentAssessment.id
+      );
+      console.log(olderPendingAssessments)
 
-            if (olderPendingAssessments.length > 0) {
-                // Sort by ID to get the oldest first
-                const oldestAssessment = olderPendingAssessments.sort((a, b) => a.id - b.id)[0];
-                
-                toast({
-                    title: "Complete Previous Assessments First",
-                    description: `Please complete Assessment #${oldestAssessment.id} before accessing Assessment #${currentAssessment.id}. Complete assessments in chronological order.`,
-                    variant: "destructive"
-                });
-                return false;
-            }
-            
-            return true; // Allow access to this assessment
-        } catch (error) {
-            console.error('Error checking for older pending assessments:', error);
-            toast({
-                title: "Error",
-                description: "Failed to check assessment order",
-                variant: "destructive"
-            });
-            return false;
-        }
-    };
+      if (olderPendingAssessments.length > 0) {
+        // Sort by ID to get the oldest first
+        const oldestAssessment = olderPendingAssessments.sort((a, b) => a.id - b.id)[0];
+
+        toast({
+          title: "Complete Previous Assessments First",
+          description: `Please complete Assessment #${oldestAssessment.id} before accessing Assessment #${currentAssessment.id}. Complete assessments in chronological order.`,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error checking for older pending assessments:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check assessment order",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
 
   const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
-          const userId = typeof assessment.user.id === "number" ? assessment.user.id: assessment.user.id;
-          console.log("HandleWriteAssessment")
-          // Check if user has older pending assessments that should be completed first
-          const canProceed = checkForOlderPendingAssessments(userId, assessment.user?.name || 'Unknown User', assessment);
-          
-          if (!canProceed) {
-              return;
+    const userId = assessment.user.id;
+    // Check if user has older pending assessments that should be completed first
+    const canProceed = await checkForOlderPendingAssessments(userId, assessment);
+
+    console.log("bool",canProceed)
+
+    if (!canProceed) {
+      setUserType("");
+      setActiveTab("comments");
+      return;
+    }
+
+    // setSelectedTab("writeAssessment");
+    console.log("current detailedScores", assessment.detailedScores);
+
+    const initialScores: { [skillId: number]: number } = {};
+    const previousScores: { [skillId: number]: number } = {};
+
+    // First, use current assessment scores if they exist (for assessments already in progress)
+    assessment.detailedScores?.forEach((score) => {
+      if (score.score != null) {
+        initialScores[score.skillId] = score.score;
+        console.log(`Using existing score for skill ${score.skillId}: ${score.score}`);
+      }
+    });
+
+    // Then, fetch latest approved scores from previous completed assessments
+    try {
+      const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
+
+      if (latestRes.success && latestRes.data) {
+
+        latestRes.data.forEach((latest) => {
+          const previousScore = latest.score || 0;
+          previousScores[latest.skill_id] = previousScore;
+
+          // Only use previous scores if current assessment doesn't have a score for this skill
+          if (initialScores[latest.skill_id] === undefined) {
+            initialScores[latest.skill_id] = previousScore;
           }
-  
-          setSelectedAssessment(assessment);
-          setSelectedTab("writeAssessment");
-          console.log("current detailedScores", assessment.detailedScores);
-  
-          const initialScores: { [skillId: number]: number } = {};
-          const previousScores: { [skillId: number]: number } = {};
-  
-          // First, use current assessment scores if they exist (for assessments already in progress)
-          assessment.detailedScores?.forEach((score) => {
-              if (score.score != null) {
-                  initialScores[score.skillId] = score.score;
-                  console.log(`Using existing score for skill ${score.skillId}: ${score.score}`);
-              }
-          });
-  
-          // Then, fetch latest approved scores from previous completed assessments
-          try {
-              const latestRes = await assessmentService.getUserLatestApprovedScoresByUserId(userId);
-  
-              if (latestRes.success && latestRes.data) {
-                  console.log("Latest approved scores from previous assessments:", latestRes.data);
-                  
-                  latestRes.data.forEach((latest) => {
-                      const previousScore = latest.score ?? latest.lead_score ?? latest.self_score ?? 0;
-                      previousScores[latest.skill_id] = previousScore;
-                      
-                      // Only use previous scores if current assessment doesn't have a score for this skill
-                      if (initialScores[latest.skill_id] === undefined) {
-                          initialScores[latest.skill_id] = previousScore;
-                          console.log(`Using previous approved score for skill ${latest.skill_id}: ${previousScore}`);
-                      }
-                  });
-              } else {
-                  console.log("No previous approved scores found or API call failed");
-              }
-          } catch (error) {
-              console.error("Error fetching previous approved scores:", error);
-              toast({
-                  title: "Warning",
-                  description: "Could not load previous assessment scores. Starting with blank scores.",
-                  variant: "default"
-              });
-          }
-  
-          // Ensure all skills in current assessment have a score (default to 0 if no previous score)
-          assessment.detailedScores?.forEach((score) => {
-              if (initialScores[score.skillId] === undefined) {
-                  initialScores[score.skillId] = 0;
-                  console.log(`No previous score found for skill ${score.skillId}, defaulting to 0`);
-              }
-          });
-  
-          console.log("Final initial scores in ADP:", initialScores);
-          console.log("Previous approved scores in ADP:", previousScores);
-  
-          setSkillScores(initialScores);
-          setPreviousApprovedScores(previousScores);
-          setComments("");
-      };
-      console.log("Previous Score in Assessment Details page:",previousApprovedScores)
+        });
+      } else {
+        console.log("No previous approved scores found or API call failed");
+      }
+    } catch (error) {
+      console.error("Error fetching previous approved scores:", error);
+      toast({
+        title: "Warning",
+        description: "Could not load previous assessment scores. Starting with blank scores.",
+        variant: "default"
+      });
+    }
+
+    // Ensure all skills in current assessment have a score (default to 0 if no previous score)
+    assessment.detailedScores?.forEach((score) => {
+      if (initialScores[score.skillId] === undefined) {
+        initialScores[score.skillId] = 0;
+        console.log(`No previous score found for skill ${score.skillId}, defaulting to 0`);
+      }
+    });
+
+    setSkillScores(initialScores);
+    setPreviousApprovedScores(previousScores);
+    setComments("");
+  };
+  console.log("Previous Score in Assessment Details page:", previousApprovedScores)
+
+  // submit assessment
   const handleSubmitAssessment = async () => {
-          if (!selectedAssessment) return;
-  
-          const unscoredSkills = selectedAssessment.detailedScores.filter(
-              (score) => !(skillScores[score.skillId] && skillScores[score.skillId] > 0)
-          );
-  
-          if (unscoredSkills.length > 0) {
-              toast({
-              title: "Incomplete Scores",
-              description: "Please provide scores for all skills before submitting.",
-              variant: "destructive",
-              });
-              return;
-          }
-          setIsSubmitting(true);
-          try {
-              const skillAssessments: LeadSkillAssessment[] = selectedAssessment.detailedScores.map((score: DetailedScore) => ({
-                  skillId: score.skillId,
-                  leadScore: skillScores[score.skillId] || 0,
-              }));
-              const payload={
-                  assessmentId:selectedAssessment.id,
-                  skills:skillAssessments,
-                  comments
-              };
-              console.log("Submitting payload:",payload);
-  
-              const response = await assessmentService.writeLeadAssessment(                
-                  selectedAssessment.id,
-                  skillAssessments,
-                  comments
-              );
-  
-              if (response.success) {
-                  toast({
-                      title: "Success",
-                      description: "Assessment submitted successfully. You can now access newer assessments.",
-                  });
-                  
-                  // Refresh data and return to pending tab
-                  await loadAssessmentDetails(); // Refresh data
-                  setSelectedTab("pending");
-                  setSelectedAssessment(null);
-              }
-          } catch (error) {
-              console.error("Error submitting assessment:", error);
-              toast({
-                  title: "Error",
-                  description: "Failed to submit assessment",
-                  variant: "destructive",
-              });
-          } finally {
-              setIsSubmitting(false);
-          }
+
+    if (!assessment) return;
+
+    const unscoredSkills = assessment.detailedScores.filter(
+      (score) => !(skillScores[score.skillId] && skillScores[score.skillId] > 0)
+    );
+
+    if (unscoredSkills.length > 0) {
+      toast({
+        title: "Incomplete Scores",
+        description: "Please provide scores for all skills before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsSubmitting(true);
+
+    try {
+      const skillAssessments: LeadSkillAssessment[] = assessment.detailedScores.map((score: DetailedScore) => ({
+        skillId: score.skillId,
+        leadScore: skillScores[score.skillId] || 0,
+      }));
+
+      const payload = {
+        assessmentId: assessment.id,
+        skills: skillAssessments,
+        comments
       };
-console.log("User:",assessment);
+
+      console.log("Submitting payload:", payload);
+
+      const response = await assessmentService.writeLeadAssessment(
+        assessment.id,
+        skillAssessments,
+        comments
+      );
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Assessment submitted successfully. You can now access newer assessments.",
+        });
+
+        await loadAssessmentDetails();
+        setActiveTab("comments");
+      }
+    } catch (error) {
+      console.error("Error submitting assessment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit assessment",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const formatDate = (date: string | Date) =>
     new Date(date).toLocaleDateString("en-US", {
       year: "numeric", month: "short", day: "numeric",
@@ -286,8 +302,9 @@ console.log("User:",assessment);
   const handleStartReview = (assessment: AssessmentWithHistory) => {
     if (assessment.userId === user.id || user.role?.name === 'hr') {
       setActiveTab('review-assessment');
+      console.log("activeTab", activeTab)
     } else {
-      setActiveTab('write-assessment');
+      handleWriteAssessment(assessment);
     }
   };
 
@@ -304,10 +321,42 @@ console.log("User:",assessment);
           description: `Assessment ${approved ? "approved" : "rejected"} successfully`,
         });
         await loadAssessmentDetails();
+        setActiveTab("comments");
       }
     } catch (error) {
       console.error("Error submitting review:", error);
       toast({ title: "Error", description: "Failed to submit review", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleHRReview = async (approved: boolean) => {
+    if (!assessment) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await assessmentService.hrFinalReview(
+        assessment.id,
+        { approved, comments: reviewComments }
+      );
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: `Assessment ${approved ? "approved" : "rejected"} successfully`,
+        });
+        setUserType("");
+        loadAssessmentDetails();
+        setActiveTab("comments");
+      }
+    } catch (error) {
+      console.error("Error submitting HR review:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit review",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -408,21 +457,13 @@ console.log("User:",assessment);
               </p>
             </div>
             <button
-              onClick={() => {
-                if (user.role.name === 'lead') {
-                  console.log("Assessmnet:",assessment);
-                  handleWriteAssessment(assessment);
-                  setActiveTab('write-assessment');
-                } else {
-                  handleStartReview(assessment);
-                }
-              }}
+              onClick={() => handleStartReview(assessment)}
               className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 flex items-center gap-2"
             >
               <Eye className="h-4 w-4" />
-              {user.role.name === 'lead'
-                ? "Write Assessment"
-                : "Review Assessment"}
+              {(assessment.userId === assessment.user?.id || user.role.name === 'hr')
+                ? "Review Assessment"
+                : "Write Assessment"}
             </button>
           </div>
         </div>
@@ -432,16 +473,16 @@ console.log("User:",assessment);
       <div className="mb-6 border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
-            onClick={() => setActiveTab('skills')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'skills' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-          >
-            Skill Assessments
-          </button>
-          <button
             onClick={() => setActiveTab('comments')}
             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'comments' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           >
             Comments
+          </button>
+          <button
+            onClick={() => setActiveTab('skills')}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'skills' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          >
+            Skill Assessments
           </button>
           <button
             onClick={() => setActiveTab('timeline')}
@@ -449,22 +490,20 @@ console.log("User:",assessment);
           >
             Assessment Timeline
           </button>
-          {shouldShowReviewTab && (
+          {(userType === "employee" || userType === "hr") && (
             <button
               onClick={() => setActiveTab('review-assessment')}
-              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'review-assessment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'review-assessment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Review Assessment
             </button>
           )}
-          {assessment?.status === 'LEAD_WRITING' && (
-            <button 
-              onClick={()=>setActiveTab('write-assessment')}
-              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'write-assessment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+          {userType === "lead" && (
+            <button
+              onClick={() => setActiveTab('write-assessment')}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'write-assessment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >Write Assessment</button>
           )}
         </nav>
@@ -521,42 +560,112 @@ console.log("User:",assessment);
 
       {activeTab === 'timeline' && (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Assessment Timeline</h2>
-          <div className="space-y-4">
+        <h3 className="font-medium mb-3">Assessment History</h3>
+          <div>
             {assessment.history?.map((audit, index) => {
               const isRejected = audit.auditType.toLowerCase().includes("rejected");
-              const isApproved = audit.auditType.toLowerCase().includes("approved") || audit.auditType.toLowerCase().includes("completed");
-              const circleColor = isApproved ? "bg-green-500" : isRejected ? "bg-red-500" : "bg-blue-500";
+              const isApprovedStep =
+                audit.auditType.toLowerCase().includes("approved") ||
+                audit.auditType.toLowerCase().includes("completed");
+    
+              const circleColor = isApprovedStep
+                ? "bg-green-500"
+                : isRejected
+                ? "bg-red-500"
+                : "bg-blue-500";
+    
+              const rejectedCount = assessment.history
+                .slice(0, index)
+                .filter((h) =>
+                  h.auditType.toLowerCase().includes("rejected")
+                ).length;
+    
+              const indent = `ml-${rejectedCount * 8}`;
               const isLast = index === assessment.history.length - 1;
+    
+              if (audit.auditType.toLowerCase().includes("score")) {
+                scoreUpdated.push(audit);
+                return null;
+              }
+    
               return (
-                <div key={index} className="relative flex items-start">
-                  {!isLast && <div className="absolute left-4 top-8 bottom-0 w-px bg-gray-300"></div>}
-                  <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center ${circleColor}`}>
-                    {isApproved ? <CheckCircle className="w-4 h-4 text-white" /> :
-                     isRejected ? <XCircle className="w-4 h-4 text-white" /> :
-                     <Clock className="w-4 h-4 text-white" />}
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900">{audit.auditType.replace(/_/g, ' ')}</h4>
-                      <span className="text-sm text-gray-500">{formatDate(audit.auditedAt || audit.createdAt)}</span>
+                <React.Fragment key={index}>
+                  <div className={`relative py-4 ${indent}`}>
+                    {!isRejected && !isLast && (
+                      <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300"></div>
+                    )}
+                    <span
+                      className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor}`}
+                    >
+                      {isRejected ? (
+                        <XCircle className="h-3 w-3 text-white" />
+                      ) : (
+                        <ThumbsUp className="h-3 w-3 text-white" />
+                      )}
+                    </span>
+                    <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
+                      <span className="font-semibold text-gray-800">
+                        {audit.auditType.replace(/_/g, " ")}
+                      </span>
+                      <span className="text-sm text-gray-500 mt-1 md:mt-0">
+                        {formatDate(audit.auditedAt || audit.createdAt)}
+                      </span>
                     </div>
-                    {audit.comments && <p className="text-sm text-gray-600 mt-1 italic">"{audit.comments}"</p>}
+                    {audit.comments && (
+                      <p className="ml-16 text-sm text-gray-600 mt-1 italic">
+                        “{audit.comments}”
+                      </p>
+                    )}
                   </div>
-                </div>
+    
+                  {/* Score Updated Section */}
+                  {(() => {
+                    if (scoreUpdated.length !== 0) {
+                      let temp_count = scoreUpdated.length;
+                      let print_scoreUpdated = scoreUpdated;
+                      scoreUpdated = [];
+                      return (
+                        <div className={`relative py-4 ${indent}`}>
+                          {!isRejected && !isLast && (
+                            <div className="absolute left-11 top-[28px] bottom-[-16px] w-px bg-gray-300"></div>
+                          )}
+                          <span
+                            className={`absolute left-8 top-4 w-6 h-6 rounded-full flex items-center justify-center ${circleColor}`}
+                          >
+                            ✓
+                          </span>
+                          <div className="ml-16 flex flex-col md:flex-row md:justify-between md:items-center">
+                            <span className="font-semibold text-gray-800">
+                              SCORE UPDATED
+                            </span>
+                            <span className="text-sm text-gray-500 mt-1 md:mt-0">
+                              {formatDate(
+                                print_scoreUpdated[0]?.auditedAt ||
+                                  print_scoreUpdated[0]?.createdAt
+                              )}
+                            </span>
+                          </div>
+                            <p className="ml-16 text-sm text-gray-600 mt-1 italic">
+                              “Score Updated for {temp_count} Skills”
+                            </p>
+                        </div>
+                      );
+                    }
+                  })()}
+                </React.Fragment>
               );
             })}
           </div>
         </div>
       )}
 
-      {activeTab === 'review-assessment' && shouldShowReviewTab && (
+      {activeTab === 'review-assessment' && (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          
-            <h2 className="text-xl font-semibold">Review Assessment</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Assessment #{assessment.id} - Cycle {assessment.currentCycle}
-            </p>
+
+          <h2 className="text-xl font-semibold">Review Assessment</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Assessment #{assessment.id} - Cycle {assessment.currentCycle}
+          </p>
 
           <div className="p-6 space-y-6">
             {/* Assessment Details */}
@@ -614,6 +723,7 @@ console.log("User:",assessment);
             </div>
 
             {/* Instructions */}
+            { userType === "employee" ?
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="font-medium text-blue-900 mb-2">Review Instructions</h4>
               <ul className="text-sm text-blue-800 space-y-1">
@@ -623,34 +733,52 @@ console.log("User:",assessment);
                 <li>• Your decision will be sent to HR for final review</li>
               </ul>
             </div>
+            :
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">Final Review Decision</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• <strong>Approve:</strong> Assessment is complete and scores are finalized</li>
+                <li>• <strong>Reject:</strong> Send back to lead for revision (increases cycle count)</li>
+              </ul>
+            </div>
+            }
           </div>
 
           <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-            
+
             <button
-              onClick={() => handleSubmitReview(false)}
+              onClick={() => { userType === "employee" ? handleSubmitReview(false) : handleHRReview(false) }}
               disabled={isSubmitting}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
             >
-              Request Changes
+              {userType === "employee" ? "Request Changes" 
+              : <>
+                <XCircle className="h-4 w-4" />
+                Reject & Send Back
+              </>}
             </button>
             <button
-              onClick={() => handleSubmitReview(true)}
+              onClick={() => { userType === "employee" ? handleSubmitReview(true) : handleHRReview(true) }}
               disabled={isSubmitting}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
             >
               {isSubmitting && (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               )}
-              Approve Assessment
+              {userType === "employee" ? "Approve Assessment" :             
+              (<>
+                <CheckCircle className="h-4 w-4" />
+                  Approve & Complete
+              </>)}
             </button>
           </div>
         </div>
       )}
-      {activeTab==='write-assessment' && (
+
+      {activeTab === 'write-assessment' && (
         <WriteAssessmentModal
           assessment={assessment}
-          skills={skills}
+          skills={[]}
           skillScores={skillScores}
           setSkillScores={setSkillScores}
           previousApprovedScores={previousApprovedScores}
@@ -659,9 +787,10 @@ console.log("User:",assessment);
           isSubmitting={isSubmitting}
           onSubmit={handleSubmitAssessment}
           data={curLeadScore}
-          onClose={() => setSelectedTab("comments")} // go back when done
+          onClose={() => setActiveTab("comments")}
         />
       )}
+
     </div>
   );
 };
