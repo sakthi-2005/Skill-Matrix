@@ -297,9 +297,9 @@ const AssessmentController: Controller = {
   getUserAssessmentHistory: async (req: AuthRequest, h: ResponseToolkit) => {
     try {
       const { userId } = req.params;
-      const userRole = req.auth.credentials.user.role;
+      // const userRole = req.auth.credentials.user.role;
       
-      ValidationHelpers.validateHRRole(userRole);
+      // ValidationHelpers.validateHRRole(userRole);
       
       if (!userId) {
         return ResponseHelpers.error(h, MESSAGES.ERROR.USER_ID_REQUIRED, HTTP_STATUS.BAD_REQUEST);

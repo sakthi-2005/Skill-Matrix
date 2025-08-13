@@ -9,18 +9,9 @@ interface User {
   roleId: number;
   teamId: number;
   positionId: number;
-  role: {
-    id: string;
-    name: "employee" | "lead" | "hr" | "admin";
-  };
-  Team?: {
-    id: string;
-    name: string;
-  };
-  position?: {
-    id: string;
-    name: string;
-  };
+  role: Role;
+  Team?: Team;
+  position?: Position;
 }
 
 interface AuthState {
