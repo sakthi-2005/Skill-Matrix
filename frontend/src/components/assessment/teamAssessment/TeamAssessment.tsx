@@ -30,7 +30,7 @@ import AssessmentHistoryPage from "./modals/AssessmentHistoryModal";
 import SkillScoresModal from "./modals/SkillScoresModal";
 import OverdueDetailsModal from "./modals/OverdueDetailsModal";
 
-import UnifiedAssessmentReview from "../shared/UnifiedAssessmentReview";
+import UnifiedAssessmentReview from "../shared/myAssessmentReview";
 
 interface Skill {
   id: number;

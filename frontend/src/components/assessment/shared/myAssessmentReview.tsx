@@ -28,29 +28,17 @@ import {
   getWorkflowTransitions
 } from "@/utils/assessmentUtils";
 
-interface UnifiedAssessmentReviewProps {
-  context?: 'employee' | 'lead' | 'auto'; // auto will determine based on user role and assessment data
-}
 
-const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({ 
-  context = 'auto' 
-}) => {
+const myAssessmentReview: React.FC = () => {
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState<AssessmentWithHistory[]>([]);
   const [pendingReviews, setPendingReviews] = useState<AssessmentWithHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [assessmentContext, setAssessmentContext] = useState<'employee' | 'lead'>('employee');
-  const [userHierarchyLevel, setUserHierarchyLevel] = useState<number>(0);
 
   useEffect(() => {
     loadAssessments();
-  }, [user]);
-
-  useEffect(() => {
-    if (user) {
-      setUserHierarchyLevel(getUserHierarchyLevel(user));
-    }
   }, [user]);
 
   const loadAssessments = async () => {
@@ -66,29 +54,14 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
         const userAssessments = allAssessments.data.filter(assessment => 
           assessment.userId === user?.id?.toString()
         );
-        
-        // Debug logging (can be removed in production)
-        // console.log('User ID:', user?.id?.toString());
-        // console.log('User Role:', user?.role?.name);
-        // console.log('All Assessments:', allAssessments.data);
-        // console.log('Filtered User Assessments:', userAssessments);
-        
+
         setAssessments(userAssessments);
-        
-        if (context === 'auto' && user) {
-          const detectedContext = determineAssessmentContext(user, userAssessments);
-          console.log('Detected Context:', detectedContext);
-          setAssessmentContext(detectedContext);
-        } else if (context !== 'auto') {
-          setAssessmentContext(context as 'employee' | 'lead');
-        }
       }
       if (requiresAction.success) {
         // Filter pending reviews to only show assessments that are actually for this user
         // and in EMPLOYEE_REVIEW status
         const filteredPendingReviews = requiresAction.data.filter(assessment => 
-          assessment.userId === user?.id?.toString() && 
-          assessment.status === AssessmentStatus.EMPLOYEE_REVIEW
+          assessment.nextApprover === user?.id?.toString()
         );
         
         // console.log('Pending Reviews (raw):', requiresAction.data);
@@ -154,17 +127,6 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
     }
   };
 
-  const handleViewHistory = (assessment: AssessmentWithHistory) => {
-    // For employee assessments, navigate to the employee assessment details page
-    if (assessment.status === AssessmentStatus.EMPLOYEE_REVIEW) {
-      // If it's pending employee review, go to details page for review
-      navigate(`/assessment-details/${assessment.id}`);
-    } else {
-      // For completed or other statuses, go to details page for viewing
-      navigate(`/assessment-details/${assessment.id}`);
-    }
-  };
-
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -176,7 +138,18 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
   };
 
   // Get context-specific labels and descriptions using utility function
-  const labels = getAssessmentContextLabels(assessmentContext, userHierarchyLevel);
+  const label = {
+      title: "My Assessments",
+      description: "Review and manage your skill assessments",
+      pendingTitle: "Action Required",
+      pendingDescription: "The following assessments require your review",
+      reviewInstructions: [
+        `• Review the skill ratings provided by your Lead`,
+        "• If you agree with the assessment, click \"Approve\"",
+        "• If you disagree, click \"Request Changes\" with your feedback",
+        "• Your decision will be sent to HR for final review"
+      ]
+    }
 
   if (isLoading) {
     return (
@@ -192,10 +165,10 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            {assessmentContext === 'lead' ? <Users className="h-8 w-8" /> : <User className="h-8 w-8" />}
-            {labels.title}
+            <User className="h-8 w-8" />
+            {label.title}
           </h1>
-          <p className="text-gray-600">{labels.description}</p>
+          <p className="text-gray-600">{label.description}</p>
         </div>
       </div>
 
@@ -252,10 +225,10 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-600" />
-              {labels.pendingTitle}
+              {label.pendingTitle}
             </h2>
             <p className="text-sm text-gray-600 mt-1">
-              {labels.pendingDescription}
+              {label.pendingDescription}
             </p>
           </div>
 
@@ -279,7 +252,7 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
 
                 <div className="mb-4 p-3 bg-white rounded-md border">
                   <p className="text-sm text-gray-700 mb-2">
-                    <strong>Assessment completed by your {labels.assessorLabel.toLowerCase()}</strong>
+                    <strong>Assessment completed by your Lead</strong>
                   </p>
                   <p className="text-sm text-gray-600">
                     Skills assessed: {assessment.detailedScores?.length || 0}
@@ -291,7 +264,7 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
 
                 <div className="flex justify-end gap-2">
                   <button
-                    onClick={() => handleViewHistory(assessment)}
+                    onClick={() => navigate(`/assessment-details/${assessment.id}`)}
                     className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
                   >
                     <Eye className="h-4 w-4" />
@@ -309,7 +282,7 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            All {assessmentContext === 'lead' ? 'Lead' : 'My'} Assessments
+            All My Assessments
           </h2>
         </div>
 
@@ -327,7 +300,7 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        {assessmentContext === 'lead' ? <Users className="h-5 w-5 text-blue-600" /> : <User className="h-5 w-5 text-blue-600" />}
+                        <Users className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
                         <h4 className="font-medium">{assessment.cycle?.title}</h4>
@@ -358,29 +331,27 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
                   </div>
 
                   <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  {assessment.status === AssessmentStatus.EMPLOYEE_REVIEW && (
-                    <span className="text-yellow-600 font-medium">⏳ Awaiting your review</span>
-                  )}
-                  {assessment.status === AssessmentStatus.COMPLETED && (
-                    <span className="text-green-600 font-medium">✅ Assessment completed</span>
-                  )}
-                  {assessment.status === AssessmentStatus.EMPLOYEE_REJECTED && (
-                    <span className="text-red-600 font-medium">🔄 Sent back for revision</span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleViewHistory(assessment)}
-                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
-                  >
-                    <Eye className="h-4 w-4" />
-                    {assessment.status === AssessmentStatus.EMPLOYEE_REVIEW
-                      ? "Review Assessment"
-                      : "View History"}
-                  </button>
-                </div>
-              </div>
+                    <div className="text-sm text-gray-600">
+                      {assessment.status === AssessmentStatus.EMPLOYEE_REVIEW && (
+                        <span className="text-yellow-600 font-medium">⏳ Awaiting your review</span>
+                      )}
+                      {assessment.status === AssessmentStatus.COMPLETED && (
+                        <span className="text-green-600 font-medium">✅ Assessment completed</span>
+                      )}
+                      {assessment.status === AssessmentStatus.EMPLOYEE_REJECTED && (
+                        <span className="text-red-600 font-medium">🔄 Sent back for revision</span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => navigate(`/assessment-details/${assessment.id}`)}
+                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Review Assessment
+                      </button>
+                    </div>
+                  </div>
 
                 </div>
               ))}
@@ -392,4 +363,4 @@ const UnifiedAssessmentReview: React.FC<UnifiedAssessmentReviewProps> = ({
   );
 };
 
-export default UnifiedAssessmentReview;
+export default myAssessmentReview;

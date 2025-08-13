@@ -14,7 +14,7 @@ import SkillCriteriaPage from "../components/criteria/SkillCriteriaPage";
 import SkillMatrixPage from "../components/matrix/SkillMatrixPage";
 import SkillUpgradePage from "../components/upgrade/SkillUpgradePage";
 import TeamAssessment from "@/components/assessment/teamAssessment/TeamAssessment";
-import EmployeeAssessmentReview from "@/components/assessment/employeeAssessment/EmployeeAssessmentReview";
+import MyAssessmentReview from "@/components/assessment/shared/myAssessmentReview";
 import HRAssessmentManagement from "@/components/assessment/hrAssessment/HRAssessmentManagement";
 import HRAdminDashboard from "@/components/admin/HRAdminDashboard";
 import AdminUsersPage from "@/components/admin/AdminUsersPage";
@@ -62,7 +62,7 @@ const Index = () => {
       setActiveTab("pending-assessments");
     } else if(path.startsWith("/team-assessment")){
       setActiveTab("team-assessment");
-    } else if(path.startsWith("/employee-assessment-review")){
+    } else if(path.startsWith("/my-assessment")){
       setActiveTab("employee-assessment-review");
     } else if(path.startsWith("/hr-assessment-management")){
       setActiveTab("hr-assessment-management");
@@ -152,7 +152,7 @@ const Index = () => {
         navigate("/team-assessment");
         break;
       case "employee-assessment-review":
-        navigate("/employee-assessment-review");
+        navigate("/my-assessment");
         break;
       case "hr-assessment-management":
         navigate("/hr-assessment-management");
@@ -189,7 +189,7 @@ const Index = () => {
           <Route path="/skill-matrix" element={<SkillMatrixPage />} />
           <Route path="/skill-upgrade" element={<SkillUpgradePage />} />
           <Route path="/team-assessment" element={<TeamAssessment/>}/>
-          <Route path="/employee-assessment-review" element={<EmployeeAssessmentReview/>}/>
+          <Route path="/my-assessment" element={<MyAssessmentReview/>}/>
           <Route path="/hr-assessment-management" element={<HRAssessmentManagement/>}/>
           <Route path="/admin-dashboard" element={<HRAdminDashboard/>}/>
           <Route path="/admin-users" element={<AdminUsersPage/>}/>

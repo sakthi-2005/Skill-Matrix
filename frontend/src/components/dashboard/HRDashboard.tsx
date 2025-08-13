@@ -216,13 +216,6 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
       action: () => onNavigate('team-overview')
     },
     {
-      title: 'User Management',
-      description: 'Manage employee profiles and teams',
-      icon: Users,
-      color: 'bg-purple-500',
-      action: () => onNavigate('user-management')
-    },
-    {
       title: 'Skill Matrix',
       description: 'View comprehensive skill matrix',
       icon: Target,
@@ -249,7 +242,7 @@ const HRDashboard = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
       {/* Quick Actions Section */}
       <div>
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
