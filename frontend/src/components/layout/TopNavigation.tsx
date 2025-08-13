@@ -79,6 +79,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
         0,
         { id: "team-overview", label: "Team Overview", icon: Users },
         { id: "skill-matrix", label: "Skill Matrix", icon: Grid3X3 },
+        { id: "employee-assessment-review", label: "My Assessments", icon: ClipboardCheck },
         { id: "team-assessment", label: "Team Assessment", icon: ClipboardCheck },
         { id: "skill-upgrade", label: "Upgrade Guide", icon: TrendingUp }
       );
@@ -101,8 +102,8 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left side - Brand */}
-          <div className="flex items-center min-w-0">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center min-w-0 -ml-12">
+            <div className="flex items-center space-x-2">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
                   <Grid3X3 className="h-4 w-4 text-white" />
@@ -149,7 +150,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
           </div>
 
           {/* Right side - User Profile and Mobile Menu */}
-          <div className="flex items-center justify-end space-x-3">
+          <div className="flex items-center justify-end space-x-3 -mr-12">
             {/* Welcome text for medium screens */}
             <div className="hidden md:block xl:hidden">
               <p className="text-sm text-gray-600 font-medium">
@@ -183,7 +184,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
               <DropdownMenuContent className="w-64 mt-2 shadow-xl border-0 bg-white/95 backdrop-blur-md" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal p-4">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-12 w-12 ml-5">
                       <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold text-lg">
                         {userProfile?.profilePhoto ? (
                           <img 

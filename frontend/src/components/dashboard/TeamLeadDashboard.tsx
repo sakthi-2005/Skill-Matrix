@@ -386,7 +386,7 @@ const TeamLeadDashboard = ({
       description: 'Access skill development guidelines',
       icon: BookOpen,
       color: 'bg-red-500',
-      action: () => onNavigate('upgrade-guide')
+      action: () => onNavigate('skill-upgrade')
     }
   ];
 
