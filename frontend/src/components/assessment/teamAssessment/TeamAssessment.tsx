@@ -30,7 +30,7 @@ import AssessmentHistoryPage from "./modals/AssessmentHistoryModal";
 import SkillScoresModal from "./modals/SkillScoresModal";
 import OverdueDetailsModal from "./modals/OverdueDetailsModal";
 
-import UnifiedAssessmentReview from "../shared/UnifiedAssessmentReview";
+import UnifiedAssessmentReview from "../shared/myAssessmentReview";
 
 interface Skill {
   id: number;
@@ -46,7 +46,7 @@ const TeamAssessment = () => {
     const [statistics, setStatistics] = useState<TeamStatistics | null>(null);
     const [skills, setSkills] = useState<Skill[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedTab, setSelectedTab] = useState("pending");
+    const [selectedTab, setSelectedTab] = useState("assessments");
     const [curLeadScore,setCurLeadScore]=useState<{ [skillId: number]: number }>({});
     const [openDropdowns, setOpenDropdowns] = useState<{
         [key: string]: boolean;
@@ -194,7 +194,7 @@ const TeamAssessment = () => {
     };
 
     const handleWriteAssessment = async (assessment: AssessmentWithHistory) => {
-        const userId = typeof assessment.user.id === "number" ? assessment.user.id.toString() : assessment.user.id;
+        const userId = typeof assessment.user.id === "number" ? assessment.user.id : assessment.user.id;
         
         // Check if user has older pending assessments that should be completed first
         const canProceed = checkForOlderPendingAssessments(userId, assessment.user?.name || 'Unknown User', assessment);
@@ -255,16 +255,15 @@ const TeamAssessment = () => {
             }
         });
 
-        console.log("Final initial scores:", initialScores);
-        console.log("Previous approved scores:", previousScores);
+        console.log("Final initial scores in TA:", initialScores);
+        console.log("Previous approved scores in TA:", previousScores);
 
         setSkillScores(initialScores);
         setPreviousApprovedScores(previousScores);
         setComments("");
     };
 
-
-
+    
     const handleSubmitAssessment = async () => {
         if (!selectedAssessment) return;
 
@@ -388,10 +387,9 @@ const TeamAssessment = () => {
     };
 
     const tabs = [
+        { id: "my-assessments", label: "My Assessments", icon: User },
         { id: "assessments", label: "All Assessments", icon: FileText },
         { id: "pending", label: "Pending Actions", icon: Clock },
-        { id: "myAssessment", label: "My Assessment", icon: User },
-        { id: "writeAssessment", label: "Write Assessment", hidden:true},
     ];
 
     return (
@@ -450,7 +448,6 @@ const TeamAssessment = () => {
                 <div className="border-b border-gray-200">
                     <nav className="flex space-x-8 px-6">
                         {tabs
-                        .filter(tab => !tab.hidden)
                         .map((tab) => {
                             const Icon = tab.icon;
                             return (
@@ -478,6 +475,9 @@ const TeamAssessment = () => {
 
                 <div className="p-6">
                     {/* Tab Content */}
+                    {selectedTab === "my-assessments" && (
+                        <UnifiedAssessmentReview />
+                    )}
                     {selectedTab === "assessments" && (
                         <AllAssessmentsTab 
                             assessments={assessments}
@@ -506,32 +506,11 @@ const TeamAssessment = () => {
                         />
                     )}
 
-                    {selectedTab === "myAssessment" && (
-                        <UnifiedAssessmentReview context="auto" />
-                    )}
-
-                    {selectedTab === "writeAssessment" && selectedAssessment && (
-                        <WriteAssessmentModal
-                            assessment={selectedAssessment}
-                            skills={skills}
-                            skillScores={skillScores}
-                            setSkillScores={setSkillScores}
-                            previousApprovedScores={previousApprovedScores}
-                            comments={comments}
-                            setComments={setComments}
-                            isSubmitting={isSubmitting}
-                            onSubmit={handleSubmitAssessment}
-                            data={curLeadScore}
-                            onClose={() => setSelectedTab("pending")} // go back when done
-                        />
-                    )}
                     {/* Skill Scores Modal */}
-                    {showSkillModal && skillModalData && (
                         <SkillScoresModal 
                             data={skillModalData}
                             onClose={() => setShowSkillModal(false)}
                         />
-                    )}
                     {/* Overdue Details Modal */}
                     <OverdueDetailsModal
                         isOpen={showOverdueModal}

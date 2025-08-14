@@ -315,7 +315,7 @@ export const skillUpgradeService = {
     data : { userId: string, skillId: number, from: number, to: number }
   ) => apiRequest("/targets/create",{ method: "POST", body: data }),
 
-  getTarget: ( id: string) => apiRequest(`/targets/skillTarget?id=${id}`),
+  getTarget: ( id: string) => apiRequest(`/targets/skillTarget?userId=${id}`),
 
   updateTarget: (
     data : { userId: string, skillId: number, from: number, to: number }

@@ -9,6 +9,7 @@ import {
   AssessmentWithHistory,
   AssessmentStatus,
 } from "@/types/assessmentTypes";
+import { useNavigate } from "react-router-dom";
 
 
 export const PendingReviewsTab: React.FC<{
@@ -43,6 +44,8 @@ export const PendingReviewsTab: React.FC<{
     hasOnSelectAll: !!onSelectAll,
     hasOnBulkAction: !!onBulkAction
   });
+
+  const navigate = useNavigate();
   
   const getAssessmentCardColor = (assessment: AssessmentWithHistory) => {
     // Check if there was a recent employee rejection
@@ -184,14 +187,7 @@ export const PendingReviewsTab: React.FC<{
 
               <div className="flex justify-end gap-2">
                 <button
-                  onClick={() => onShowHistory(assessment.userId, assessment.user?.name || 'Unknown User')}
-                  className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center gap-1"
-                >
-                  <FileText className="h-4 w-4" />
-                  History
-                </button>
-                <button
-                  onClick={() => onReview(assessment)}
+                  onClick={() => navigate(`/assessment-details/${assessment.id}`)}
                   className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-1"
                 >
                   <Eye className="h-4 w-4" />

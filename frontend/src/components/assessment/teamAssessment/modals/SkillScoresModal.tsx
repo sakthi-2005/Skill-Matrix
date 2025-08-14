@@ -3,9 +3,13 @@ import { X } from "lucide-react";
 import { SkillModalData } from "../../../../types/teamTypes";
 
 const SkillScoresModal: React.FC<{
-  data: SkillModalData;
+  data: SkillModalData | null;
   onClose: () => void;
 }> = ({ data, onClose }) => {
+  if (!data) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -38,7 +42,7 @@ const SkillScoresModal: React.FC<{
                 >
                   <span className="font-medium">{skill.skill_name}</span>
                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                    {skill.lead_score}/5
+                    {skill.score}/5
                   </span>
                 </div>
               ))}

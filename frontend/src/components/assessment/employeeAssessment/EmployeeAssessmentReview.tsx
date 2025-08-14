@@ -1,8 +1,8 @@
 import React from "react";
-import UnifiedAssessmentReview from "../shared/UnifiedAssessmentReview";
+import UnifiedAssessmentReview from "../shared/myAssessmentReview";
 
 const EmployeeAssessmentReview: React.FC = () => {
-  return <UnifiedAssessmentReview context="employee" />;
+  return <UnifiedAssessmentReview />;
 };
 
 export default EmployeeAssessmentReview;

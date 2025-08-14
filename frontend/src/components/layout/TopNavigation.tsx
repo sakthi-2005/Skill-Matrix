@@ -73,22 +73,25 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
         { id: "skill-matrix", label: "Skill Matrix", icon: Grid3X3 },
         { id: "hr-assessment-management", label: "HR Assessment", icon: ClipboardCheck }
       );
-    } else if (await verifyLead(user.id)) {
-      baseItems.splice(
-        2,
-        0,
-        { id: "team-overview", label: "Team Overview", icon: Users },
-        { id: "skill-matrix", label: "Skill Matrix", icon: Grid3X3 },
-        { id: "team-assessment", label: "Team Assessment", icon: ClipboardCheck },
-        { id: "skill-upgrade", label: "Upgrade Guide", icon: TrendingUp }
-      );
-    } else if (!await verifyLead(user.id)) {
-      baseItems.splice(
-        2,
-        0,
-        { id: "employee-assessment-review", label: "My Assessments", icon: ClipboardCheck },
-        { id: "skill-upgrade", label: "Upgrade Guide", icon: TrendingUp }
-      );
+    } else {
+      const isLead = await verifyLead(user.id);
+      if (isLead) {
+        baseItems.splice(
+          2,
+          0,
+          { id: "team-overview", label: "Team Overview", icon: Users },
+          { id: "skill-matrix", label: "Skill Matrix", icon: Grid3X3 },
+          { id: "team-assessment", label: "Assessments", icon: ClipboardCheck },
+          { id: "skill-upgrade", label: "Upgrade Guide", icon: TrendingUp }
+        );
+      } else {
+        baseItems.splice(
+          2,
+          0,
+          { id: "employee-assessment-review", label: "My Assessments", icon: ClipboardCheck },
+          { id: "skill-upgrade", label: "Upgrade Guide", icon: TrendingUp }
+        );
+      }
     }
 
     // return baseItems;
@@ -102,13 +105,13 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
         <div className="flex items-center justify-between h-16">
           {/* Left side - Brand */}
           <div className="flex items-center min-w-0">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
                   <Grid3X3 className="h-4 w-4 text-white" />
                 </div>
               </div>
-              <div className="hidden sm:block">
+              <div className="block">
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   Skill Matrix
                 </h1>
@@ -117,8 +120,8 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
           </div>
 
           {/* Center - Desktop Navigation */}
-          <div className="hidden xl:flex items-center justify-center flex-1 max-w-2xl mx-8">
-            <nav className="flex items-center space-x-1 bg-gray-50/80 rounded-full p-1 backdrop-blur-sm">
+          <div className="flex items-center justify-center flex-1 max-w-4xl">
+            <nav className="flex items-center space-x-1 w-full bg-gray-50/80 rounded-full backdrop-blur-sm">
               {useNavigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -151,7 +154,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
           {/* Right side - User Profile and Mobile Menu */}
           <div className="flex items-center justify-end space-x-3">
             {/* Welcome text for medium screens */}
-            <div className="hidden md:block xl:hidden">
+            <div className="hidden xl:hidden">
               <p className="text-sm text-gray-600 font-medium">
                 Hi, {user?.name?.split(' ')[0] || "User"}
               </p>
@@ -183,7 +186,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
               <DropdownMenuContent className="w-64 mt-2 shadow-xl border-0 bg-white/95 backdrop-blur-md" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal p-4">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-12 w-12 ml-5">
                       <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold text-lg">
                         {userProfile?.profilePhoto ? (
                           <img 
@@ -225,7 +228,7 @@ const TopNavigation = ({ activeTab, onTabChange }: TopNavigationProps) => {
             </DropdownMenu>
 
             {/* Mobile Hamburger Menu */}
-            <div className="xl:hidden">
+            <div className="md:hidden">
               <Button
                 variant="ghost"
                 size="sm"
