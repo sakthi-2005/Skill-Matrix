@@ -46,7 +46,7 @@ const TeamAssessment = () => {
     const [statistics, setStatistics] = useState<TeamStatistics | null>(null);
     const [skills, setSkills] = useState<Skill[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedTab, setSelectedTab] = useState("pending");
+    const [selectedTab, setSelectedTab] = useState("assessments");
     const [curLeadScore,setCurLeadScore]=useState<{ [skillId: number]: number }>({});
     const [openDropdowns, setOpenDropdowns] = useState<{
         [key: string]: boolean;
@@ -387,6 +387,7 @@ const TeamAssessment = () => {
     };
 
     const tabs = [
+        { id: "my-assessments", label: "My Assessments", icon: User },
         { id: "assessments", label: "All Assessments", icon: FileText },
         { id: "pending", label: "Pending Actions", icon: Clock },
     ];
@@ -474,6 +475,9 @@ const TeamAssessment = () => {
 
                 <div className="p-6">
                     {/* Tab Content */}
+                    {selectedTab === "my-assessments" && (
+                        <UnifiedAssessmentReview />
+                    )}
                     {selectedTab === "assessments" && (
                         <AllAssessmentsTab 
                             assessments={assessments}
