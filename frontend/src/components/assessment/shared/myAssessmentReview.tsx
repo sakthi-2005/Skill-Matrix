@@ -45,29 +45,15 @@ const myAssessmentReview: React.FC = () => {
     setIsLoading(true);
     try {
       const [allAssessments, requiresAction] = await Promise.all([
-        assessmentService.getAssessmentsForRole(),
+        assessmentService.getUserAssessmentHistory(user?.id),
         assessmentService.getAssessmentsRequiringAction(),
       ]);
 
       if (allAssessments.success) {
-        // Filter assessments to only show those that belong to the current user
-        const userAssessments = allAssessments.data.filter(assessment => 
-          assessment.userId === user?.id?.toString()
-        );
-
-        setAssessments(userAssessments);
+        setAssessments(allAssessments.data);
       }
       if (requiresAction.success) {
-        // Filter pending reviews to only show assessments that are actually for this user
-        // and in EMPLOYEE_REVIEW status
-        const filteredPendingReviews = requiresAction.data.filter(assessment => 
-          assessment.nextApprover === user?.id?.toString()
-        );
-        
-        // console.log('Pending Reviews (raw):', requiresAction.data);
-        // console.log('Filtered Pending Reviews:', filteredPendingReviews);
-        
-        setPendingReviews(filteredPendingReviews);
+        setPendingReviews(requiresAction);
       }
     } catch (error) {
       console.error("Error loading assessments:", error);
@@ -179,7 +165,7 @@ const myAssessmentReview: React.FC = () => {
             <FileText className="h-8 w-8 text-blue-600" />
             <div>
               <p className="text-sm text-gray-600">Total Assessments</p>
-              <p className="text-2xl font-bold">{assessments.length}</p>
+              <p className="text-2xl font-bold">{assessments.length || 0}</p>
             </div>
           </div>
         </div>
@@ -189,7 +175,7 @@ const myAssessmentReview: React.FC = () => {
             <Eye className="h-8 w-8 text-purple-600" />
             <div>
               <p className="text-sm text-gray-600">Pending Review</p>
-              <p className="text-2xl font-bold text-purple-600">{pendingReviews.length}</p>
+              <p className="text-2xl font-bold text-purple-600">{pendingReviews.length || 0}</p>
             </div>
           </div>
         </div>
@@ -200,7 +186,7 @@ const myAssessmentReview: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">Completed</p>
               <p className="text-2xl font-bold text-green-600">
-                {assessments.filter(a => a.status === AssessmentStatus.COMPLETED).length}
+                {assessments.filter(a => a.status === AssessmentStatus.COMPLETED).length || 0}
               </p>
             </div>
           </div>
@@ -212,7 +198,7 @@ const myAssessmentReview: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">In Progress</p>
               <p className="text-2xl font-bold text-yellow-600">
-                {assessments.filter(a => a.status !== AssessmentStatus.COMPLETED && a.status !== AssessmentStatus.CANCELLED).length}
+                {assessments.filter(a => a.status !== AssessmentStatus.COMPLETED && a.status !== AssessmentStatus.CANCELLED).length || 0}
               </p>
             </div>
           </div>

@@ -389,8 +389,6 @@ const TeamAssessment = () => {
     const tabs = [
         { id: "assessments", label: "All Assessments", icon: FileText },
         { id: "pending", label: "Pending Actions", icon: Clock },
-        { id: "myAssessment", label: "My Assessment", icon: User },
-        { id: "writeAssessment", label: "Write Assessment", hidden:true},
     ];
 
     return (
@@ -449,7 +447,6 @@ const TeamAssessment = () => {
                 <div className="border-b border-gray-200">
                     <nav className="flex space-x-8 px-6">
                         {tabs
-                        .filter(tab => !tab.hidden)
                         .map((tab) => {
                             const Icon = tab.icon;
                             return (
@@ -505,32 +502,11 @@ const TeamAssessment = () => {
                         />
                     )}
 
-                    {selectedTab === "myAssessment" && (
-                        <UnifiedAssessmentReview context="auto" />
-                    )}
-
-                    {selectedTab === "writeAssessment" && selectedAssessment && (
-                        <WriteAssessmentModal
-                            assessment={selectedAssessment}
-                            skills={skills}
-                            skillScores={skillScores}
-                            setSkillScores={setSkillScores}
-                            previousApprovedScores={previousApprovedScores}
-                            comments={comments}
-                            setComments={setComments}
-                            isSubmitting={isSubmitting}
-                            onSubmit={handleSubmitAssessment}
-                            data={curLeadScore}
-                            onClose={() => setSelectedTab("pending")} // go back when done
-                        />
-                    )}
                     {/* Skill Scores Modal */}
-                    {showSkillModal && skillModalData && (
                         <SkillScoresModal 
                             data={skillModalData}
                             onClose={() => setShowSkillModal(false)}
                         />
-                    )}
                     {/* Overdue Details Modal */}
                     <OverdueDetailsModal
                         isOpen={showOverdueModal}
